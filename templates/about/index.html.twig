@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'about.title'|trans }}{% endblock %}
+
+{% block body %}
+<section class="bg-dark text-white py-5">
+    <div class="container py-5 reveal">
+        <p class="text-teal fw-bold mb-2">{{ 'about.section_title'|trans }}</p>
+        <h1 class="display-4 fw-bold mb-3">{{ 'about.hero_title'|trans }}</h1>
+        <p class="lead text-light opacity-75 w-75">{{ 'about.hero_description'|trans }}</p>
+    </div>
+</section>
+
+<section class="py-5 bg-teal-fade">
+    <div class="container">
+        <div class="row gy-5">
+            <div class="col-lg-8 reveal">
+                <h2 class="h2 fw-bold mb-4">{{ 'about.why_choose_title'|trans }}</h2>
+                <p class="text-muted mb-4">{{ 'about.why_choose_description'|trans }}</p>
+                <div class="row g-4 reveal-group">
+                    <div class="col-md-6 reveal">
+                        <div class="card h-100 border-0 shadow-sm hover-lift">
+                            <div class="card-body">
+                                <p class="text-teal fw-bold mb-2">{{ 'about.for_pros'|trans }}</p>
+                                <p class="text-muted mb-0">{{ 'about.for_pros_desc'|trans }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 reveal">
+                        <div class="card h-100 border-0 shadow-sm hover-lift">
+                            <div class="card-body">
+                                <p class="text-teal fw-bold mb-2">{{ 'about.for_groups'|trans }}</p>
+                                <p class="text-muted mb-0">{{ 'about.for_groups_desc'|trans }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 reveal" style="transition-delay: 0.2s;">
+                <div class="card border-0 shadow-sm mb-4 hover-lift">
+                    <div class="card-body">
+                        <h3 class="h5 fw-bold mb-3">{{ 'about.popular_amenities'|trans }}</h3>
+                        <ul class="list-unstyled text-muted small mb-0">
+                            {% for amenity in popularAmenities %}
+                                <li class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="text-teal">•</span>{{ amenity|trans }}
+                                </li>
+                            {% else %}
+                                <li>{{ 'about.amenities_coming'|trans }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm hover-lift">
+                    <div class="card-body">
+                        <p class="fw-bold mb-2">{{ 'footer.contact'|trans }}</p>
+                        <p class="text-muted small mb-1">Email: <a class="text-teal text-decoration-none" href="mailto:contact@roamingfr.com">contact@roamingfr.com</a></p>
+                        <p class="text-muted small mb-0">Phone: <a class="text-teal text-decoration-none" href="tel:+330660344071">+33 6 60 34 40 71</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

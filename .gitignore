@@ -18,3 +18,14 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+node_modules
+
+# Local backups
+*.bak
+
+# Windows reserved device / accidental artifacts
+NUL
+
+# Accidental path-dump files (should never be committed)
+c*Users*smogii*assets*styles*app.css
+r*sum* des propri*t*s

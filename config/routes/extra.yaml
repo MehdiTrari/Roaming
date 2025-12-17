@@ -1,0 +1,20 @@
+app_home:
+    path: /
+    controller: App\Controller\HomeController::index
+
+app_about:
+    path: /about-us
+    controller: App\Controller\AboutController::__invoke
+
+app_contact:
+    path: /contact-us
+    controller: App\Controller\ContactController::__invoke
+
+app_property_show:
+    path: /property/{slug}
+    controller: App\Controller\PropertyController::show
+
+api_availability:
+    path: /api/availability
+    controller: App\Controller\AvailabilityController
+    methods: [GET]

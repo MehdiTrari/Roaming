@@ -1,0 +1,319 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'home.title'|trans }}{% endblock %}
+
+{% block body %}
+<section class="hero-section position-relative" style="background-image: url('{{ asset('images/imagedefond.jpg') }}'); background-size: cover; background-position: center;">
+    <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+    <div class="container py-5 position-relative">
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-10 reveal">
+                {# <span class="badge bg-white text-teal border border-teal-subtle rounded-pill mb-3 px-3 py-2">{{ 'home.hero_badge'|trans }}</span> #}
+                <h1 class="display-4 fw-bold text-white mb-4">{{ 'home.hero_title'|trans }}</h1>
+                <p class="lead text-white mb-4 mx-auto" style="max-width: 700px;">{{ 'home.hero_description'|trans }}</p>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center reveal" style="transition-delay: 0.2s;">
+            <div class="col-xl-10">
+                <div class="booking-bar bg-white rounded-pill shadow-lg p-2 position-relative z-2">
+                    <form id="booking-search-form" class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center">
+                        
+                        <!-- Destination -->
+                        <div class="booking-field-horizontal flex-grow-1 position-relative px-4 py-2 border-end-lg">
+                            <label class="small fw-bold text-muted d-block mb-1">Destination</label>
+                            <div class="d-flex align-items-center">
+                                <span class="me-2 text-teal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                    </svg>
+                                </span>
+                                <input type="text" class="form-control border-0 p-0 shadow-none fw-bold text-dark bg-transparent" value="Lille, France" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="booking-field-horizontal flex-grow-1 position-relative px-4 py-2 border-end-lg" id="date-toggle" data-open="false">
+                            <label class="small fw-bold text-muted d-block mb-1">{{ 'home.arrival_date'|trans }} - {{ 'home.departure_date'|trans }}</label>
+                            <div class="d-flex align-items-center cursor-pointer" id="date-display">
+                                <span class="me-2 text-teal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-calendar-event" viewBox="0 0 16 16">
+                                        <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
+                                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                    </svg>
+                                </span>
+                                <div class="text-truncate fw-bold text-dark" id="date-display-text">
+                                    <span class="selector-title">Choisir des dates</span>
+                                    <span class="selector-sub d-none">Clique pour sélectionner</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Hidden Panel -->
+                            <div class="selector-panel d-none" id="date-panel" style="top: 100%; left: 0; margin-top: 15px; min-width: 380px;">
+                                <h5>Dates de séjour</h5>
+                                <p class="small text-muted mb-2">Choisis ton arrivée puis ton départ sur le même calendrier.</p>
+                                <div id="date-calendar" class="date-calendar"></div>
+                                <input type="text" id="date-range" class="visually-hidden">
+                                <input type="hidden" id="arrival-date">
+                                <input type="hidden" id="departure-date">
+                                <div class="panel-actions">
+                                    <button type="button" class="btn btn-light btn-sm" id="date-cancel">Annuler</button>
+                                    <button type="button" class="btn btn-primary btn-sm text-white" id="date-apply">Valider</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Guests -->
+                        <div class="booking-field-horizontal flex-grow-1 position-relative px-4 py-2" id="guests-toggle" data-open="false">
+                            <label class="small fw-bold text-muted d-block mb-1">{{ 'home.guests'|trans }}</label>
+                            <div class="d-flex align-items-center cursor-pointer" id="guests-display">
+                                <span class="me-2 text-teal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                        <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
+                                        <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+                                    </svg>
+                                </span>
+                                <div class="fw-bold text-dark" id="guests-display-text">
+                                    <span class="selector-title">1 voyageur</span>
+                                    <span class="selector-sub d-none">Clique pour ajuster</span>
+                                </div>
+                            </div>
+
+                            <!-- Hidden Panel -->
+                            <div class="selector-panel d-none" id="guests-panel" style="top: 100%; right: 0; left: auto; margin-top: 15px; min-width: 300px;">
+                                <div class="guests-body">
+                                    <div class="guests-labels">
+                                        <span class="title">Voyageurs</span>
+                                        <span class="hint">Adultes et enfants</span>
+                                    </div>
+                                    <div class="guests-counter">
+                                        <button type="button" id="guests-decrease">-</button>
+                                        <input type="text" id="guests-current" value="1" readonly aria-label="Nombre de voyageurs">
+                                        <button type="button" id="guests-increase">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <select class="form-select d-none" id="guests-count">
+                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                            </select>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="p-1">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-3 fw-bold h-100 w-100 d-flex align-items-center justify-content-center gap-2 hover-lift booking-submit">
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                    </svg>
+                                </span>
+                                <span>{{ 'home.search'|trans }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Search Results -->
+                <div id="booking-results" class="mt-5 d-none">
+                    <div class="card border-0 shadow-lg p-4">
+                        <div id="results-list" class="d-flex flex-column gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" id="amenities">
+    <div class="container py-4">
+        <div class="mb-5 reveal">
+            <p class="text-teal fw-bold mb-2">{{ 'home.popular_amenities'|trans }}</p>
+            <h2 class="h2 fw-bold">{{ 'home.amenities_subtitle'|trans }}</h2>
+        </div>
+        <div class="row g-4 reveal-group">
+            {% for amenity in popularAmenities %}
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="card h-100 border-0 shadow-sm hover-lift transition-all">
+                        <div class="card-body d-flex align-items-start gap-3">
+                            <span class="icon-box bg-light text-teal rounded-circle">
+                                {% if amenity == 'amenities.fast_wifi' %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-wifi" viewBox="0 0 16 16"><path d="M15.384 6.115a.485.485 0 0 0-.047-.736A12.444 12.444 0 0 0 8 3C5.259 3 2.723 3.882.663 5.379a.485.485 0 0 0-.048.736.518.518 0 0 0 .668.05A11.448 11.448 0 0 1 8 4c2.507 0 4.827.802 6.716 2.164.205.148.49.13.668-.049z"/><path d="M13.229 8.271a.482.482 0 0 0-.063-.745A9.455 9.455 0 0 0 8 6c-1.905 0-3.68.56-5.166 1.526a.48.48 0 0 0-.063.745.525.525 0 0 0 .652.065A8.46 8.46 0 0 1 8 7a8.46 8.46 0 0 1 4.576 1.336c.206.132.48.108.653-.065zm-2.183 2.183c.226.15.535.12.697-.075a.491.491 0 0 0-.07-.768C10.73 9.019 9.394 8.6 8 8.6c-1.394 0-2.73.419-3.673 1.011a.491.491 0 0 0-.07.768c.162.195.471.225.697.075A6.47 6.47 0 0 1 8 9.6c1.124 0 2.185.27 3.046.854z"/><path d="M9.405 11.85a.513.513 0 0 0 .093-.775 4.49 4.49 0 0 0-2.996-.975 4.49 4.49 0 0 0-2.996.975.513.513 0 0 0 .093.775c.198.15.48.11.668-.072C5.077 11.188 6.473 10.8 8 10.8c1.527 0 2.923.388 3.729 1.052.188.182.47.222.668.072zM8 13.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                {% elseif amenity == 'amenities.self_checkin' %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-key" viewBox="0 0 16 16"><path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8zm4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647.646.647.146-.147V7.5l-1.5-1.5V6h-2.8c-.1 0-.2-.02-.292-.06l-2.3-1.5a.5.5 0 0 1-.228-.399zM3.888 7.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/></svg>
+                                {% elseif amenity == 'amenities.equipped_accommodation' %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cup-hot" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M.5 6a.5.5 0 0 0-.488.608l1.652 7.434A2.5 2.5 0 0 0 4.104 16h5.792a2.5 2.5 0 0 0 2.44-1.958l.131-.59a3 3 0 0 0 1.3-5.854l.221-.99A.5.5 0 0 0 13.5 6H.5ZM13 12.5a2.01 2.01 0 0 1-.316-.025l.867-3.898A2.001 2.001 0 0 1 13 12.5ZM2.64 13.825 1.123 7h11.754l-1.517 6.825A1.5 1.5 0 0 1 9.896 15H4.104a1.5 1.5 0 0 1-1.464-1.175Z"/><path d="m4.4.8-.003.004-.014.019a4.167 4.167 0 0 0-.204.31 2.327 2.327 0 0 0-.141.267c-.026.06-.034.092-.037.103v.004a.593.593 0 0 0 .091.248c.075.133.178.272.308.445l.01.012c.118.158.26.347.37.543.112.2.22.455.22.745 0 .188-.065.368-.119.494a3.31 3.31 0 0 1-.202.388 5.444 5.444 0 0 1-.253.382l-.018.025-.005.008-.002.002A.5.5 0 0 1 3.6 4.2l.003-.004.014-.019a4.149 4.149 0 0 0 .204-.31 2.06 2.06 0 0 0 .141-.267c.026-.06.034-.092.037-.103a.593.593 0 0 0-.09-.252A4.334 4.334 0 0 0 3.6 2.8l-.01-.012a5.099 5.099 0 0 1-.37-.543A1.53 1.53 0 0 1 3 1.5c0-.188.065-.368.119-.494.059-.138.134-.274.202-.388a5.446 5.446 0 0 1 .253-.382l.025-.033A.5.5 0 0 1 4.4.8Zm3 0-.003.004-.014.019a4.167 4.167 0 0 0-.204.31 2.327 2.327 0 0 0-.141.267c-.026.06-.034.092-.037.103v.004a.593.593 0 0 0 .091.248c.075.133.178.272.308.445l.01.012c.118.158.26.347.37.543.112.2.22.455.22.745 0 .188-.065.368-.119.494a3.31 3.31 0 0 1-.202.388 5.444 5.444 0 0 1-.253.382l-.018.025-.005.008-.002.002A.5.5 0 0 1 6.6 4.2l.003-.004.014-.019a4.149 4.149 0 0 0 .204-.31 2.06 2.06 0 0 0 .141-.267c.026-.06.034-.092.037-.103a.593.593 0 0 0-.09-.252A4.334 4.334 0 0 0 6.6 2.8l-.01-.012a5.099 5.099 0 0 1-.37-.543A1.53 1.53 0 0 1 6 1.5c0-.188.065-.368.119-.494.059-.138.134-.274.202-.388a5.446 5.446 0 0 1 .253-.382l.025-.033A.5.5 0 0 1 7.4.8Zm3 0-.003.004-.014.019a4.167 4.167 0 0 0-.204.31 2.327 2.327 0 0 0-.141.267c-.026.06-.034.092-.037.103v.004a.593.593 0 0 0 .091.248c.075.133.178.272.308.445l.01.012c.118.158.26.347.37.543.112.2.22.455.22.745 0 .188-.065.368-.119.494a3.31 3.31 0 0 1-.202.388 5.444 5.444 0 0 1-.253.382l-.018.025-.005.008-.002.002A.5.5 0 0 1 9.6 4.2l.003-.004.014-.019a4.149 4.149 0 0 0 .204-.31 2.06 2.06 0 0 0 .141-.267c.026-.06.034-.092.037-.103a.593.593 0 0 0-.09-.252A4.334 4.334 0 0 0 9.6 2.8l-.01-.012a5.099 5.099 0 0 1-.37-.543A1.53 1.53 0 0 1 9 1.5c0-.188.065-.368.119-.494.059-.138.134-.274.202-.388a5.446 5.446 0 0 1 .253-.382l.025-.033A.5.5 0 0 1 10.4.8Z"/></svg>
+                                {% elseif amenity == 'amenities.comfortable_bedding' %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 640 512">
+                                        <path d="M32 32c17.7 0 32 14.3 32 32V320H288V160c0-17.7 14.3-32 32-32H544c53 0 96 43 96 96V448c0 17.7-14.3 32-32 32s-32-14.3-32-32V416H352 320 64v32c0 17.7-14.3 32-32 32s-32-14.3-32-32V64C0 46.3 14.3 32 32 32zM176 288c-44.2 0-80-35.8-80-80s35.8-80 80-80s80 35.8 80 80s-35.8 80-80 80zM320 416H576V224c0-17.7-14.3-32-32-32H320v224z"/>
+                                    </svg>
+                                {% elseif amenity == 'amenities.ideal_for_pros' %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-briefcase" viewBox="0 0 16 16"><path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0zM1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5z"/></svg>
+                                {% elseif amenity == 'amenities.commission_free' %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-tag" viewBox="0 0 16 16"><path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-1 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/><path d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1zm0 5.586 7 7L13.586 9l-7-7H2v4.586z"/></svg>
+                                {% else %}
+                                    ★
+                                {% endif %}
+                            </span>
+                            <div>
+                                <p class="fw-bold mb-1">{{ amenity|trans }}</p>
+                                <p class="text-muted small mb-0">{{ 'home.amenity_verified'|trans }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="bg-light py-5" id="featured">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-end mb-5 flex-wrap gap-3 reveal">
+            <div>
+                <p class="text-teal fw-bold mb-2">{{ 'home.featured_properties'|trans }}</p>
+                <h2 class="h2 fw-bold mb-0">{{ 'home.featured_subtitle'|trans }}</h2>
+            </div>
+            <a href="#contact" class="text-teal text-decoration-none fw-bold hover-lift">{{ 'home.need_help'|trans }}</a>
+        </div>
+        <div class="row g-4 reveal-group">
+            {% set locale = app.request.locale %}
+            {% for property in featuredProperties %}
+                <div class="col-md-6 col-lg-4 reveal">
+                    <article class="card h-100 border-0 shadow-sm overflow-hidden hover-lift">
+                        <div class="property-card-img-container bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 200px;">
+                            {% if property.images|length > 0 %}
+                                <img src="{{ asset('uploads/properties/' ~ property.images[0].filename) }}" class="property-card-img w-100 h-100 object-fit-cover" alt="{{ property.title }}">
+                            {% else %}
+                                <span class="text-muted small">Photo</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h3 class="h5 fw-bold mb-0">{{ property.title }}</h3>
+                                <span class="badge bg-light text-teal border border-teal-subtle rounded-pill">{{ property.city }}</span>
+                            </div>
+                            {% set shortDesc = locale == 'en' and property.shortDescriptionEn ? property.shortDescriptionEn : property.shortDescription %}
+                            <p class="card-text text-muted small mb-3 flex-grow-1">{{ shortDesc ?? 'home.property_default_desc'|trans }}</p>
+                            <div class="row g-2 text-muted small mb-3">
+                                <div class="col-6">👥 {{ property.travelers }} {{ 'home.guests_count'|trans }}</div>
+                                <div class="col-6">🛏️ {{ property.bedrooms }} {{ 'home.bedrooms'|trans }}</div>
+                                <div class="col-6">🛌 {{ property.beds }} {{ 'home.beds'|trans }}</div>
+                                <div class="col-6">🛁 {{ property.bathrooms }} {{ 'home.baths'|trans }}</div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                                <a class="text-teal text-decoration-none fw-bold small stretched-link" href="{{ path('app_property_show', { slug: property.slug }) }}">{{ 'home.view_details'|trans }}</a>
+                                <a class="btn btn-primary btn-sm text-white fw-semibold position-relative z-2" href="{{ path('app_property_show', { slug: property.slug }) }}#availability">{{ 'menu.book_now'|trans }}</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <p class="text-muted">{{ 'home.no_properties'|trans }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="bg-dark text-white py-5" id="testimonials">
+    <div class="container py-5 text-center reveal">
+        <p class="text-teal fw-bold mb-2">{{ 'home.testimonials_title'|trans }}</p>
+        <h2 class="h2 fw-bold mb-3">{{ 'home.testimonials_subtitle'|trans }}</h2>
+        <p class="text-light opacity-75 mx-auto" style="max-width: 600px;">{{ 'home.testimonials_description'|trans }}</p>
+    </div>
+</section>
+
+<section class="py-5" id="contact">
+    <div class="container py-4">
+        <div class="row gy-5">
+            <div class="col-lg-6 reveal">
+                <p class="text-teal fw-bold mb-2">{{ 'home.contact_title'|trans }}</p>
+                <h2 class="h2 fw-bold mb-3">{{ 'home.contact_subtitle'|trans }}</h2>
+                <p class="text-muted mb-4">{{ 'home.contact_description'|trans({'%email%': '<a class="text-teal text-decoration-none" href="mailto:contact@roamingfr.com">contact@roamingfr.com</a>', '%phone%': '<a class="text-teal text-decoration-none" href="tel:+330660344071">+33 6 60 34 40 71</a>'})|raw }}</p>
+            </div>
+            <div class="col-lg-6 reveal" style="transition-delay: 0.2s;">
+                <div class="card border-0 shadow-sm p-4 hover-lift">
+                    <div class="card-body">
+                        {{ form_start(contactForm, {'attr': {'novalidate': 'novalidate', 'class': 'contact-form'}}) }}
+                            <div class="mb-3">
+                                {{ form_label(contactForm.name, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(contactForm.name, { attr: { class: 'form-control' ~ (contactForm.name.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+                                {% if contactForm.name.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.name.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(contactForm.email, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(contactForm.email, { attr: { class: 'form-control' ~ (contactForm.email.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+                                {% if contactForm.email.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.email.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(contactForm.phone, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-muted small">({{ 'form.optional'|trans }})</span>
+                                {{ form_widget(contactForm.phone, { attr: { class: 'form-control' ~ (contactForm.phone.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+                                {% if contactForm.phone.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.phone.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(contactForm.subject, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(contactForm.subject, { attr: { class: 'form-control' ~ (contactForm.subject.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+                                {% if contactForm.subject.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.subject.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(contactForm.message, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(contactForm.message, { attr: { class: 'form-control', rows: 4 } }) }}
+                                {% if contactForm.message.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.message.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="d-grid">
+                                {{ form_widget(contactForm.submit, { attr: { class: 'btn btn-primary text-white fw-semibold no-hover-lift' } }) }}
+                            </div>
+                        {{ form_end(contactForm) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

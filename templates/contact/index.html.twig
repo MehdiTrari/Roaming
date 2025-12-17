@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'contact.title'|trans }}{% endblock %}
+
+{% block body %}
+<section class="py-5 bg-teal-fade" id="contact">
+    <div class="container py-5">
+        <div class="row gy-5">
+            <div class="col-lg-6 reveal">
+                <p class="text-teal fw-bold mb-2">{{ 'contact.section_title'|trans }}</p>
+                <h1 class="display-5 fw-bold mb-3">We’ll help plan your stay</h1>
+                <p class="lead text-muted mb-4">{{ 'contact.hero_description'|trans }}</p>
+                <div class="card border-0 shadow-sm p-4 hover-lift">
+                    <div class="card-body">
+                        <p class="mb-2 text-muted">Email: <a class="text-teal text-decoration-none fw-bold" href="mailto:contact@roamingfr.com">contact@roamingfr.com</a></p>
+                        <p class="mb-0 text-muted">Phone: <a class="text-teal text-decoration-none fw-bold" href="tel:+330660344071">+33 6 60 34 40 71</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 reveal" style="transition-delay: 0.2s;">
+                <div class="card border-0 shadow-sm p-4 hover-lift">
+                    <div class="card-body">
+                        {{ form_start(contactForm, {'attr': {'novalidate': 'novalidate', 'class': 'contact-form'}}) }}
+                            <div class="mb-3">
+                                {{ form_label(contactForm.name, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(contactForm.name, { attr: { class: 'form-control' ~ (contactForm.name.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+                                {% if contactForm.name.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.name.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(contactForm.email, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(contactForm.email, { attr: { class: 'form-control' ~ (contactForm.email.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+                                {% if contactForm.email.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.email.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(contactForm.phone, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-muted small">({{ 'form.optional'|trans }})</span>
+                                {{ form_widget(contactForm.phone, { attr: { class: 'form-control' ~ (contactForm.phone.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+                                {% if contactForm.phone.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.phone.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(contactForm.subject, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(contactForm.subject, { attr: { class: 'form-control' ~ (contactForm.subject.vars.errors|length > 0 ? ' is-invalid' : '') } }) }}
+                                {% if contactForm.subject.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.subject.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(contactForm.message, null, { label_attr: { class: 'form-label small fw-bold' } }) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(contactForm.message, { attr: { class: 'form-control', rows: 4 } }) }}
+                                {% if contactForm.message.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                        </svg>
+                                        {{ contactForm.message.vars.errors[0].message }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="d-grid">
+                                {{ form_widget(contactForm.submit, { attr: { class: 'btn btn-primary text-white fw-semibold no-hover-lift' } }) }}
+                            </div>
+                        {{ form_end(contactForm) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

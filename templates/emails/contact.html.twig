@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau message de contact</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 40px 0;">
+                <table role="presentation" style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); padding: 30px 40px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">
+                                📬 Nouveau message de contact
+                            </h1>
+                            <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">
+                                Reçu via le site Roaming Home
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <!-- Sender Info Card -->
+                            <table role="presentation" style="width: 100%; background-color: #f8fafc; border-radius: 8px; margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h2 style="margin: 0 0 16px; color: #1e293b; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Informations de l'expéditeur
+                                        </h2>
+                                        
+                                        <table role="presentation" style="width: 100%;">
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                                                    <span style="color: #64748b; font-size: 13px;">Nom</span><br>
+                                                    <span style="color: #1e293b; font-size: 15px; font-weight: 500;">{{ contact.name ?? 'Non renseigné' }}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                                                    <span style="color: #64748b; font-size: 13px;">Email</span><br>
+                                                    <a href="mailto:{{ contact.email }}" style="color: #0d9488; font-size: 15px; font-weight: 500; text-decoration: none;">{{ contact.email ?? 'Non renseigné' }}</a>
+                                                </td>
+                                            </tr>
+                                            {% if contact.phone %}
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                                                    <span style="color: #64748b; font-size: 13px;">Téléphone</span><br>
+                                                    <a href="tel:{{ contact.phone }}" style="color: #0d9488; font-size: 15px; font-weight: 500; text-decoration: none;">{{ contact.phone }}</a>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <span style="color: #64748b; font-size: 13px;">Sujet</span><br>
+                                                    <span style="color: #1e293b; font-size: 15px; font-weight: 500;">{{ contact.subject ?? 'Aucun sujet' }}</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Message -->
+                            <h2 style="margin: 0 0 12px; color: #1e293b; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Message
+                            </h2>
+                            <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #0d9488; border-radius: 4px; padding: 20px;">
+                                <p style="margin: 0; color: #334155; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">{{ contact.message }}</p>
+                            </div>
+                            
+                            <!-- Reply Button -->
+                            <table role="presentation" style="width: 100%; margin-top: 30px;">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <a href="mailto:{{ contact.email }}?subject=Re: {{ contact.subject }}" 
+                                           style="display: inline-block; background-color: #0d9488; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 15px; font-weight: 600;">
+                                            ✉️ Répondre à {{ contact.name|split(' ')|first }}
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 24px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="margin: 0 0 8px; color: #64748b; font-size: 13px;">
+                                Ce message a été envoyé depuis le formulaire de contact du site
+                            </p>
+                            <p style="margin: 0; color: #0d9488; font-size: 14px; font-weight: 600;">
+                                🏠 Roaming Home
+                            </p>
+                            <p style="margin: 8px 0 0; color: #94a3b8; font-size: 12px;">
+                                {{ "now"|date("d/m/Y à H:i") }}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

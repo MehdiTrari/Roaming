@@ -1,0 +1,108 @@
+menu:
+    home: Accueil
+    about: À propos
+    properties: Nos logements
+    contact: Contact
+    book_now: Réserver
+footer:
+    description: Des logements soigneusement sélectionnés à Lille et alentours, pensés pour les pros et les groupes.
+    quick_links: Navigation
+    contact: Contact
+    rights: Tous droits réservés.
+    privacy: Confidentialité
+    terms: CGU
+
+# Page d'accueil
+home:
+    title: Roaming Lille | Votre pied-à-terre à Lille
+    hero_badge: Votre pied-à-terre à Lille
+    hero_title: Trouvez votre prochaine escapade avec Roaming
+    hero_description: Découvrez des locations de vacances soigneusement sélectionnées, conçues pour votre confort, votre aventure et des séjours inoubliables. Explorez nos 5 propriétés uniques et réservez votre escapade idéale.
+    browse_properties: Voir nos logements
+    contact_us: Nous contacter
+    plan_stay: Préparez votre séjour
+    arrival_date: Arrivée
+    departure_date: Départ
+    guests: Voyageurs
+    search: Rechercher
+    demo_form_note: "* Démo — formulaire non fonctionnel."
+    popular_amenities: Ce qu'on vous propose
+    amenities_subtitle: L'essentiel pour un séjour sans accroc
+    amenity_verified: Vérifié dans chaque logement.
+    featured_properties: Nos logements
+    featured_subtitle: Trouvez votre prochaine adresse
+    need_help: Besoin d'un coup de main ?
+    view_details: En savoir plus
+    no_properties: Aucun logement disponible.
+    property_default_desc: Un séjour confortable avec tout le nécessaire.
+    guests_count: voyageurs
+    bedrooms: chambres
+    beds: lits
+    baths: SDB
+    testimonials_title: Ils nous ont fait confiance
+    testimonials_subtitle: Témoignages à venir
+    testimonials_description: On rassemble les retours de nos derniers voyageurs. En attendant, n'hésitez pas à nous demander des références.
+    contact_title: Une question ?
+    contact_subtitle: Parlons de votre projet
+    contact_description: Écrivez-nous à %email% ou appelez-nous au %phone%. Nous répondrons rapidement afin de vous aider.
+# Page À propos
+about:
+    title: À propos | Roaming Lille
+    section_title: Qui sommes-nous
+    hero_title: Smogii x Roaming
+    hero_description: On sélectionne des logements confortables et bien situés à Lille et ses environs — parfaits pour les déplacements pro, les retrouvailles entre amis ou les séjours en famille.
+    why_choose_title: Pourquoi nous choisir
+    why_choose_description: Arrivée autonome, Wi-Fi rapide, cuisines équipées, literie de qualité. Chaque logement est vérifié pour garantir une expérience au top. On reste dispo si besoin, discrets sinon.
+    for_pros: Pour les pros
+    for_pros_desc: Espace de travail, connexion stable, emplacements centraux.
+    for_groups: Pour les groupes
+    for_groups_desc: Grands espaces, chambres multiples, parking quand c'est possible.
+    popular_amenities: Équipements
+    amenities_coming: Liste à venir.
+
+# Page Contact
+contact:
+    title: Contact | Roaming Lille
+    section_title: Contactez-nous
+    hero_title: On vous aide à trouver le bon logement
+    hero_description: Dites-nous vos dates, le nombre de voyageurs et vos besoins. On revient vers vous rapidement.
+
+# Page Propriété
+property:
+    travelers: voyageurs
+    bedrooms: chambres
+    beds: lits
+    baths: SDB
+    book_now: Réserver
+    about_title: Le logement
+    about_default: Un logement lumineux et spacieux dans la métropole lilloise.
+    accommodation_title: L'hébergement
+    accommodation_default: Cuisine équipée, chambres confortables, espaces de vie agréables.
+    guest_access_title: Accès
+    guest_access_default: Accès à l'ensemble du logement, terrasses et parking inclus.
+    other_remarks_title: Autres remarques
+    popular_amenities: Équipements
+    amenities_coming: Liste à venir.
+    location: Localisation
+    image_carousel: Photos
+    google_maps: Carte
+    availability_title: Disponibilités
+    availability_intro: "Disponibilités en temps réel depuis votre plateforme de réservation. Données de démonstration pour l'instant."
+    availability_next: "Prochaine nuit disponible : %date%"
+    availability_booked: "Séjours réservés à venir"
+    availability_all_open: "Aucune nuit réservée dans les prochaines semaines."
+    availability_note: "Source : %source%. Remplacez cette démo par votre intégration Booking/Airbnb."
+    occupied: Occupé
+
+# Amenities
+amenities:
+    fast_wifi: Wi-Fi rapide
+    self_checkin: Arrivée autonome
+    equipped_accommodation: Logement équipé
+    comfortable_bedding: Literie de qualité
+    ideal_for_pros: Idéal pour les groupes de pros
+    commission_free: Réservation sans commission
+
+# Form
+form:
+    optional: optionnel

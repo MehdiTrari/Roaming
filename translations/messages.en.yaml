@@ -1,0 +1,111 @@
+menu:
+    home: Home
+    about: About us
+    properties: Properties
+    contact: Contact
+    book_now: Book Now
+footer:
+    description: Find your next escape in Lille and its surroundings with curated stays tailored for professionals and groups.
+    quick_links: Quick links
+    contact: Contact
+    rights: All rights reserved.
+    privacy: Privacy Policy
+    terms: Terms of Service
+
+# Home page
+home:
+    title: Roaming Lille | Find Your Next Escape
+    hero_badge: Find Your Next Escape With Roaming
+    hero_title: Find Your Next Escape With Roaming
+    hero_description: Discover beautifully curated vacation rentals designed for comfort, adventure, and unforgettable stays. Explore all 5 of our unique properties and book your perfect getaway.
+    browse_properties: Browse properties
+    contact_us: Contact us
+    plan_stay: Plan your stay
+    arrival_date: Arrival date
+    departure_date: Departure date
+    guests: Guests
+    search: Search
+    demo_form_note: "* Demo form, not connected."
+    popular_amenities: Popular amenities
+    amenities_subtitle: Everything you need for a smooth stay
+    amenity_verified: Curated and verified for every property.
+    featured_properties: Featured properties
+    featured_subtitle: Pick your next address
+    need_help: Need help choosing?
+    view_details: View details
+    no_properties: No properties yet.
+    property_default_desc: A comfortable stay with everything you need.
+    guests_count: guests
+    bedrooms: bedrooms
+    beds: beds
+    baths: baths
+    testimonials_title: What Our Clients Are Saying
+    testimonials_subtitle: Testimonials coming soon
+    testimonials_description: We're gathering stories from recent stays. In the meantime, reach out and we'll share references.
+    contact_title: Contact Us
+    contact_subtitle: Tell us about your stay
+    contact_description: Email us at %email% or call %phone%. Or drop a line below and we'll reply quickly.
+    contact_note: We send messages to the configured recipient; you can change it later in CONTACT_RECIPIENT_EMAIL.
+
+# About page
+about:
+    title: About Us | Roaming Lille
+    section_title: About Us
+    hero_title: Smogii x Roaming
+    hero_description: We curate comfortable, connected, and flexible stays in Lille and nearby cities—ideal for professionals, friends, and families who value reliability and design.
+    why_choose_title: Why travelers choose us
+    why_choose_description: Self check-in, fast Wi‑Fi, well-equipped kitchens, and calm bedding. Each property is audited to ensure a consistent experience. We stay close by when you need help, and invisible when you don't.
+    for_pros: For pros
+    for_pros_desc: Work-friendly desks, stable internet, and central locations.
+    for_groups: For groups
+    for_groups_desc: Generous bedding, social spaces, and easy parking where possible.
+    popular_amenities: Popular amenities
+    amenities_coming: Amenities coming soon.
+
+# Contact page
+contact:
+    title: Contact Us | Roaming Lille
+    section_title: Contact Us
+    hero_title: We'll help plan your stay
+    hero_description: Drop us a line about dates, number of guests, and any special needs. We reply quickly and route bookings to the right property.
+
+# Property page
+property:
+    travelers: travelers
+    bedrooms: bedrooms
+    beds: beds
+    baths: baths
+    book_now: Book Now
+    about_title: About this accommodation
+    about_default: Spacious and bright stay in Lille area.
+    accommodation_title: Accommodation
+    accommodation_default: Fully equipped kitchen, cozy bedrooms, and relaxing lounge areas.
+    guest_access_title: Guest access
+    guest_access_default: Full access to the entire property, terraces, and parking.
+    other_remarks_title: Other remarks
+    popular_amenities: Popular amenities
+    amenities_coming: Amenities coming soon.
+    location: Location
+    image_carousel: Image carousel
+    google_maps: Google Maps
+    availability_title: Availability
+    availability_intro: "Real-time availability pulled from your booking provider. Demo data shown for now."
+    availability_next: "Next available night: %date%"
+    availability_booked: "Upcoming booked stays"
+    availability_all_open: "No booked nights detected in the coming weeks."
+    availability_note: "Source: %source%. Replace this demo with your Booking/Airbnb API integration."
+    occupied: Occupied
+
+# Amenities
+amenities:
+    fast_wifi: Fast Wifi
+    self_checkin: Self Check-in
+    equipped_accommodation: Equipped Accommodation
+    comfortable_bedding: Comfortable Bedding
+    ideal_for_pros: Ideal for Groups of Professionals
+    commission_free: Commission Free-Booking
+
+# Form
+form:
+    optional: optional
+
