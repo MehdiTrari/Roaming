@@ -9,6 +9,7 @@
 parameters:
     app.default_locale: 'fr'
     app.supported_locales: ['en', 'fr']
+    app.hostname: '%env(APP_HOSTNAME)%'
 
 services:
     # default configuration for services in *this* file

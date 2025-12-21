@@ -4,9 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Roaming Lille — Premium Stays{% endblock %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🏠</text></svg>">
+    
+    {# SEO Meta Tags #}
+    <meta name="description" content="{% block meta_description %}{{ 'seo.default_description'|trans }}{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}{{ 'seo.default_keywords'|trans }}{% endblock %}">
+    <meta name="author" content="Roaming Lille">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{% block canonical %}{{ app.request.uri }}{% endblock %}">
+    
+    {# Open Graph / Facebook #}
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ app.request.uri }}">
+    <meta property="og:title" content="{% block og_title %}{{ block('title') }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ block('meta_description') }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('images/og-default.png')) }}{% endblock %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="{{ app.request.locale == 'fr' ? 'fr_FR' : 'en_US' }}">
+    <meta property="og:site_name" content="Roaming Lille">
+    
+    {# Twitter Card #}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ block('og_title') }}">
+    <meta name="twitter:description" content="{{ block('og_description') }}">
+    <meta name="twitter:image" content="{{ block('og_image') }}">
+    
+    {# Alternate language versions #}
+    <link rel="alternate" hreflang="fr" href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'_locale': 'fr'})) }}">
+    <link rel="alternate" hreflang="en" href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'_locale': 'en'})) }}">
+    <link rel="alternate" hreflang="x-default" href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'_locale': 'fr'})) }}">
+    
+    {# Favicon adaptatif selon le thème du navigateur (blanc par défaut / noir pour thème clair) #}
+    <link rel="icon" href="{{ asset('images/logo-footer-white.png') }}" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="{{ asset('images/logo-footer-black.png') }}" media="(prefers-color-scheme: light)">
+    <link rel="icon" href="{{ asset('images/logo-footer-white.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo-footer-white.png') }}">
+    
     {% block stylesheets %}
         {{ encore_entry_link_tags('app') }}
+    {% endblock %}
+    
+    {# Structured Data - JSON-LD #}
+    {% block structured_data %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Roaming Lille",
+        "url": "{{ url('app_home') }}",
+        "logo": "{{ absolute_url(asset('images/logo-footer-black.png')) }}",
+        "description": "{{ 'seo.default_description'|trans }}",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Lille",
+            "addressCountry": "FR"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+33660344071",
+            "email": "contact@roamingfr.com",
+            "contactType": "customer service",
+            "availableLanguage": ["French", "English"]
+        },
+        "sameAs": []
+    }
+    </script>
     {% endblock %}
 
     {% block javascripts %}
@@ -69,18 +131,24 @@
     </header>
 
     <main class="flex-grow-1">
-        {% for label, messages in app.flashes %}
-            <div class="container pt-4">
+        {# Toast notifications - haut à droite #}
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+            {% for label, messages in app.flashes %}
                 {% for message in messages %}
-                    <div class="alert alert-success d-flex align-items-center" role="alert">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill me-2" viewBox="0 0 16 16">
-                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                        </svg>
-                        <div>{{ message }}</div>
+                    <div class="toast show align-items-center text-white bg-teal border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                        <div class="d-flex">
+                            <div class="toast-body d-flex align-items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                </svg>
+                                <span>{{ message|trans }}</span>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
                     </div>
                 {% endfor %}
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
         {% block body %}{% endblock %}
     </main>
 
@@ -140,6 +208,12 @@
                     }, 50);
                 }
             } catch (e) {}
+
+            // Auto-initialize and hide toasts after 5 seconds
+            document.querySelectorAll('.toast.show').forEach(function(toastEl) {
+                var toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+                toast.show();
+            });
         });
     </script>
 </html>

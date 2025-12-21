@@ -75,6 +75,15 @@ class Property
     #[ORM\Column(length: 120)]
     private ?string $city = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $airbnbUrl = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $airbnbRating = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $airbnbReviewsCount = null;
+
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
@@ -451,6 +460,42 @@ class Property
                 $review->setProperty(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAirbnbUrl(): ?string
+    {
+        return $this->airbnbUrl;
+    }
+
+    public function setAirbnbUrl(?string $airbnbUrl): self
+    {
+        $this->airbnbUrl = $airbnbUrl;
+
+        return $this;
+    }
+
+    public function getAirbnbRating(): ?float
+    {
+        return $this->airbnbRating;
+    }
+
+    public function setAirbnbRating(?float $airbnbRating): self
+    {
+        $this->airbnbRating = $airbnbRating;
+
+        return $this;
+    }
+
+    public function getAirbnbReviewsCount(): ?int
+    {
+        return $this->airbnbReviewsCount;
+    }
+
+    public function setAirbnbReviewsCount(?int $airbnbReviewsCount): self
+    {
+        $this->airbnbReviewsCount = $airbnbReviewsCount;
 
         return $this;
     }

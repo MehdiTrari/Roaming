@@ -97,6 +97,8 @@ property:
   beds: lits
   baths: SDB
   book_now: Réserver
+  view_on_airbnb: Voir sur Airbnb
+  reviews: avis
   about_title: Le logement
   about_default: Un logement lumineux et spacieux dans la métropole lilloise.
   accommodation_title: L'hébergement
@@ -131,3 +133,11 @@ amenities:
 # Form
 form:
   optional: optionnel
+# SEO
+seo:
+  default_description: "Location d'appartements meublés à Lille pour professionnels et groupes. Wi-Fi rapide, arrivée autonome, logements équipés. Réservation directe sans commission."
+  default_keywords: "location appartement Lille, location meublée Lille, hébergement professionnel Lille, location courte durée Lille, appartement groupe Lille, Roaming Lille"
+  home_description: "Découvrez nos appartements meublés à Lille, parfaits pour les professionnels et les groupes. Wi-Fi rapide, arrivée autonome, logements entièrement équipés."
+  about_description: "Découvrez Roaming Lille : une gestion locative à taille humaine, des logements soignés pour les voyageurs exigeants dans la métropole lilloise."
+  contact_description: "Contactez Roaming Lille pour réserver votre appartement meublé. Réponse rapide, conseils personnalisés pour votre séjour à Lille."
+  property_description: "%title% à %city%. %bedrooms% chambres, %beds% lits, %bathrooms% salles de bain. Idéal pour %travelers% voyageurs. Réservation directe."

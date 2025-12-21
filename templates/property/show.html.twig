@@ -2,6 +2,89 @@
 
 {% block title %}{{ property.title }} | Roaming Lille{% endblock %}
 
+{% block meta_description %}{{ 'seo.property_description'|trans({'%title%': property.title, '%city%': property.city, '%bedrooms%': property.bedrooms, '%beds%': property.beds, '%bathrooms%': property.bathrooms, '%travelers%': property.travelers}) }}{% endblock %}
+
+{% block meta_keywords %}{{ property.title }}, {{ property.city }}, location appartement {{ property.city }}, hébergement {{ property.city }}, Roaming Lille{% endblock %}
+
+{% block og_type %}product{% endblock %}
+
+{% block og_image %}{% if property.images|length > 0 %}{{ absolute_url(asset('uploads/' ~ property.images|first.filename)) }}{% else %}{{ parent() }}{% endif %}{% endblock %}
+
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "LodgingBusiness",
+    "name": "{{ property.title }}",
+    "description": "{{ property.about|default(property.description)|default('')|slice(0, 200)|e('js') }}",
+    "url": "{{ url('app_property_show', {slug: property.slug}) }}",
+    {% if property.images|length > 0 %}
+    "image": [
+        {% for image in property.images|slice(0, 5) %}
+        "{{ absolute_url(asset('uploads/' ~ image.filename)) }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ],
+    {% endif %}
+    "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "{{ property.city }}",
+        "addressRegion": "Hauts-de-France",
+        "addressCountry": "FR"
+    },
+    "amenityFeature": [
+        {"@type": "LocationFeatureSpecification", "name": "Wi-Fi", "value": true},
+        {"@type": "LocationFeatureSpecification", "name": "Self Check-in", "value": true}
+    ],
+    "numberOfRooms": {{ property.bedrooms }},
+    "occupancy": {
+        "@type": "QuantitativeValue",
+        "maxValue": {{ property.travelers }}
+    },
+    "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+33660344071",
+        "email": "contact@roamingfr.com",
+        "contactType": "reservations"
+    }{% if property.airbnbRating and property.airbnbReviewsCount %},
+    "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "{{ property.airbnbRating }}",
+        "bestRating": "5",
+        "worstRating": "1",
+        "ratingCount": "{{ property.airbnbReviewsCount }}",
+        "reviewCount": "{{ property.airbnbReviewsCount }}"
+    }{% endif %}
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "{{ 'menu.home'|trans }}",
+            "item": "{{ url('app_home') }}"
+        },
+        {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "{{ 'menu.properties'|trans }}",
+            "item": "{{ url('app_home') }}#properties"
+        },
+        {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "{{ property.title }}",
+            "item": "{{ url('app_property_show', {slug: property.slug}) }}"
+        }
+    ]
+}
+</script>
+{% endblock %}
+
 {% block body %}
 {% set locale = app.request.locale %}
 <section class="bg-teal-fade py-5">
@@ -10,12 +93,28 @@
             <div>
                 <p class="text-teal fw-bold mb-1">{{ property.city }}</p>
                 <h1 class="display-5 fw-bold text-dark mb-3">{{ property.title }}</h1>
-                <div class="d-flex flex-wrap gap-2 text-muted small">
+                <div class="d-flex flex-wrap gap-2 text-muted small mb-3">
                     <span class="badge bg-white text-dark border fw-normal p-2 hover-lift">👥 {{ property.travelers }} {{ 'property.travelers'|trans }}</span>
                     <span class="badge bg-white text-dark border fw-normal p-2 hover-lift">🛏️ {{ property.bedrooms }} {{ 'property.bedrooms'|trans }}</span>
                     <span class="badge bg-white text-dark border fw-normal p-2 hover-lift">🛌 {{ property.beds }} {{ 'property.beds'|trans }}</span>
                     <span class="badge bg-white text-dark border fw-normal p-2 hover-lift">🛁 {{ property.bathrooms }} {{ 'property.baths'|trans }}</span>
                 </div>
+                
+                {# Airbnb Badge #}
+                {% if property.airbnbUrl %}
+                <a href="https://{{ property.airbnbUrl }}" target="_blank" rel="noopener noreferrer" class="badge bg-white border fw-normal p-2 d-inline-flex align-items-center gap-2 text-decoration-none" style="color: #212529 !important;" title="{{ 'property.view_on_airbnb'|trans|default('Voir sur Airbnb') }}">
+                    <img src="{{ asset('images/Airbnb-Logo.png') }}" alt="Airbnb" height="18" style="object-fit: contain;">
+                    {% if property.airbnbRating %}
+                    <span class="d-flex align-items-center gap-1">
+                        <span style="color: #FF5A5F;">★</span>
+                        <span class="fw-bold" style="color: #212529 !important;">{{ property.airbnbRating|number_format(2, ',') }}</span>
+                    </span>
+                    {% endif %}
+                    {% if property.airbnbReviewsCount %}
+                    <span class="small" style="color: #6c757d !important;">({{ property.airbnbReviewsCount }} {{ 'property.reviews'|trans|default('avis') }})</span>
+                    {% endif %}
+                </a>
+                {% endif %}
             </div>
             <a href="{{ path('app_home') }}#top" class="btn btn-primary text-white fw-semibold px-4 hover-lift">{{ 'property.book_now'|trans }}</a>
         </div>

@@ -2,13 +2,54 @@
 
 {% block title %}{{ 'contact.title'|trans }}{% endblock %}
 
+{% block meta_description %}{{ 'seo.contact_description'|trans }}{% endblock %}
+
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "{{ 'contact.title'|trans }}",
+    "description": "{{ 'seo.contact_description'|trans }}",
+    "url": "{{ url('app_contact') }}",
+    "mainEntity": {
+        "@type": "Organization",
+        "name": "Roaming Lille",
+        "email": "contact@roamingfr.com",
+        "telephone": "+33660344071"
+    }
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "{{ 'menu.home'|trans }}",
+            "item": "{{ url('app_home') }}"
+        },
+        {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "{{ 'contact.section_title'|trans }}",
+            "item": "{{ url('app_contact') }}"
+        }
+    ]
+}
+</script>
+{% endblock %}
+
 {% block body %}
 <section class="py-5 bg-teal-fade" id="contact">
     <div class="container py-5">
         <div class="row gy-5">
             <div class="col-lg-6 reveal">
                 <p class="text-teal fw-bold mb-2">{{ 'contact.section_title'|trans }}</p>
-                <h1 class="display-5 fw-bold mb-3">We’ll help plan your stay</h1>
+                <h1 class="display-5 fw-bold mb-3">{{ 'contact.hero_title'|trans }}</h1>
                 <p class="lead text-muted mb-4">{{ 'contact.hero_description'|trans }}</p>
                 <div class="card border-0 shadow-sm p-4 hover-lift">
                     <div class="card-body">

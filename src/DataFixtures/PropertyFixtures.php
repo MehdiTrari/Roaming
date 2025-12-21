@@ -47,6 +47,17 @@ class PropertyFixtures extends Fixture
             $property->setAccommodationEn($data['housingEn']);
             $property->setGuestAccessEn($data['guestAccessEn']);
             $property->setOtherRemarksEn($data['otherRemarksEn']);
+            
+            // Airbnb data
+            if (isset($data['airbnbUrl'])) {
+                $property->setAirbnbUrl($data['airbnbUrl']);
+            }
+            if (isset($data['airbnbRating'])) {
+                $property->setAirbnbRating($data['airbnbRating']);
+            }
+            if (isset($data['airbnbReviewsCount'])) {
+                $property->setAirbnbReviewsCount($data['airbnbReviewsCount']);
+            }
 
             // Add Amenities
             if (isset($data['amenities'])) {
@@ -173,6 +184,10 @@ Please remove your shoes on the 1st and 2nd floors to preserve the flooring.
 
 Everything is designed to ensure you have a peaceful, comfortable, and pleasant stay.',
                 'amenities' => ['towels', 'soap', 'tv', 'heating', 'kitchen', 'wifi', 'hairdryer', 'washer', 'dryer', 'parking', 'terrace', 'shampoo', 'hangers', 'pets', 'wheelchair', 'cooking_basics', 'workspace', 'coffee', 'freezer', 'microwave', 'dining_table', 'dishwasher', 'smart_tv'],
+                // Airbnb
+                'airbnbUrl' => 'airbnb.fr/h/marcq2',
+                'airbnbRating' => 5.0,
+                'airbnbReviewsCount' => 3,
             ],
             [
                 'title' => 'Appartement Marcq-en-Barœul',
@@ -255,6 +270,10 @@ To ensure everyone\'s comfort and tranquility, the property is non-smoking, pets
 
 Everything has been designed for you to enjoy a peaceful, comfortable, and stress-free stay.',
                 'amenities' => ['towels', 'soap', 'heating', 'kitchen', 'hairdryer', 'parking', 'no_smoking', 'cooking_basics', 'coffee', 'freezer', 'kettle', 'microwave', 'dishwasher'],
+                // Airbnb
+                'airbnbUrl' => 'airbnb.fr/h/roamingmarcq1',
+                'airbnbRating' => 5.0,
+                'airbnbReviewsCount' => 4,
             ],
             [
                 'title' => 'Duplex Lambersart',
@@ -311,6 +330,10 @@ You can also enjoy the two terraces, ideal for relaxing.
 Parking is free and easy in the neighborhood.',
                 'otherRemarksEn' => null,
                 'amenities' => ['towels', 'soap', 'tv', 'heating', 'kitchen', 'wifi', 'washer', 'terrace', 'shampoo', 'hangers', 'cooking_basics', 'workspace', 'coffee', 'freezer', 'kettle', 'microwave', 'dining_table'],
+                // Airbnb
+                'airbnbUrl' => 'airbnb.fr/h/roamingllambrsart',
+                'airbnbRating' => 4.42,
+                'airbnbReviewsCount' => 19,
             ],
             [
                 'title' => 'Maison familiale Roubaix',
@@ -430,6 +453,10 @@ Free parking spaces are available on the street.',
 Non-smoking property, pets not allowed, parties prohibited.
 A peaceful and practical setting in the heart of a lively neighborhood.',
                 'amenities' => ['towels', 'soap', 'tv', 'heating', 'kitchen', 'wifi', 'washer', 'terrace', 'shampoo', 'hangers', 'cooking_basics', 'workspace', 'coffee', 'freezer', 'kettle', 'microwave', 'dining_table'],
+                // Airbnb
+                'airbnbUrl' => 'airbnb.fr/h/roaming',
+                'airbnbRating' => 4.44,
+                'airbnbReviewsCount' => 94,
             ],
         ];
     }

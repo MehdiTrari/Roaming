@@ -1,0 +1,13 @@
+# Robots.txt for Roaming Lille
+# https://www.roamingfr.com
+
+User-agent: *
+Allow: /
+
+# Disallow admin and development paths
+Disallow: /_profiler/
+Disallow: /_wdt/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://www.roamingfr.com/sitemap.xml

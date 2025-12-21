@@ -2,6 +2,49 @@
 
 {% block title %}{{ 'home.title'|trans }}{% endblock %}
 
+{% block meta_description %}{{ 'seo.home_description'|trans }}{% endblock %}
+
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Roaming Lille",
+    "url": "{{ url('app_home') }}",
+    "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ url('app_home') }}?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+    }
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": [
+        {% for property in featuredProperties %}
+        {
+            "@type": "ListItem",
+            "position": {{ loop.index }},
+            "item": {
+                "@type": "LodgingBusiness",
+                "name": "{{ property.title }}",
+                "url": "{{ url('app_property_show', {slug: property.slug}) }}",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressLocality": "{{ property.city }}",
+                    "addressCountry": "FR"
+                }
+            }
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+}
+</script>
+{% endblock %}
+
 {% block body %}
 <section class="hero-section position-relative" style="background-image: url('{{ asset('images/imagedefond.jpg') }}'); background-size: cover; background-position: center;">
     <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
@@ -222,6 +265,20 @@
                                 <div class="col-6">🛌 {{ property.beds }} {{ 'home.beds'|trans }}</div>
                                 <div class="col-6">🛁 {{ property.bathrooms }} {{ 'home.baths'|trans }}</div>
                             </div>
+                            {% if property.airbnbRating and property.airbnbUrl %}
+                            <div class="mb-3">
+                                <a href="https://{{ property.airbnbUrl }}" target="_blank" rel="noopener noreferrer" class="d-inline-flex align-items-center gap-2 text-decoration-none small bg-white border rounded px-2 py-1 position-relative z-2" style="color: #212529 !important;" title="Voir sur Airbnb">
+                                    <img src="{{ asset('images/Airbnb-Logo.png') }}" alt="Airbnb" height="14" style="object-fit: contain;">
+                                    <span class="d-flex align-items-center gap-1">
+                                        <span style="color: #FF5A5F;">★</span>
+                                        <span class="fw-bold" style="color: #212529 !important;">{{ property.airbnbRating|number_format(2, ',') }}</span>
+                                    </span>
+                                    {% if property.airbnbReviewsCount %}
+                                    <span style="color: #6c757d !important;">({{ property.airbnbReviewsCount }})</span>
+                                    {% endif %}
+                                </a>
+                            </div>
+                            {% endif %}
                             <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
                                 <a class="text-teal text-decoration-none fw-bold small stretched-link" href="{{ path('app_property_show', { slug: property.slug }) }}">{{ 'home.view_details'|trans }}</a>
                                 <a class="btn btn-primary btn-sm text-white fw-semibold position-relative z-2" href="{{ path('app_home') }}#top">{{ 'menu.book_now'|trans }}</a>
@@ -253,6 +310,7 @@
                 <p class="text-teal fw-bold mb-2">{{ 'home.contact_title'|trans }}</p>
                 <h2 class="h2 fw-bold mb-3">{{ 'home.contact_subtitle'|trans }}</h2>
                 <p class="text-muted mb-4">{{ 'home.contact_description'|trans({'%email%': '<a class="text-teal text-decoration-none" href="mailto:contact@roamingfr.com">contact@roamingfr.com</a>', '%phone%': '<a class="text-teal text-decoration-none" href="tel:+330660344071">+33 6 60 34 40 71</a>'})|raw }}</p>
+                <img src="{{ asset('images/og-default.png') }}" alt="Roaming Lille - Locations meublées" class="img-fluid rounded-4 shadow-sm" style="max-height: 450px; object-fit: cover; width: 100%;">
             </div>
             <div class="col-lg-6 reveal" style="transition-delay: 0.2s;">
                 <div class="card border-0 shadow-sm p-4 hover-lift">

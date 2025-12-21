@@ -93,6 +93,8 @@ property:
     beds: beds
     baths: baths
     book_now: Book Now
+    view_on_airbnb: View on Airbnb
+    reviews: reviews
     about_title: About this accommodation
     about_default: Spacious and bright stay in Lille area.
     accommodation_title: Accommodation
@@ -128,3 +130,11 @@ amenities:
 form:
     optional: optional
 
+# SEO
+seo:
+    default_description: "Furnished apartment rentals in Lille for professionals and groups. Fast WiFi, self check-in, fully equipped homes. Direct booking without commission."
+    default_keywords: "apartment rental Lille, furnished rental Lille, professional accommodation Lille, short term rental Lille, group apartment Lille, Roaming Lille"
+    home_description: "Discover our furnished apartments in Lille, perfect for professionals and groups. Fast WiFi, self check-in, fully equipped accommodations."
+    about_description: "Discover Roaming Lille: human-scale rental management, carefully maintained properties for discerning travelers in the Lille metropolis."
+    contact_description: "Contact Roaming Lille to book your furnished apartment. Quick response, personalized advice for your stay in Lille."
+    property_description: "%title% in %city%. %bedrooms% bedrooms, %beds% beds, %bathrooms% bathrooms. Perfect for %travelers% travelers. Direct booking."

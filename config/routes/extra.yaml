@@ -18,3 +18,13 @@ api_availability:
     path: /api/availability
     controller: App\Controller\AvailabilityController
     methods: [GET]
+
+app_sitemap:
+    path: /sitemap.xml
+    controller: App\Controller\SitemapController::index
+    defaults:
+        _format: xml
+
+app_switch_locale:
+    path: /change-locale/{locale}
+    controller: App\Controller\LocaleController::switchLocale
