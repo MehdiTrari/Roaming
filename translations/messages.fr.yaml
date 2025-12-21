@@ -49,10 +49,32 @@ home:
 about:
   title: À propos | Roaming Lille
   section_title: Qui sommes-nous
-  hero_title: Roaming
-  hero_description: On sélectionne des logements confortables et bien situés à Lille et ses environs — parfaits pour les déplacements pro, les retrouvailles entre amis ou les séjours en famille.
-  why_choose_title: Pourquoi nous choisir
-  why_choose_description: Arrivée autonome, Wi-Fi rapide, cuisines équipées, literie de qualité. Chaque logement est vérifié pour garantir une expérience au top. On reste dispo si besoin, discrets sinon.
+  hero_title: "Roaming est née d’une expérience simple et très concrète : celle de gérer des logements comme si c’étaient les miens."
+  hero_description: |
+    Je m'appelle %nizar_linkedin% et j'ai créé Roaming avec une idée claire en tête : proposer une façon de louer plus humaine, plus honnête, et plus sereine, aussi bien pour les voyageurs que pour les propriétaires.
+
+    En tant que gestionnaire, je suis impliqué au quotidien. Chaque logement est suivi, entretenu et exploité avec attention. Je privilégie la qualité à la quantité, et des relations construites sur la durée plutôt que des promesses irréalistes.
+
+    Roaming est une structure à taille humaine, où chaque détail compte. Mon objectif est simple : que les voyageurs se sentent bien, et que les propriétaires aient l’esprit tranquille.
+  why_choose_title: "Une expérience simple, fiable et sans mauvaise surprise"
+  why_choose_description: "Chez Roaming, tout est pensé pour faciliter le séjour, dès l’arrivée. Les logements sont équipés pour répondre aux besoins réels des voyageurs, qu’ils soient en déplacement professionnel ou en séjour temporaire."
+  
+  feature_wifi: "Connexion Wi-Fi rapide et fiable, indispensable pour travailler ou se divertir"
+  feature_checkin: "Arrivée autonome et fluide, sans contrainte d’horaire"
+  feature_equipped: "Logements entièrement équipés, prêts à vivre (cuisine, électroménager, rangements)"
+  feature_bedding: "Literie confortable, pour garantir de vraies nuits de repos"
+
+  solution_pros_title: "Une solution adaptée aux professionnels et aux groupes"
+  solution_pros_desc: "Roaming est particulièrement adapté aux équipes, professionnels et groupes en déplacement, avec des logements spacieux, fonctionnels et bien situés sur la métropole lilloise."
+
+  transparent_framework_title: "Un cadre clair et transparent"
+  transparent_framework_item1: "Réservation directe, sans commission cachée"
+  transparent_framework_item2: "Un seul interlocuteur, avant, pendant et après le séjour"
+  transparent_framework_item3: "Règles claires, respect du logement et du voisinage"
+
+  human_management_title: "Une gestion à taille humaine"
+  human_management_desc: "Contrairement aux plateformes impersonnelles, chaque logement est suivi avec attention. L’objectif n’est pas le volume, mais la qualité de l’expérience, pour des séjours sereins et maîtrisés."
+  
   for_pros: Pour les pros
   for_pros_desc: Espace de travail, connexion stable, emplacements centraux.
   for_groups: Pour les groupes

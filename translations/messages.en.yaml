@@ -51,16 +51,32 @@ home:
 about:
     title: About Us | Roaming Lille
     section_title: About Us
-    hero_title: Smogii x Roaming
-    hero_description: We curate comfortable, connected, and flexible stays in Lille and nearby cities—ideal for professionals, friends, and families who value reliability and design.
-    why_choose_title: Why travelers choose us
-    why_choose_description: Self check-in, fast Wi‑Fi, well-equipped kitchens, and calm bedding. Each property is audited to ensure a consistent experience. We stay close by when you need help, and invisible when you don't.
+    hero_title: "Roaming was born from a simple and very concrete experience: managing properties as if they were my own."
+    hero_description: |
+        My name is %nizar_linkedin% and I created Roaming with a clear idea in mind: to offer a more human, honest, and serene way of renting, both for travelers and owners.
+
+        As a manager, I am involved daily. Each property is monitored, maintained, and operated with care. I prioritize quality over quantity, and relationships built on the long term rather than unrealistic promises.
+
+        Roaming is a human-sized structure where every detail counts. My goal is simple: for travelers to feel good, and for owners to have peace of mind.
+    why_choose_title: "A simple, reliable experience with no bad surprises"
+    why_choose_description: "At Roaming, everything is designed to facilitate your stay from the moment you arrive. Properties are equipped to meet the real needs of travelers, whether on a business trip or a temporary stay."
+    feature_wifi: "Fast and reliable Wi-Fi connection, essential for working or entertainment"
+    feature_checkin: "Autonomous and fluid arrival, with no time constraints"
+    feature_equipped: "Fully equipped homes, ready to live in (kitchen, appliances, storage)"
+    feature_bedding: "Comfortable bedding, to guarantee real nights of rest"
+    solution_pros_title: "A solution adapted to professionals and groups"
+    solution_pros_desc: "Roaming is particularly suitable for teams, professionals, and groups on the move, with spacious, functional, and well-located properties in the Lille metropolis."
+    transparent_framework_title: "A clear and transparent framework"
+    transparent_framework_item1: "Direct booking, no hidden fees"
+    transparent_framework_item2: "A single point of contact, before, during, and after the stay"
+    transparent_framework_item3: "Clear rules, respect for the property and the neighborhood"
+    human_management_title: "Human-sized management"
+    human_management_desc: "Unlike impersonal platforms, each property is followed with attention. The goal is not volume, but the quality of the experience, for serene and controlled stays."
     for_pros: For pros
     for_pros_desc: Work-friendly desks, stable internet, and central locations.
     for_groups: For groups
     for_groups_desc: Generous bedding, social spaces, and easy parking where possible.
     popular_amenities: Popular amenities
-    amenities_subtitle: Fast Wi-Fi, self check-in, equipped kitchens, comfy bedding, and commission-free booking across every stay.
     amenities_coming: Amenities coming soon.
 
 # Contact page
