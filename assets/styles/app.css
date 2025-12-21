@@ -38,6 +38,23 @@ body {
     height: 40px;
 }
 
+/* Navbar Hide on Scroll */
+header.sticky-top {
+    transition: transform 0.3s ease-in-out, box-shadow 0.5s ease;
+}
+
+header.sticky-top.navbar-hidden {
+    transform: translateY(-100%);
+}
+
+header.sticky-top.navbar-scrolled {
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="dark"] header.sticky-top.navbar-scrolled {
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+}
+
 /* Logo Theme Switching */
 .logo-dark {
     display: none;
@@ -206,6 +223,64 @@ footer {
     background-color: #2d2d2d;
     border-color: #404040;
     color: #9ca3af;
+}
+
+/* Airbnb Badge */
+.airbnb-badge {
+    background-color: var(--card-bg) !important;
+    border: 1px solid rgba(13, 148, 136, 0.3) !important;
+    color: var(--bs-body-color) !important;
+    transition: all 0.3s ease;
+}
+
+.airbnb-badge:hover {
+    border-color: var(--teal-primary) !important;
+    box-shadow: var(--teal-glow);
+    transform: translateY(-2px);
+}
+
+.airbnb-badge .rating-value {
+    color: var(--bs-body-color) !important;
+}
+
+.airbnb-badge .rating-star {
+    color: #FF5A5F;
+}
+
+.airbnb-badge .reviews-count {
+    color: #9ca3af !important;
+}
+
+[data-bs-theme="dark"] .airbnb-badge {
+    background-color: #1e1e1e !important;
+    border-color: rgba(20, 184, 166, 0.4) !important;
+}
+
+[data-bs-theme="dark"] .airbnb-badge .rating-value {
+    color: #f8f9fa !important;
+}
+
+[data-bs-theme="dark"] .airbnb-badge .reviews-count {
+    color: #9ca3af !important;
+}
+
+/* Property Info Badges */
+.property-info-badge {
+    background-color: var(--card-bg) !important;
+    border: 1px solid rgba(13, 148, 136, 0.3) !important;
+    color: var(--bs-body-color) !important;
+    transition: all 0.3s ease;
+}
+
+.property-info-badge:hover {
+    border-color: var(--teal-primary) !important;
+    box-shadow: var(--teal-glow);
+}
+
+[data-bs-theme="dark"] .property-info-badge {
+    background-color: #1e1e1e !important;
+    border-color: rgba(20, 184, 166, 0.4) !important;
+    color: #f8f9fa !important;
 }
 
 /* --- Animations & Interactions --- */
@@ -781,6 +856,45 @@ footer {
 @media (max-width: 991.98px) {
     .booking-bar.rounded-pill {
         border-radius: 1.5rem !important;
+    }
+    
+    /* Fix navbar dropdown on mobile - no reserved space */
+    .navbar .dropdown-menu {
+        position: static !important;
+        float: none;
+        margin-top: 0 !important;
+        border-radius: 8px;
+        padding: 0;
+        border: none;
+        box-shadow: none;
+        background-color: transparent;
+        
+        /* Reset desktop animation - use Bootstrap's native collapse */
+        display: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        pointer-events: auto;
+    }
+    
+    .navbar .dropdown-menu.show {
+        display: block;
+    }
+    
+    .navbar .dropdown-menu::before {
+        display: none;
+    }
+    
+    .navbar .dropdown-item {
+        padding: 8px 16px;
+        border-radius: 8px;
+        color: var(--bs-body-color);
+    }
+    
+    [data-bs-theme="dark"] .navbar .dropdown-menu {
+        background-color: transparent;
+        border: none;
+        box-shadow: none;
     }
 }
 

@@ -94,24 +94,24 @@
                 <p class="text-teal fw-bold mb-1">{{ property.city }}</p>
                 <h1 class="display-5 fw-bold text-dark mb-3">{{ property.title }}</h1>
                 <div class="d-flex flex-wrap gap-2 text-muted small mb-3">
-                    <span class="badge bg-white text-dark border fw-normal p-2 hover-lift">👥 {{ property.travelers }} {{ 'property.travelers'|trans }}</span>
-                    <span class="badge bg-white text-dark border fw-normal p-2 hover-lift">🛏️ {{ property.bedrooms }} {{ 'property.bedrooms'|trans }}</span>
-                    <span class="badge bg-white text-dark border fw-normal p-2 hover-lift">🛌 {{ property.beds }} {{ 'property.beds'|trans }}</span>
-                    <span class="badge bg-white text-dark border fw-normal p-2 hover-lift">🛁 {{ property.bathrooms }} {{ 'property.baths'|trans }}</span>
+                    <span class="badge property-info-badge fw-normal p-2 hover-lift">👥 {{ property.travelers }} {{ 'property.travelers'|trans }}</span>
+                    <span class="badge property-info-badge fw-normal p-2 hover-lift">🛏️ {{ property.bedrooms }} {{ 'property.bedrooms'|trans }}</span>
+                    <span class="badge property-info-badge fw-normal p-2 hover-lift">🛌 {{ property.beds }} {{ 'property.beds'|trans }}</span>
+                    <span class="badge property-info-badge fw-normal p-2 hover-lift">🛁 {{ property.bathrooms }} {{ 'property.baths'|trans }}</span>
                 </div>
                 
                 {# Airbnb Badge #}
                 {% if property.airbnbUrl %}
-                <a href="https://{{ property.airbnbUrl }}" target="_blank" rel="noopener noreferrer" class="badge bg-white border fw-normal p-2 d-inline-flex align-items-center gap-2 text-decoration-none" style="color: #212529 !important;" title="{{ 'property.view_on_airbnb'|trans|default('Voir sur Airbnb') }}">
+                <a href="https://{{ property.airbnbUrl }}" target="_blank" rel="noopener noreferrer" class="airbnb-badge badge fw-normal p-2 d-inline-flex align-items-center gap-2 text-decoration-none" title="{{ 'property.view_on_airbnb'|trans|default('Voir sur Airbnb') }}">
                     <img src="{{ asset('images/Airbnb-Logo.png') }}" alt="Airbnb" height="18" style="object-fit: contain;">
                     {% if property.airbnbRating %}
                     <span class="d-flex align-items-center gap-1">
-                        <span style="color: #FF5A5F;">★</span>
-                        <span class="fw-bold" style="color: #212529 !important;">{{ property.airbnbRating|number_format(2, ',') }}</span>
+                        <span class="rating-star">★</span>
+                        <span class="fw-bold rating-value">{{ property.airbnbRating|number_format(2, ',') }}</span>
                     </span>
                     {% endif %}
                     {% if property.airbnbReviewsCount %}
-                    <span class="small" style="color: #6c757d !important;">({{ property.airbnbReviewsCount }} {{ 'property.reviews'|trans|default('avis') }})</span>
+                    <span class="small reviews-count">({{ property.airbnbReviewsCount }} {{ 'property.reviews'|trans|default('avis') }})</span>
                     {% endif %}
                 </a>
                 {% endif %}

@@ -267,14 +267,14 @@
                             </div>
                             {% if property.airbnbRating and property.airbnbUrl %}
                             <div class="mb-3">
-                                <a href="https://{{ property.airbnbUrl }}" target="_blank" rel="noopener noreferrer" class="d-inline-flex align-items-center gap-2 text-decoration-none small bg-white border rounded px-2 py-1 position-relative z-2" style="color: #212529 !important;" title="Voir sur Airbnb">
+                                <a href="https://{{ property.airbnbUrl }}" target="_blank" rel="noopener noreferrer" class="airbnb-badge d-inline-flex align-items-center gap-2 text-decoration-none small rounded px-2 py-1 position-relative z-2" title="Voir sur Airbnb">
                                     <img src="{{ asset('images/Airbnb-Logo.png') }}" alt="Airbnb" height="14" style="object-fit: contain;">
                                     <span class="d-flex align-items-center gap-1">
-                                        <span style="color: #FF5A5F;">★</span>
-                                        <span class="fw-bold" style="color: #212529 !important;">{{ property.airbnbRating|number_format(2, ',') }}</span>
+                                        <span class="rating-star">★</span>
+                                        <span class="fw-bold rating-value">{{ property.airbnbRating|number_format(2, ',') }}</span>
                                     </span>
                                     {% if property.airbnbReviewsCount %}
-                                    <span style="color: #6c757d !important;">({{ property.airbnbReviewsCount }})</span>
+                                    <span class="reviews-count">({{ property.airbnbReviewsCount }})</span>
                                     {% endif %}
                                 </a>
                             </div>

@@ -92,6 +92,55 @@ const initScrollReveal = () => {
 document.addEventListener('DOMContentLoaded', initScrollReveal);
 document.addEventListener('turbo:load', initScrollReveal);
 
+// Navbar Hide on Scroll
+const initNavbarScroll = () => {
+    const header = document.querySelector('header.sticky-top');
+    if (!header || header.hasAttribute('data-scroll-initialized')) return;
+    
+    header.setAttribute('data-scroll-initialized', 'true');
+    
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    
+    const updateNavbar = () => {
+        const currentScrollY = window.scrollY;
+        
+        // Add shadow when scrolled
+        if (currentScrollY > 10) {
+            header.classList.add('navbar-scrolled');
+        } else {
+            header.classList.remove('navbar-scrolled');
+        }
+        
+        // Hide/show navbar based on scroll direction
+        if (currentScrollY > 100) {
+            if (currentScrollY > lastScrollY) {
+                // Scrolling down - hide navbar
+                header.classList.add('navbar-hidden');
+            } else {
+                // Scrolling up - show navbar
+                header.classList.remove('navbar-hidden');
+            }
+        } else {
+            // At top - always show
+            header.classList.remove('navbar-hidden');
+        }
+        
+        lastScrollY = currentScrollY;
+        ticking = false;
+    };
+    
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(updateNavbar);
+            ticking = true;
+        }
+    }, { passive: true });
+};
+
+document.addEventListener('DOMContentLoaded', initNavbarScroll);
+document.addEventListener('turbo:load', initNavbarScroll);
+
 // Booking Search Functionality
 const initBookingSearch = () => {
     const form = document.getElementById('booking-search-form');
