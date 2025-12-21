@@ -40,6 +40,7 @@
         "symfony/ux-turbo": "^2.31",
         "symfony/validator": "8.0.*",
         "symfony/web-link": "8.0.*",
+        "symfony/webpack-encore-bundle": "^2.4",
         "symfony/yaml": "8.0.*",
         "twig/extra-bundle": "^2.12|^3.22.1",
         "twig/twig": "^2.12|^3.22.1"

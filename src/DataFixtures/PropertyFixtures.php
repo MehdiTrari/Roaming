@@ -59,12 +59,26 @@ class PropertyFixtures extends Fixture
 
             $manager->persist($property);
 
+            // Add profile image (first image / cover)
             if (isset($data['image'])) {
                 $image = new PropertyImage();
                 $image->setFilename($data['image']);
                 $image->setProperty($property);
                 $image->setIsCover(true);
+                $image->setPosition(0);
                 $manager->persist($image);
+            }
+
+            // Add gallery images
+            if (isset($data['gallery'])) {
+                foreach ($data['gallery'] as $position => $filename) {
+                    $image = new PropertyImage();
+                    $image->setFilename($filename);
+                    $image->setProperty($property);
+                    $image->setIsCover(false);
+                    $image->setPosition($position + 1);
+                    $manager->persist($image);
+                }
             }
         }
 
@@ -84,7 +98,20 @@ class PropertyFixtures extends Fixture
                 'bedrooms' => 3,
                 'beds' => 4,
                 'bathrooms' => 1.0,
-                'image' => 'marcmaisonprofil.png',
+                'image' => 'propertiesFirstPic/MaisonMarqProfil.jpeg',
+                'gallery' => [
+                    'MaisonMarq/MaisonMarq1.jpeg', 'MaisonMarq/MaisonMarq2.jpeg', 'MaisonMarq/MaisonMarq3.jpeg',
+                    'MaisonMarq/MaisonMarq4.jpeg', 'MaisonMarq/MaisonMarq5.jpeg', 'MaisonMarq/MaisonMarq6.jpeg',
+                    'MaisonMarq/MaisonMarq7.jpeg', 'MaisonMarq/MaisonMarq8.jpeg', 'MaisonMarq/MaisonMarq9.jpeg',
+                    'MaisonMarq/MaisonMarq10.jpeg', 'MaisonMarq/MaisonMarq11.jpeg', 'MaisonMarq/MaisonMarq13.jpeg',
+                    'MaisonMarq/MaisonMarq14.jpeg', 'MaisonMarq/MaisonMarq15.jpeg', 'MaisonMarq/MaisonMarq16.jpeg',
+                    'MaisonMarq/MaisonMarq17.jpeg', 'MaisonMarq/MaisonMarq18.jpeg', 'MaisonMarq/MaisonMarq19.jpeg',
+                    'MaisonMarq/MaisonMarq20.jpeg', 'MaisonMarq/MaisonMarq21.jpeg', 'MaisonMarq/MaisonMarq22.jpeg',
+                    'MaisonMarq/MaisonMarq23.jpeg', 'MaisonMarq/MaisonMarq24.jpeg', 'MaisonMarq/MaisonMarq25.jpeg',
+                    'MaisonMarq/MaisonMarq26.jpeg', 'MaisonMarq/MaisonMarq27.jpeg', 'MaisonMarq/MaisonMarq28.jpeg',
+                    'MaisonMarq/MaisonMarq29.jpeg', 'MaisonMarq/MaisonMarq30.jpeg', 'MaisonMarq/MaisonMarq31.jpeg',
+                    'MaisonMarq/MaisonMarq32.jpeg', 'MaisonMarq/MaisonMarq33.jpeg',
+                ],
                 // French
                 'shortDescription' => 'Profitez d\'un séjour inoubliable dans cette superbe maison de 105 m² à Marcq-en-Barœul, à 10 minutes du centre de Lille. Sa grande verrière baigne le salon de lumière naturelle et s\'ouvre sur un jardin paisible.',
                 'about' => 'Profitez d\'un séjour inoubliable dans cette superbe maison de 105 m² à Marcq-en-Barœul, à 10 minutes du centre de Lille.
@@ -157,7 +184,22 @@ Everything is designed to ensure you have a peaceful, comfortable, and pleasant 
                 'bedrooms' => 4,
                 'beds' => 4,
                 'bathrooms' => 1.5,
-                'image' => 'marcprofil.png',
+                'image' => 'propertiesFirstPic/AppartementMarqProfil.jpeg',
+                'gallery' => [
+                    'AppartementMarq/AppartementMarq1.jpeg', 'AppartementMarq/AppartementMarq2.jpeg', 'AppartementMarq/AppartementMarq3.jpeg',
+                    'AppartementMarq/AppartementMarq4.jpeg', 'AppartementMarq/AppartementMarq5.jpeg', 'AppartementMarq/AppartementMarq6.jpeg',
+                    'AppartementMarq/AppartementMarq7.jpeg', 'AppartementMarq/AppartementMarq8.jpeg', 'AppartementMarq/AppartementMarq9.jpeg',
+                    'AppartementMarq/AppartementMarq10.jpeg', 'AppartementMarq/AppartementMarq11.jpeg', 'AppartementMarq/AppartementMarq12.jpeg',
+                    'AppartementMarq/AppartementMarq13.jpeg', 'AppartementMarq/AppartementMarq14.jpeg', 'AppartementMarq/AppartementMarq15.jpeg',
+                    'AppartementMarq/AppartementMarq16.jpeg', 'AppartementMarq/AppartementMarq17.jpeg', 'AppartementMarq/AppartementMarq18.jpeg',
+                    'AppartementMarq/AppartementMarq19.jpeg', 'AppartementMarq/AppartementMarq20.jpeg', 'AppartementMarq/AppartementMarq21.jpeg',
+                    'AppartementMarq/AppartementMarq22.jpeg', 'AppartementMarq/AppartementMarq23.jpeg', 'AppartementMarq/AppartementMarq24.jpeg',
+                    'AppartementMarq/AppartementMarq26.jpeg', 'AppartementMarq/AppartementMarq27.jpeg', 'AppartementMarq/AppartementMarq28.jpeg',
+                    'AppartementMarq/AppartementMarq29.jpeg', 'AppartementMarq/AppartementMarq30.jpeg', 'AppartementMarq/AppartementMarq31.jpeg',
+                    'AppartementMarq/AppartementMarq32.jpeg', 'AppartementMarq/AppartementMarq33.jpeg', 'AppartementMarq/AppartementMarq34.jpeg',
+                    'AppartementMarq/AppartementMarq35.jpeg', 'AppartementMarq/AppartementMarq36.jpeg', 'AppartementMarq/AppartementMarq37.jpeg',
+                    'AppartementMarq/AppartementMarq38.jpeg',
+                ],
                 // French
                 'shortDescription' => 'Appartement haut de gamme de 90 m² à Marcq-en-Barœul, à 10 minutes de Lille. Lumineux et décoré avec soin, il offre un grand séjour design, une cuisine moderne entièrement équipée et quatre chambres confortables.',
                 'about' => 'Appartement haut de gamme de 90 m² à Marcq-en-Barœul, à 10 minutes de Lille. Lumineux et décoré avec soin, il offre un grand séjour design, une cuisine moderne entièrement équipée et quatre chambres confortables au style unique.
@@ -224,7 +266,16 @@ Everything has been designed for you to enjoy a peaceful, comfortable, and stres
                 'bedrooms' => 4,
                 'beds' => 6,
                 'bathrooms' => 2.5,
-                'image' => 'lambersartprofil.png',
+                'image' => 'propertiesFirstPic/LambersartProfil.jpg',
+                'gallery' => [
+                    'Lambersart/Lambersart1.jpg', 'Lambersart/Lambersart2.jpg', 'Lambersart/Lambersart3.jpg',
+                    'Lambersart/Lambersart4.jpg', 'Lambersart/Lambersart5.jpg', 'Lambersart/Lambersart6.jpg',
+                    'Lambersart/Lambersart7.jpg', 'Lambersart/Lambersart8.jpg', 'Lambersart/Lambersart9.jpg',
+                    'Lambersart/Lambersart10.jpg', 'Lambersart/Lambersart11.jpg', 'Lambersart/Lambersart12.jpg',
+                    'Lambersart/Lambersart14.jpg', 'Lambersart/Lambersart15.jpg', 'Lambersart/Lambersart16.jpg',
+                    'Lambersart/Lambersart17.jpg', 'Lambersart/Lambersart18.jpg', 'Lambersart/Lambersart19.jpg',
+                    'Lambersart/Lambersart20.jpg', 'Lambersart/Lambersart21.jpg',
+                ],
                 // French
                 'shortDescription' => 'Spacieux duplex de 140 m² idéalement situé à Lambersart, à quelques minutes du métro et du centre de Lille. Lumineux, moderne et entièrement équipé, il offre deux grandes terrasses.',
                 'about' => 'Spacieux duplex de 140 m² idéalement situé à Lambersart, à quelques minutes du métro et du centre de Lille. Lumineux, moderne et entièrement équipé, il offre deux grandes terrasses, un séjour chaleureux et une cuisine équipée.
@@ -271,7 +322,16 @@ Parking is free and easy in the neighborhood.',
                 'bedrooms' => 5,
                 'beds' => 6,
                 'bathrooms' => 2.0,
-                'image' => 'roubaixprofil.png',
+                'image' => 'propertiesFirstPic/RoubaixProfil.JPG',
+                'gallery' => [
+                    'Roubaix/Roubaix1.JPG', 'Roubaix/Roubaix2.JPG', 'Roubaix/Roubaix3.JPG',
+                    'Roubaix/Roubaix4.JPG', 'Roubaix/Roubaix5.JPG', 'Roubaix/Roubaix6.JPG',
+                    'Roubaix/Roubaix7.JPG', 'Roubaix/Roubaix8.JPG', 'Roubaix/Roubaix9.jpeg',
+                    'Roubaix/Roubaix10.JPG', 'Roubaix/Roubaix11.JPG', 'Roubaix/Roubaix12.JPG',
+                    'Roubaix/Roubaix13.JPG', 'Roubaix/Roubaix14.JPG', 'Roubaix/Roubaix16.JPG',
+                    'Roubaix/Roubaix17.JPG', 'Roubaix/Roubaix18.JPG', 'Roubaix/Roubaix19.JPG',
+                    'Roubaix/Roubaix20.JPG',
+                ],
                 // French
                 'shortDescription' => 'Magnifique maison familiale spacieuse et décorée avec goût, à proximité de toutes les commodités. Dotée d\'une charmante cour privée, elle offre un espace convivial pour 10 personnes.',
                 'about' => 'Magnifique maison familiale spacieuse et décorée avec goût, à proximité de toutes les commodités.
@@ -326,7 +386,11 @@ Street parking is free.',
                 'bedrooms' => 1,
                 'beds' => 1,
                 'bathrooms' => 1.0,
-                'image' => 'wazemmesprofil.png',
+                'image' => 'propertiesFirstPic/WazemmesProfil.avif',
+                'gallery' => [
+                    'Wazemmes/Wazemmes1.avif', 'Wazemmes/Wazemmes2.avif', 'Wazemmes/Wazemmes3.avif',
+                    'Wazemmes/Wazemmes4.avif', 'Wazemmes/Wazemmes5.avif', 'Wazemmes/Wazemmes6.avif',
+                ],
                 // French
                 'shortDescription' => 'Appartement lumineux et accueillant situé au cœur de Wazemmes, l\'un des quartiers les plus animés et authentiques de Lille. À seulement 3 minutes du métro et à deux pas du marché.',
                 'about' => 'Appartement lumineux et accueillant situé au cœur de Wazemmes, l\'un des quartiers les plus animés et authentiques de Lille.

@@ -17,18 +17,39 @@
                     <span class="badge bg-white text-dark border fw-normal p-2 hover-lift">🛁 {{ property.bathrooms }} {{ 'property.baths'|trans }}</span>
                 </div>
             </div>
-            <a href="#availability" class="btn btn-primary text-white fw-semibold px-4 hover-lift">{{ 'property.book_now'|trans }}</a>
+            <a href="{{ path('app_home') }}#top" class="btn btn-primary text-white fw-semibold px-4 hover-lift">{{ 'property.book_now'|trans }}</a>
         </div>
 
         <div class="row g-5">
             <div class="col-lg-8">
-                <div class="bg-secondary bg-opacity-10 rounded-4 d-flex align-items-center justify-content-center mb-5 hover-lift" style="aspect-ratio: 16/9;">
-                    {% if property.images|length > 0 %}
-                        <img src="{{ asset('uploads/properties/' ~ property.images[0].filename) }}" class="w-100 h-100 object-fit-cover rounded-4" alt="{{ property.title }}">
-                    {% else %}
-                        <span class="text-muted">{{ 'property.image_carousel'|trans }}</span>
-                    {% endif %}
+                {% if property.images|length > 0 %}
+                <div id="propertyCarousel" class="carousel slide property-card-carousel mb-5 rounded-4 overflow-hidden shadow-sm hover-lift">
+                    <div class="carousel-indicators">
+                        {% for image in property.images %}
+                            <button type="button" data-bs-target="#propertyCarousel" data-bs-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ loop.index }}"></button>
+                        {% endfor %}
+                    </div>
+                    <div class="carousel-inner" style="aspect-ratio: 16/9;">
+                        {% for image in property.images %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %} h-100">
+                                <img src="{{ asset('uploads/' ~ image.filename) }}" class="d-block w-100 h-100 object-fit-cover" alt="{{ image.alt ?? property.title }}" loading="{% if loop.first %}eager{% else %}lazy{% endif %}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">{{ 'property.carousel_prev'|trans }}</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">{{ 'property.carousel_next'|trans }}</span>
+                    </button>
                 </div>
+                {% else %}
+                <div class="bg-secondary bg-opacity-10 rounded-4 d-flex align-items-center justify-content-center mb-5 hover-lift" style="aspect-ratio: 16/9;">
+                    <span class="text-muted">{{ 'property.image_carousel'|trans }}</span>
+                </div>
+                {% endif %}
 
                 <div class="mb-5 reveal">
                     <h2 class="h4 fw-bold mb-3">{{ 'property.about_title'|trans }}</h2>
@@ -66,10 +87,10 @@
                 {% endif %}
 
                 <div class="mb-5 reveal" id="availability">
-                    <h2 class="h4 fw-bold mb-2">{{ 'property.availability_title'|trans }}</h2>
-                    <p class="text-muted small mb-3">{{ 'property.availability_intro'|trans }}</p>
+                    {# <h2 class="h4 fw-bold mb-2">{{ 'property.availability_title'|trans }}</h2>
+                    <p class="text-muted small mb-3">{{ 'property.availability_intro'|trans }}</p> #}
 
-                    {% if availability.nextAvailable is defined and availability.nextAvailable %}
+                    {# {% if availability.nextAvailable is defined and availability.nextAvailable %}
                         <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
                             <span class="fw-semibold text-teal">{{ 'property.availability_next'|trans({'%date%': availability.nextAvailable|date('d M Y')}) }}</span>
                         </div>
@@ -89,11 +110,11 @@
                         <div class="alert alert-light border text-muted small mb-0">
                             {{ 'property.availability_all_open'|trans }}
                         </div>
-                    {% endif %}
+                    {% endif %} #}
 
-                    <div class="alert alert-info border-0 bg-info bg-opacity-10 text-muted small mt-3 mb-0">
+                    {# <div class="alert alert-info border-0 bg-info bg-opacity-10 text-muted small mt-3 mb-0">
                         {{ 'property.availability_note'|trans({'%source%': availability.source|default('demo')}) }}
-                    </div>
+                    </div> #}
                 </div>
             </div>
 
@@ -115,8 +136,15 @@
                 <div class="card border-0 shadow-sm hover-lift">
                     <div class="card-body p-4">
                         <h3 class="h5 fw-bold mb-3">{{ 'property.location'|trans }}</h3>
-                        <div class="bg-secondary bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center" style="aspect-ratio: 4/3;">
-                            <span class="text-muted">{{ 'property.google_maps'|trans }}</span>
+                        <div class="rounded-3 overflow-hidden" style="aspect-ratio: 4/3;">
+                            <iframe 
+                                width="100%" 
+                                height="100%" 
+                                frameborder="0" 
+                                style="border:0" 
+                                src="https://www.google.com/maps?q={{ property.city|url_encode }}&t=&z=13&ie=UTF8&iwloc=&output=embed" 
+                                allowfullscreen>
+                            </iframe>
                         </div>
                     </div>
                 </div>

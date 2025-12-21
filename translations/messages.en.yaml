@@ -60,6 +60,7 @@ about:
     for_groups: For groups
     for_groups_desc: Generous bedding, social spaces, and easy parking where possible.
     popular_amenities: Popular amenities
+    amenities_subtitle: Fast Wi-Fi, self check-in, equipped kitchens, comfy bedding, and commission-free booking across every stay.
     amenities_coming: Amenities coming soon.
 
 # Contact page
@@ -88,6 +89,8 @@ property:
     location: Location
     image_carousel: Image carousel
     google_maps: Google Maps
+    carousel_prev: Previous
+    carousel_next: Next
     availability_title: Availability
     availability_intro: "Real-time availability pulled from your booking provider. Demo data shown for now."
     availability_next: "Next available night: %date%"

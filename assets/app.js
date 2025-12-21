@@ -1,4 +1,4 @@
-import './stimulus_bootstrap.js';
+import './bootstrap.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 import 'flatpickr/dist/flatpickr.min.css';
@@ -16,7 +16,8 @@ import './styles/app.css';
         if (storedTheme) {
             return storedTheme;
         }
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        // Default to dark when no preference was saved
+        return 'dark';
     };
 
     const setTheme = (theme) => {

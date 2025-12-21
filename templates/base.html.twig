@@ -1,12 +1,17 @@
 <!DOCTYPE html>
-<html lang="{{ app.request.locale }}" data-bs-theme="light">
+<html lang="{{ app.request.locale }}" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Roaming Lille — Premium Stays{% endblock %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🏠</text></svg>">
-    {% block stylesheets %}{% endblock %}
-    {% block javascripts %}{% block importmap %}{{ importmap('app') }}{% endblock %}{% endblock %}
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
+
+    {% block javascripts %}
+        {{ encore_entry_script_tags('app') }}
+    {% endblock %}
 </head>
 <body>
     <header class="sticky-top bg-peps border-bottom">
@@ -24,9 +29,6 @@
                         <li class="nav-item">
                             <a class="nav-link hover-teal" href="{{ path('app_home') }}">{{ 'menu.home'|trans }}</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link hover-teal" href="{{ path('app_about') }}">{{ 'menu.about'|trans }}</a>
-                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle hover-teal" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ 'menu.properties'|trans }}
@@ -42,6 +44,9 @@
                         <li class="nav-item">
                             <a class="nav-link hover-teal" href="{{ path('app_contact') }}">{{ 'menu.contact'|trans }}</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link hover-teal" href="{{ path('app_about') }}">{{ 'menu.about'|trans }}</a>
+                        </li>
                     </ul>
                     <div class="d-flex align-items-center gap-2">
                         <button type="button" class="btn btn-outline-secondary btn-sm" id="theme-toggle" aria-label="Toggle theme">
@@ -56,7 +61,7 @@
                             <a href="{{ path('app_switch_locale', {'locale': 'en'}) }}" class="btn btn-outline-secondary {{ app.request.locale == 'en' ? 'active' : '' }}">EN</a>
                             <a href="{{ path('app_switch_locale', {'locale': 'fr'}) }}" class="btn btn-outline-secondary {{ app.request.locale == 'fr' ? 'active' : '' }}">FR</a>
                         </div>
-                        <a href="#book" class="btn btn-primary fw-semibold text-white px-4">{{ 'menu.book_now'|trans }}</a>
+                        <a href="{{ path('app_home') }}#top" class="btn btn-primary fw-semibold text-white px-4">{{ 'menu.book_now'|trans }}</a>
                     </div>
                 </div>
             </div>
@@ -124,4 +129,17 @@
     </footer>
 </div>
 </body>
+    <script>
+        // If arriving with #top fragment, ensure a smooth scroll to top and remove the hash.
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                if (window.location.hash === '#top') {
+                    setTimeout(function () {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }, 50);
+                }
+            } catch (e) {}
+        });
+    </script>
 </html>
