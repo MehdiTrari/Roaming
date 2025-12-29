@@ -130,6 +130,17 @@ amenities:
 form:
     optional: optional
 
+# Error 404
+error:
+    404:
+        title: "Page not found"
+        meta: "The page you're looking for doesn't exist or has been moved."
+        heading: "Oops! This page has flown away..."
+        message: "The page you're looking for no longer exists or has been moved. Don't worry, we have other great discoveries for you!"
+        home_button: "Back to home"
+        contact_button: "Contact us"
+        suggestions_title: "Discover our properties"
+
 # SEO
 seo:
     default_description: "Furnished apartment rentals in Lille for professionals and groups. Fast WiFi, self check-in, fully equipped homes. Direct booking without commission."

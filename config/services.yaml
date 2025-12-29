@@ -27,5 +27,10 @@ services:
         arguments:
             $defaultLocale: '%app.default_locale%'
 
+    # Exception subscriber for 404 handling and redirects
+    App\EventSubscriber\ExceptionSubscriber:
+        arguments:
+            $kernelEnvironment: '%kernel.environment%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

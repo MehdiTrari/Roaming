@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\PropertyRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,6 +12,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class AvailabilityController extends AbstractController
 {
     private HttpClientInterface $httpClient;
+    private PropertyRepository $propertyRepository;
 
     private const SMOOBU_USER_ID = '1213908';
     private const SMOOBU_BASE_URL = 'https://booking.smoobu.com/RoamingLille';
@@ -56,9 +58,10 @@ class AvailabilityController extends AbstractController
         ],
     ];
 
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(HttpClientInterface $httpClient, PropertyRepository $propertyRepository)
     {
         $this->httpClient = $httpClient;
+        $this->propertyRepository = $propertyRepository;
     }
 
     #[Route('/api/availability', name: 'api_availability', methods: ['GET'])]
@@ -134,6 +137,24 @@ class AvailabilityController extends AbstractController
                 $error = 'Smoobu ID missing';
             }
 
+            // Récupérer l'image depuis la base de données
+            $dbProperty = $this->propertyRepository->findOneBy(['slug' => $property['slug']]);
+            $image = null;
+            if ($dbProperty) {
+                // Chercher l'image de couverture ou la première image
+                $images = $dbProperty->getImages();
+                foreach ($images as $img) {
+                    if ($img->isCover()) {
+                        $image = $img->getFilename();
+                        break;
+                    }
+                }
+                // Si pas d'image de couverture, prendre la première
+                if (!$image && $images->count() > 0) {
+                    $image = $images->first()->getFilename();
+                }
+            }
+
             $payload['availability'][] = [
                 'name' => $property['name'],
                 'slug' => $property['slug'],
@@ -145,6 +166,7 @@ class AvailabilityController extends AbstractController
                 'currency' => $currency,
                 'nights' => $nights,
                 'error' => $error,
+                'image' => $image ? '/uploads/' . $image : null,
             ];
         }
 

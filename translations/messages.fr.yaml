@@ -133,6 +133,17 @@ amenities:
 # Form
 form:
   optional: optionnel
+# Erreur 404
+error:
+  404:
+    title: Page introuvable
+    meta: "La page que vous recherchez n'existe pas ou a été déplacée."
+    heading: "Oups ! Cette page s'est envolée..."
+    message: "La page que vous cherchez n'existe plus ou a été déplacée. Pas de panique, nous avons d'autres belles découvertes pour vous !"
+    home_button: "Retour à l'accueil"
+    contact_button: "Nous contacter"
+    suggestions_title: "Découvrez nos logements"
+
 # SEO
 seo:
   default_description: "Location d'appartements meublés à Lille pour professionnels et groupes. Wi-Fi rapide, arrivée autonome, logements équipés. Réservation directe sans commission."
