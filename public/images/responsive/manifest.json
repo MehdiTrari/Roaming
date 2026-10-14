@@ -1,0 +1,828 @@
+{
+    "Lambersart/Lambersart1.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/ca6b78f8f7bb8576edbd-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/ca6b78f8f7bb8576edbd-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/ca6b78f8f7bb8576edbd-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/ca6b78f8f7bb8576edbd-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart10.jpg": {
+        "width": 1024,
+        "height": 1365,
+        "variants": [
+            {
+                "url": "images/responsive/ee428a1db3e900d14a1c-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/ee428a1db3e900d14a1c-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/ee428a1db3e900d14a1c-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/ee428a1db3e900d14a1c-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart11.jpg": {
+        "width": 1024,
+        "height": 1365,
+        "variants": [
+            {
+                "url": "images/responsive/abf03c4b094a600203fd-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/abf03c4b094a600203fd-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/abf03c4b094a600203fd-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/abf03c4b094a600203fd-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart12.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/41f62f8b59ab21ac179d-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/41f62f8b59ab21ac179d-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/41f62f8b59ab21ac179d-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/41f62f8b59ab21ac179d-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart14.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/e8893d6dce66470d460d-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/e8893d6dce66470d460d-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/e8893d6dce66470d460d-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/e8893d6dce66470d460d-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart15.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/ca76e9271c37cfb293c3-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/ca76e9271c37cfb293c3-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/ca76e9271c37cfb293c3-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/ca76e9271c37cfb293c3-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart16.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/7f2d37fa0d5d82401aa4-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/7f2d37fa0d5d82401aa4-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/7f2d37fa0d5d82401aa4-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/7f2d37fa0d5d82401aa4-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart17.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/de12b30054847e84158e-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/de12b30054847e84158e-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/de12b30054847e84158e-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/de12b30054847e84158e-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart18.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/b210e4a9deea34da01c9-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/b210e4a9deea34da01c9-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/b210e4a9deea34da01c9-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/b210e4a9deea34da01c9-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart19.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/6ee7fc7be20dcc4d98e0-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/6ee7fc7be20dcc4d98e0-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/6ee7fc7be20dcc4d98e0-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/6ee7fc7be20dcc4d98e0-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart2.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/294232ebf9c00881132f-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/294232ebf9c00881132f-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/294232ebf9c00881132f-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/294232ebf9c00881132f-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart20.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/8531d80501ce835b6ff2-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/8531d80501ce835b6ff2-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/8531d80501ce835b6ff2-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/8531d80501ce835b6ff2-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart21.jpg": {
+        "width": 1024,
+        "height": 1535,
+        "variants": [
+            {
+                "url": "images/responsive/1a5aa737d9c6ce1bc99e-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/1a5aa737d9c6ce1bc99e-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/1a5aa737d9c6ce1bc99e-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/1a5aa737d9c6ce1bc99e-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart3.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/b342866af9a736e9e34a-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/b342866af9a736e9e34a-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/b342866af9a736e9e34a-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/b342866af9a736e9e34a-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart4.jpg": {
+        "width": 1024,
+        "height": 1365,
+        "variants": [
+            {
+                "url": "images/responsive/16d72e30f555f82394e2-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/16d72e30f555f82394e2-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/16d72e30f555f82394e2-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/16d72e30f555f82394e2-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart5.jpg": {
+        "width": 1024,
+        "height": 1365,
+        "variants": [
+            {
+                "url": "images/responsive/23603bc7f3f9c3362ae4-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/23603bc7f3f9c3362ae4-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/23603bc7f3f9c3362ae4-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/23603bc7f3f9c3362ae4-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart6.jpg": {
+        "width": 1024,
+        "height": 1365,
+        "variants": [
+            {
+                "url": "images/responsive/c1f1f5241c92c2db58a6-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/c1f1f5241c92c2db58a6-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/c1f1f5241c92c2db58a6-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/c1f1f5241c92c2db58a6-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart7.jpg": {
+        "width": 1024,
+        "height": 1365,
+        "variants": [
+            {
+                "url": "images/responsive/250c3480ac8625f92b9b-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/250c3480ac8625f92b9b-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/250c3480ac8625f92b9b-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/250c3480ac8625f92b9b-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart8.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/ada8677778e76c4df982-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/ada8677778e76c4df982-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/ada8677778e76c4df982-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/ada8677778e76c4df982-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Lambersart/Lambersart9.jpg": {
+        "width": 1024,
+        "height": 1365,
+        "variants": [
+            {
+                "url": "images/responsive/0ec925ec3ef1bbf2cc05-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/0ec925ec3ef1bbf2cc05-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/0ec925ec3ef1bbf2cc05-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/0ec925ec3ef1bbf2cc05-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "Roubaix/Roubaix1.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/647b52fa47ec031e1b1f-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/647b52fa47ec031e1b1f-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/647b52fa47ec031e1b1f-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix10.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/57811826f51e9aa75ac1-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/57811826f51e9aa75ac1-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/57811826f51e9aa75ac1-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix11.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/092a097e987f7b0871d4-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/092a097e987f7b0871d4-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/092a097e987f7b0871d4-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix12.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/279d070aedf84abd546a-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/279d070aedf84abd546a-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/279d070aedf84abd546a-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix13.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/54afbd8e8ea5a7b20f31-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/54afbd8e8ea5a7b20f31-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/54afbd8e8ea5a7b20f31-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix14.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/2041790654c541b61300-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/2041790654c541b61300-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/2041790654c541b61300-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix16.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/18446b15b114138bf866-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/18446b15b114138bf866-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/18446b15b114138bf866-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix17.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/019df3875d81e211a2c2-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/019df3875d81e211a2c2-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/019df3875d81e211a2c2-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix18.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/f6dc6de6e65f0ebdc444-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/f6dc6de6e65f0ebdc444-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/f6dc6de6e65f0ebdc444-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix19.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/ab70b31bc230405bf6a3-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/ab70b31bc230405bf6a3-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/ab70b31bc230405bf6a3-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix2.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/58cb282ca2a3bd5789fa-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/58cb282ca2a3bd5789fa-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/58cb282ca2a3bd5789fa-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix20.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/f44bcbbf3ea81367a697-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/f44bcbbf3ea81367a697-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/f44bcbbf3ea81367a697-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix3.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/9bc0a73c40f2fb8efedb-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/9bc0a73c40f2fb8efedb-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/9bc0a73c40f2fb8efedb-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix4.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/73f9104bbc6ecc73f401-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/73f9104bbc6ecc73f401-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/73f9104bbc6ecc73f401-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix5.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/0e60afd958a48f8e426a-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/0e60afd958a48f8e426a-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/0e60afd958a48f8e426a-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix6.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/30fdd3c317528b295002-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/30fdd3c317528b295002-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/30fdd3c317528b295002-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix7.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/bc3a1eb600a4971e3bfc-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/bc3a1eb600a4971e3bfc-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/bc3a1eb600a4971e3bfc-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix8.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/ed22c9bb6370704520fb-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/ed22c9bb6370704520fb-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/ed22c9bb6370704520fb-750.webp",
+                "width": 750
+            }
+        ]
+    },
+    "Roubaix/Roubaix9.jpeg": {
+        "width": 1200,
+        "height": 900,
+        "variants": [
+            {
+                "url": "images/responsive/c0c2f289259cfbdc175d-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/c0c2f289259cfbdc175d-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/c0c2f289259cfbdc175d-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/c0c2f289259cfbdc175d-1200.webp",
+                "width": 1200
+            }
+        ]
+    },
+    "propertiesFirstPic/LambersartProfil.jpg": {
+        "width": 1024,
+        "height": 683,
+        "variants": [
+            {
+                "url": "images/responsive/ded38a60ddb860bba72a-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/ded38a60ddb860bba72a-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/ded38a60ddb860bba72a-960.webp",
+                "width": 960
+            },
+            {
+                "url": "images/responsive/ded38a60ddb860bba72a-1024.webp",
+                "width": 1024
+            }
+        ]
+    },
+    "propertiesFirstPic/RoubaixProfil.JPG": {
+        "width": 750,
+        "height": 1000,
+        "variants": [
+            {
+                "url": "images/responsive/921900e71098425b5bad-320.webp",
+                "width": 320
+            },
+            {
+                "url": "images/responsive/921900e71098425b5bad-640.webp",
+                "width": 640
+            },
+            {
+                "url": "images/responsive/921900e71098425b5bad-750.webp",
+                "width": 750
+            }
+        ]
+    }
+}

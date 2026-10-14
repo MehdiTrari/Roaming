@@ -1,0 +1,14 @@
+{% extends 'team/layout.html.twig' %}
+{% block title %}{{ 'team.tickets'|trans }} · Roaming Lille{% endblock %}
+{% block body %}
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><h1>{{ 'team.tickets'|trans }}</h1><a class="btn btn-primary align-self-start" href="{{ path('team_ticket_new') }}">{{ 'team.report'|trans }}</a></div>
+<form method="get" class="d-flex flex-wrap gap-3 mb-4">
+    <div><label for="filter-status">{{ 'team.status'|trans }}</label><select id="filter-status" name="status" class="form-select"><option value="">{{ 'team.all'|trans }}</option>{% for status in statuses %}<option value="{{ status }}" {{ filters.status|default('') == status ? 'selected' : '' }}>{{ ('team.status_' ~ status)|trans }}</option>{% endfor %}</select></div>
+    <div><label for="filter-category">{{ 'team.category'|trans }}</label><select id="filter-category" name="category" class="form-select"><option value="">{{ 'team.all'|trans }}</option>{% for category in categories %}<option value="{{ category }}" {{ filters.category|default('') == category ? 'selected' : '' }}>{{ ('team.category_' ~ category)|trans }}</option>{% endfor %}</select></div>
+    <button class="btn btn-outline-secondary align-self-end">{{ 'team.filter'|trans }}</button>
+</form>
+<div class="d-grid gap-3">{% for ticket in tickets %}
+<article class="team-panel team-panel-wide"><h2 class="h5"><a href="{{ path('team_ticket_show', {id: ticket.id}) }}">#{{ ticket.id }} · {{ ticket.title }}</a></h2><p class="mb-0">{{ ('team.status_' ~ ticket.status)|trans }} · {{ ('team.category_' ~ ticket.category)|trans }} · {{ ('team.priority_' ~ ticket.priority)|trans }}<br>{{ ticket.author.name }} · {{ ticket.createdAt|date('d/m/Y H:i', 'Europe/Paris') }}</p></article>
+{% else %}<p>{{ 'team.empty'|trans }}</p>{% endfor %}</div>
+<nav class="d-flex justify-content-between py-4" aria-label="{{ 'team.pagination'|trans }}">{% if page > 1 %}<a href="{{ path('team_tickets', filters|merge({page: page - 1})) }}">{{ 'team.previous'|trans }}</a>{% endif %}{% if page * 30 < total %}<a href="{{ path('team_tickets', filters|merge({page: page + 1})) }}">{{ 'team.next'|trans }}</a>{% endif %}</nav>
+{% endblock %}

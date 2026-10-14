@@ -24,6 +24,7 @@ node_modules
 
 # Local backups
 *.bak
+/public/.maintenance
 
 # Windows reserved device / accidental artifacts
 NUL

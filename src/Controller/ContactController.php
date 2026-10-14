@@ -19,7 +19,7 @@ class ContactController extends AbstractController
         PropertyRepository $propertyRepository,
         ContactService $contactService
     ): Response {
-        $navProperties = $propertyRepository->findBy([], ['title' => 'ASC']);
+        $navProperties = $propertyRepository->findActive();
 
         $contact = new ContactMessage();
         $form = $this->createForm(ContactMessageType::class, $contact);
@@ -35,6 +35,6 @@ class ContactController extends AbstractController
         return $this->render('contact/index.html.twig', [
             'navProperties' => $navProperties,
             'contactForm' => $form->createView(),
-        ]);
+        ], new Response('', $form->isSubmitted() ? 422 : 200));
     }
 }

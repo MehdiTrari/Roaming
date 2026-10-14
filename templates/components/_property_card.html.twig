@@ -1,0 +1,46 @@
+{% set locale = app.request.locale %}
+{% set detailsUrl = path('app_property_show', {slug: property.slug}) %}
+{% set carouselId = 'propertyCarousel' ~ property.id %}
+<article class="home-property-card catalogue-card card h-100 border-0 shadow-sm overflow-hidden hover-lift">
+    {% if property.images|length > 1 %}
+        <div id="{{ carouselId }}" class="carousel slide property-card-carousel position-relative z-2" data-controller="property-gallery" role="region" aria-label="{{ 'listing.photos_of'|trans({'%name%': property.title}) }}">
+            <div class="carousel-inner home-card-media">
+                {% for image in property.images %}
+                    <div class="carousel-item {{ loop.first ? 'active' : '' }} h-100">
+                        <a href="{{ detailsUrl }}" class="d-block h-100" aria-label="{{ 'listing.discover'|trans({'%name%': property.title}) }}">
+                            {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: 'd-block w-100 h-100 object-fit-cover', alt: image.alt ?: property.title, sizes: '(min-width: 1400px) 416px, (min-width: 1200px) 356px, (min-width: 992px) 296px, (min-width: 768px) 336px, calc(100vw - 24px)'} only %}
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#{{ carouselId }}" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">{{ 'ui.previous'|trans }}</span></button>
+            <button class="carousel-control-next" type="button" data-bs-target="#{{ carouselId }}" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">{{ 'ui.next'|trans }}</span></button>
+        </div>
+    {% elseif property.images|length == 1 %}
+        <a href="{{ detailsUrl }}" class="home-card-media property-card-img-container position-relative z-2" aria-label="{{ 'listing.discover'|trans({'%name%': property.title}) }}">
+            {% include 'components/_picture.html.twig' with {filename: property.images[0].filename, imageClass: 'w-100 h-100 object-fit-cover', alt: property.images[0].alt ?: property.title, sizes: '(min-width: 992px) 416px, (min-width: 768px) 336px, calc(100vw - 24px)'} only %}
+        </a>
+    {% else %}
+        <a href="{{ detailsUrl }}" class="home-card-media property-photo-placeholder position-relative z-2" aria-label="{{ 'listing.discover'|trans({'%name%': property.title}) }}"><span>{{ 'calendar.photo_pending'|trans }}</span><small>{{ property.city }}</small></a>
+    {% endif %}
+    <div class="card-body d-flex flex-column position-relative">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h3 class="h5 fw-bold mb-0">{{ property.title }}</h3>
+            <span class="badge bg-light text-teal border border-teal-subtle rounded-pill">{{ property.city }}</span>
+        </div>
+        {% set shortDesc = locale == 'en' and property.shortDescriptionEn ? property.shortDescriptionEn : property.shortDescription %}
+        {% if shortDesc %}<p class="card-text text-muted small mb-3">{{ shortDesc }}</p>{% endif %}
+        {% include 'components/_property_facts.html.twig' with {property: property, compact: true} only %}
+        {% if property.airbnbRating and property.airbnbUrl %}
+            <div class="mb-3"><a href="{{ property.airbnbUrl starts with 'https://' or property.airbnbUrl starts with 'http://' ? property.airbnbUrl : 'https://' ~ property.airbnbUrl }}" target="_blank" rel="noopener noreferrer" class="airbnb-badge d-inline-flex align-items-center gap-2 text-decoration-none small rounded px-2 py-1 position-relative z-2" title="{{ 'ui.airbnb'|trans }}">
+                <img src="{{ asset('images/Airbnb-Logo.png') }}" alt="Airbnb" height="14">
+                <span class="rating-star" aria-hidden="true">★</span><span class="fw-bold rating-value">{{ property.airbnbRating|number_format(2, app.request.locale == 'fr' ? ',' : '.') }}</span>
+                {% if property.airbnbReviewsCount %}<span class="reviews-count">({{ property.airbnbReviewsCount }} {{ 'property.reviews'|trans }})</span>{% endif %}
+            </a></div>
+        {% endif %}
+        <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+            <a class="text-teal text-decoration-none fw-bold small stretched-link" href="{{ detailsUrl }}" aria-label="{{ 'listing.discover'|trans({'%name%': property.title}) }}">{{ 'home.view_details'|trans }}</a>
+            <a class="btn btn-primary btn-sm text-white fw-semibold position-relative z-2" href="{{ detailsUrl }}#availability">{{ 'calendar.choose'|trans }}</a>
+        </div>
+    </div>
+</article>

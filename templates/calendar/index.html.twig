@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ 'calendar.title'|trans }} | Roaming Lille{% endblock %}
+{% block meta_description %}{{ 'audit.availability_description'|trans }}{% endblock %}
+{% block body %}
+<section class="calendar-page">
+  <div class="container py-5">
+    <header class="calendar-intro"><p class="calendar-eyebrow">{{ 'calendar.eyebrow'|trans }}</p>
+    <h1>{{ 'calendar.title'|trans }}</h1>
+    <p>{{ 'calendar.intro'|trans }}</p></header>
+    {% include 'calendar/_planning.html.twig' with {calendarUrl: path('api_calendar'), propertyPicker: true} %}
+  </div>
+</section>
+{% endblock %}

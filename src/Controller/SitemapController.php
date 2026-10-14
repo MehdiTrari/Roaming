@@ -18,6 +18,7 @@ class SitemapController extends AbstractController
         // Static pages with both locales
         $staticRoutes = [
             ['route' => 'app_home', 'priority' => '1.0', 'changefreq' => 'weekly'],
+            ['route' => 'app_calendar', 'priority' => '0.9', 'changefreq' => 'daily'],
             ['route' => 'app_about', 'priority' => '0.8', 'changefreq' => 'monthly'],
             ['route' => 'app_contact', 'priority' => '0.8', 'changefreq' => 'monthly'],
         ];
@@ -26,7 +27,7 @@ class SitemapController extends AbstractController
             foreach ($staticRoutes as $staticRoute) {
                 $urls[] = [
                     'loc' => $this->generateUrl($staticRoute['route'], ['_locale' => $locale], UrlGeneratorInterface::ABSOLUTE_URL),
-                    'lastmod' => (new \DateTime())->format('Y-m-d'),
+                    'alternates' => array_combine(['fr', 'en'], array_map(fn ($language) => $this->generateUrl($staticRoute['route'], ['_locale' => $language], UrlGeneratorInterface::ABSOLUTE_URL), ['fr', 'en'])),
                     'changefreq' => $staticRoute['changefreq'],
                     'priority' => $staticRoute['priority'],
                 ];
@@ -34,7 +35,7 @@ class SitemapController extends AbstractController
         }
 
         // Property pages
-        $properties = $propertyRepository->findAll();
+        $properties = $propertyRepository->findActive();
         foreach ($properties as $property) {
             foreach (['fr', 'en'] as $locale) {
                 $urls[] = [
@@ -42,7 +43,8 @@ class SitemapController extends AbstractController
                         'slug' => $property->getSlug(),
                         '_locale' => $locale,
                     ], UrlGeneratorInterface::ABSOLUTE_URL),
-                    'lastmod' => $property->getUpdatedAt()?->format('Y-m-d') ?? $property->getCreatedAt()?->format('Y-m-d') ?? (new \DateTime())->format('Y-m-d'),
+                    'lastmod' => $property->getUpdatedAt()?->format('Y-m-d') ?? $property->getCreatedAt()?->format('Y-m-d'),
+                    'alternates' => array_combine(['fr', 'en'], array_map(fn ($language) => $this->generateUrl('app_property_show', ['slug' => $property->getSlug(), '_locale' => $language], UrlGeneratorInterface::ABSOLUTE_URL), ['fr', 'en'])),
                     'changefreq' => 'weekly',
                     'priority' => '0.9',
                 ];

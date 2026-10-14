@@ -34,3 +34,13 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Integration\GuestLucky\GuestLuckyClient:
+        arguments:
+            $baseUrl: '%env(GUESTLUCKY_BASE_URL)%'
+            $bookingKey: '%env(GUESTLUCKY_BOOKING_KEY)%'
+
+    App\Service\AvailabilityService:
+        arguments:
+            $cache: '@cache.app'
+            $enabled: '%env(bool:GUESTLUCKY_AVAILABILITY_ENABLED)%'

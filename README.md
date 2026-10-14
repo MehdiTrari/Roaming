@@ -11,7 +11,7 @@
 ### ✨ Fonctionnalités principales
 
 - 🔍 **Recherche avancée** — Filtrage par destination, dates et nombre de voyageurs
-- 🏡 **Catalogue de propriétés** — 5 logements uniques (maisons, appartements, duplex)
+- 🏡 **Catalogue de propriétés** — 3 logements actifs : Lambersart, Roubaix et Croix
 - 📅 **Intégration Airbnb** — Notes et avis synchronisés depuis Airbnb
 - 🌍 **Multilingue** — Disponible en français et anglais
 - 📧 **Formulaire de contact** — Communication directe avec l'équipe
@@ -39,7 +39,7 @@
 | **PHP** | >= 8.4 | Langage serveur |
 | **Symfony** | 8.0 | Framework PHP |
 | **Doctrine ORM** | 3.x | Mapping objet-relationnel |
-| **PostgreSQL** | 16 | Base de données |
+| **MySQL** | 8.0 | Base de données |
 | **Twig** | 3.x | Moteur de templates |
 
 ### Frontend
@@ -54,7 +54,7 @@
 
 ### Infrastructure
 
-- 🐳 **Docker** — Conteneurisation (PostgreSQL)
+- 🐳 **Docker** — Conteneurisation (MySQL)
 - 📦 **Composer** — Gestion des dépendances PHP
 - 📦 **npm** — Gestion des dépendances JS
 - 🔒 **Symfony Security** — Authentification & autorisation
@@ -64,59 +64,146 @@
 
 ## 🚀 Installation
 
-### Prérequis
+### Lancer l'application en local
+
+Ce guide permet de lancer l'application Symfony sur une machine de développement.
+
+#### 1. Prérequis
+
+Installez les outils suivants :
 
 - PHP `>= 8.4`
 - Composer
-- Node.js & npm
-- Docker & Docker Compose (recommandé pour PostgreSQL)
+- Node.js et npm
+- Docker Desktop
+- Symfony CLI, recommandé pour lancer le serveur local
 
-### Installation locale
+Vérifiez rapidement les versions :
 
-1️⃣ **Cloner le projet et installer les dépendances**
+```bash
+php -v
+composer -V
+node -v
+npm -v
+docker --version
+symfony version
+```
+
+#### 2. Installer les dépendances
+
+Depuis la racine du projet :
 
 ```bash
 composer install
 npm install
 ```
 
-2️⃣ **Démarrer PostgreSQL avec Docker**
+#### 3. Configurer l'environnement
+
+Le projet utilise `.env` comme configuration par défaut et `.env.local` pour votre configuration locale.
+
+Si `.env.local` n'existe pas encore :
+
+```bash
+cp .env .env.local
+```
+
+Dans `.env.local`, vérifiez surtout `DATABASE_URL`. Avec Docker Compose, la base locale est une base MySQL. L'URL doit ressembler à ceci, en adaptant le port si Docker en expose un autre :
+
+```dotenv
+DATABASE_URL="mysql://smogii:smogii@127.0.0.1:PORT/smogii?serverVersion=8.0.32&charset=utf8mb4"
+```
+
+Pour trouver le port MySQL exposé par Docker :
+
+```bash
+docker compose ps
+```
+
+#### 4. Démarrer les services Docker
 
 ```bash
 docker compose up -d
 ```
 
-3️⃣ **Configurer l'environnement**
+Cela lance notamment :
 
-Copier `.env` vers `.env.local` et configurer :
+- MySQL
+- Mailpit pour tester les emails en local
 
-```dotenv
-DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=16&charset=utf8"
-APP_SECRET=your_random_secret_here
-```
-
-4️⃣ **Créer la base de données et exécuter les migrations**
+#### 5. Préparer la base de données
 
 ```bash
+php bin/console doctrine:database:create --if-not-exists
 php bin/console doctrine:migrations:migrate
 ```
 
-5️⃣ **Compiler les assets**
+Validez la migration quand Symfony le demande.
+
+#### 6. Compiler les assets
+
+Pour un lancement simple :
 
 ```bash
-npm run build
+npm run dev
 ```
 
-6️⃣ **Lancer le serveur**
+Pendant le développement, vous pouvez utiliser le mode watch :
+
+```bash
+npm run watch
+```
+
+#### 7. Lancer le serveur web
+
+Avec Symfony CLI :
 
 ```bash
 symfony server:start
 ```
 
-Ou avec le serveur PHP intégré :
+L'application sera disponible sur l'URL affichée par la commande, en général :
+
+```text
+https://127.0.0.1:8000
+```
+
+Alternative sans Symfony CLI :
 
 ```bash
 php -S 127.0.0.1:8000 -t public
+```
+
+#### Commandes utiles
+
+```bash
+# Voir les conteneurs Docker et les ports exposés
+docker compose ps
+
+# Arrêter les services Docker
+docker compose down
+
+# Nettoyer le cache Symfony
+php bin/console cache:clear
+
+# Lancer les tests
+php bin/phpunit
+
+# Générer les assets de production
+npm run build
+```
+
+#### Problème fréquent : connexion à la base
+
+Si Symfony n'arrive pas à se connecter à MySQL :
+
+1. Vérifiez que Docker est lancé.
+2. Lancez `docker compose ps`.
+3. Recopiez le port MySQL exposé dans `DATABASE_URL` de `.env.local`.
+4. Relancez les migrations :
+
+```bash
+php bin/console doctrine:migrations:migrate
 ```
 
 ---
@@ -185,3 +272,21 @@ npm run build
 
 Propriétaire — © 2025 Roaming Lille. Tous droits réservés.
 
+
+## GuestLucky
+
+Le catalogue, les calendriers et la recherche utilisent GuestLucky. La mise en ligne des disponibilités est désactivée par défaut jusqu’à validation du calendrier fournisseur.
+
+Voir [la documentation d’intégration](docs/GuestLucky_Integration.md) pour l’import du catalogue, les variables d’environnement, les tests et la bascule.
+
+En local : `/test-disponibilites` permet de lire les calendriers et de tester les devis sans réserver, même si la publication est désactivée. `/disponibilites` explique le verrou et propose un accès au test en environnement `dev` uniquement.
+
+Diagnostic en lecture seule : `php bin/console app:guestlucky:check lambersart 2026-10-01 2026-10-03 --guests=2` (adapter les dates).
+
+## Maintenance et tests en équipe
+
+`SITE_MAINTENANCE=1` affiche la maintenance publique ; les comptes invités accèdent au site via `/equipe/connexion`, avec tickets partagés et captures privées. Les comptes sont créés ou réinitialisés avec `app:team:user`. Pour développer sans maintenance, mettre `SITE_MAINTENANCE=0` dans `.env.local`.
+
+Voir [le guide de déploiement, des comptes et des tickets](docs/MAINTENANCE_ET_TESTS.md), avec le bouclier FTP, les migrations, l'ouverture publique et le retour arrière. Le verrou GuestLucky reste indépendant.
+
+Voir [le guide de style Roaming](docs/Style_Guide.md) avant de créer ou modifier une page : palette, thèmes, typographie, états du planning et contrôles visuels.

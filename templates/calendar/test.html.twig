@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+{% block title %}Test GuestLucky | Roaming Lille{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block body %}
+<section class="calendar-page">
+  <div class="container py-5">
+    <div class="calendar-test-notice" role="note">
+        <strong>{{ 'calendar.test_title'|trans }}</strong><br>
+        {{ 'calendar.test_notice'|trans }}
+    </div>
+    <header class="calendar-intro"><p class="calendar-eyebrow">{{ 'calendar.eyebrow'|trans }}</p>
+    <h1>{{ 'calendar.title'|trans }}</h1>
+    <p>{{ 'calendar.intro'|trans }}</p></header>
+    {% include 'calendar/_planning.html.twig' with {calendarUrl: path('api_calendar_test'), preview: true} %}
+  </div>
+</section>
+{% endblock %}

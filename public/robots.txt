@@ -8,6 +8,9 @@ Allow: /
 Disallow: /_profiler/
 Disallow: /_wdt/
 Disallow: /api/
+Disallow: /test-disponibilites
+Disallow: /reservation/
+Disallow: /change-locale/
 
 # Sitemap location
 Sitemap: https://www.roamingfr.com/sitemap.xml

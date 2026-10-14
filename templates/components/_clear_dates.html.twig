@@ -1,0 +1,1 @@
+<button class="stay-clear" type="button" {% if id|default('') %}id="{{ id }}"{% endif %} {% if planning|default(false) %}data-calendar-target="clear" data-action="calendar#clearDates"{% endif %} disabled><span aria-hidden="true">×</span> {{ 'calendar.clear_dates'|trans }}</button>

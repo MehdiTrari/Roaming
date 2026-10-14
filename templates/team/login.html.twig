@@ -1,0 +1,13 @@
+{% extends 'team/layout.html.twig' %}
+{% block title %}{{ 'team.access'|trans }} · Roaming Lille{% endblock %}
+{% block body %}
+<section class="team-panel mx-auto">
+<h1>{{ 'team.access'|trans }}</h1><p>{{ 'team.invited_only'|trans }}</p>
+{% if error %}<p role="alert" class="alert alert-danger">{{ 'team.login_error'|trans }}</p>{% endif %}
+<form method="post" action="{{ path('team_login') }}" data-turbo="false">
+    <label class="form-label" for="username">{{ 'team.email'|trans }}</label><input class="form-control mb-3" id="username" name="_username" type="email" maxlength="180" value="{{ last_username }}" autocomplete="username" required>
+    <label class="form-label" for="password">{{ 'team.password'|trans }}</label><input class="form-control mb-3" id="password" name="_password" type="password" autocomplete="current-password" required>
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+    <button class="btn btn-primary">{{ 'team.login'|trans }}</button>
+</form></section>
+{% endblock %}

@@ -1,250 +1,133 @@
 <?php
-
 namespace App\Controller;
-
+use App\Booking\BookingDates;
+use App\Integration\GuestLucky\GuestLuckyClient;
 use App\Repository\PropertyRepository;
+use App\Service\AvailabilityService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
-class AvailabilityController extends AbstractController
+final class AvailabilityController extends AbstractController
 {
-    private HttpClientInterface $httpClient;
-    private PropertyRepository $propertyRepository;
+    public function __construct(private PropertyRepository $properties, private AvailabilityService $availability) {}
 
-    private const SMOOBU_USER_ID = '1213908';
-    private const SMOOBU_BASE_URL = 'https://booking.smoobu.com/RoamingLille';
-
-    /**
-     * Public property definitions.
-     */
-    private const PROPERTIES = [
-        [
-            'name' => 'Appartement Wazemmes',
-            'slug' => 'wazemmes',
-            'smoobuId' => '2695213',
-            'maxGuests' => 4,
-            'city' => 'Lille',
-        ],
-        [
-            'name' => 'Maison familiale Roubaix',
-            'slug' => 'roubaix',
-            'smoobuId' => '2695583',
-            'maxGuests' => 10,
-            'city' => 'Roubaix',
-        ],
-        [
-            'name' => 'Appartement Marcq-en-Barœul',
-            'slug' => 'appartement-marcq-en-baroeul',
-            'smoobuId' => '3006736',
-            'maxGuests' => 7,
-            'city' => 'Marcq-en-Barœul',
-        ],
-        [
-            'name' => 'Maison Marcq-en-Barœul',
-            'slug' => 'maison-marcq-en-baroeul',
-            'smoobuId' => '3006741',
-            'maxGuests' => 7,
-            'city' => 'Marcq-en-Barœul',
-        ],
-        [
-            'name' => 'Duplex Lambersart',
-            'slug' => 'lambersart',
-            'smoobuId' => '2948001',
-            'maxGuests' => 10,
-            'city' => 'Lambersart',
-        ],
-    ];
-
-    public function __construct(HttpClientInterface $httpClient, PropertyRepository $propertyRepository)
+    #[Route('/disponibilites', name: 'app_calendar', methods: ['GET'])]
+    public function page(): Response
     {
-        $this->httpClient = $httpClient;
-        $this->propertyRepository = $propertyRepository;
+        return $this->render('calendar/index.html.twig', ['navProperties' => $this->properties->findActiveWithImages()]);
+    }
+
+    #[Route('/test-disponibilites', name: 'app_calendar_test', methods: ['GET'])]
+    public function testPage(): Response
+    {
+        if (!$this->canPreview()) { throw $this->createNotFoundException(); }
+        return $this->render('calendar/test.html.twig', ['navProperties' => $this->properties->findActive()]);
+    }
+
+    #[Route('/api/test/calendar', name: 'api_calendar_test', methods: ['GET'])]
+    public function testCalendar(Request $request): JsonResponse
+    {
+        if (!$this->canPreview()) { return $this->reply(['error' => 'not_found'], 404); }
+        try {
+            $year = $this->integer($request, 'year', (int) BookingDates::today()->format('Y'));
+            $month = $this->integer($request, 'month', (int) BookingDates::today()->format('n'));
+            $slug = $request->query->getString('slug');
+            $properties = $slug === '' ? $this->properties->findActive() : [$this->properties->findActiveSlug($slug)];
+            if ($slug !== '' && !$properties[0]) { return $this->reply(['error' => 'not_found'], 404); }
+            $payload = $this->availability->calendarsForTest($properties, $year, $month);
+            foreach ($payload['properties'] as &$row) {
+                $row['detailsUrl'] = $this->generateUrl('app_property_show', ['slug' => $row['slug']]);
+            }
+            return $this->reply($payload);
+        } catch (\InvalidArgumentException) { return $this->reply(['error' => 'invalid_month'], 400); }
+    }
+
+    #[Route('/api/calendar', name: 'api_calendar', methods: ['GET'])]
+    #[Route('/api/properties/{slug}/availability', name: 'api_property_availability', methods: ['GET'])]
+    public function calendar(Request $request, ?string $slug = null): JsonResponse
+    {
+        $properties = $slug === null ? $this->properties->findActive() : [$this->properties->findActiveSlug($slug)];
+        if ($slug !== null && !$properties[0]) { return $this->reply(['error' => 'not_found'], 404); }
+        try {
+            $year = $this->integer($request, 'year', (int) BookingDates::today()->format('Y'));
+            $month = $this->integer($request, 'month', (int) BookingDates::today()->format('n'));
+            $payload = $this->availability->calendars($properties, $year, $month);
+            foreach ($payload['properties'] as &$row) {
+                $row['detailsUrl'] = $this->generateUrl('app_property_show', ['slug' => $row['slug']]);
+            }
+            return $this->reply($payload);
+        } catch (\InvalidArgumentException) { return $this->reply(['error' => 'invalid_month'], 400); }
     }
 
     #[Route('/api/availability', name: 'api_availability', methods: ['GET'])]
-    public function __invoke(Request $request): JsonResponse
+    #[Route('/api/test/availability', name: 'api_availability_test', methods: ['GET'])]
+    public function search(Request $request): JsonResponse
     {
-        $arrival = $request->query->get('arrivalDate');
-        $departure = $request->query->get('departureDate');
-        $guests = (int) $request->query->get('guests', 1);
-
-        if (!$arrival || !$departure) {
-            return $this->json(['error' => 'Missing dates'], 400);
-        }
-
+        $preview = $request->attributes->get('_route') === 'api_availability_test';
+        if ($preview && !$this->canPreview()) { return $this->reply(['error' => 'not_found'], 404); }
         try {
-            $arrivalDt = new \DateTimeImmutable($arrival);
-            $departureDt = new \DateTimeImmutable($departure);
-        } catch (\Exception $e) {
-            return $this->json(['error' => 'Invalid date format'], 400);
-        }
-
-        $payload = [
-            'arrivalDate' => $arrivalDt->format('Y-m-d'),
-            'departureDate' => $departureDt->format('Y-m-d'),
-            'guests' => $guests,
-            'availability' => [],
-        ];
-
-        foreach (self::PROPERTIES as $property) {
-            $bookingUrl = $property['smoobuId']
-                ? $this->buildSmoobuUrl($property['smoobuId'], $arrivalDt, $departureDt, $guests)
-                : null;
-
-            $available = false;
-            $error = null;
-            $price = null;
-            $currency = null;
-            $nights = null;
-
-            if ($property['smoobuId']) {
-                try {
-                    $check = $this->fetchAvailability($property['smoobuId'], $arrivalDt, $departureDt, $guests);
-                    $status = $check['status'];
-                    $data = $check['data'];
-
-                    if ($status >= 200 && $status < 300 && ($data['success'] ?? false)) {
-                        $availableIds = $data['data']['availabilityResponse']['availableApartments'] ?? [];
-                        $available = in_array((string) $property['smoobuId'], array_map('strval', $availableIds), true);
-
-                        $aptData = $this->findApartmentData($data, $property['smoobuId']);
-                        $priceData = $this->findPriceData($data, $property['smoobuId']);
-
-                        if ($aptData) {
-                            $bookingUrl = $this->formatBookingUrl($aptData['bookUrl'] ?? $bookingUrl);
-                            $price = $aptData['amount'] ?? $priceData['price'] ?? null;
-                            $currency = $aptData['currency'] ?? $priceData['currency'] ?? null;
-                            $nights = $aptData['numberOfNights'] ?? null;
-                        } elseif ($priceData) {
-                            $price = $priceData['price'] ?? null;
-                            $currency = $priceData['currency'] ?? null;
-                        }
-
-                        $error = $data['data']['availabilityResponse']['errorMessages'][$property['smoobuId']]['message']
-                            ?? $data['data']['message']
-                            ?? null;
-                    } else {
-                        $error = $data['data']['message']
-                            ?? ('Unavailable (status ' . $status . ')');
-                    }
-                } catch (\Exception $e) {
-                    $error = 'Request failed';
-                }
-            } else {
-                $error = 'Smoobu ID missing';
+            [$arrival, $departure, $guests] = $this->stay($request);
+            $slug = $request->query->getString('slug');
+            $properties = $slug === '' ? $this->properties->findActive() : [$this->properties->findActiveSlug($slug)];
+            if ($slug !== '' && !$properties[0]) { return $this->reply(['error' => 'not_found'], 404); }
+            $payload = $preview
+                ? $this->availability->quotesForTest($properties, $arrival, $departure, $guests)
+                : $this->availability->quotes($properties, $arrival, $departure, $guests);
+            $payload['preview'] = $preview;
+            foreach ($payload['availability'] as &$row) {
+                $row['detailsUrl'] = $this->generateUrl('app_property_show', ['slug' => $row['slug']]);
+                $row['bookingUrl'] = !$preview && $row['available'] ? $this->generateUrl('app_booking_redirect', ['slug' => $row['slug'], 'arrivalDate' => $arrival, 'departureDate' => $departure, 'guests' => $guests]) : null;
             }
+            return $this->reply($payload);
+        } catch (\InvalidArgumentException) { return $this->reply(['error' => 'invalid_stay'], 400); }
+    }
 
-            // Récupérer l'image depuis la base de données
-            $dbProperty = $this->propertyRepository->findOneBy(['slug' => $property['slug']]);
-            $image = null;
-            if ($dbProperty) {
-                // Chercher l'image de couverture ou la première image
-                $images = $dbProperty->getImages();
-                foreach ($images as $img) {
-                    if ($img->isCover()) {
-                        $image = $img->getFilename();
-                        break;
-                    }
-                }
-                // Si pas d'image de couverture, prendre la première
-                if (!$image && $images->count() > 0) {
-                    $image = $images->first()->getFilename();
-                }
+    #[Route('/reservation/{slug}', name: 'app_booking_redirect', methods: ['GET'])]
+    public function book(string $slug, Request $request, GuestLuckyClient $client): Response
+    {
+        $property = $this->properties->findActiveSlug($slug);
+        if (!$property) { throw $this->createNotFoundException(); }
+        $status = 503;
+        try {
+            [$arrival, $departure, $guests] = $this->stay($request);
+            // Always issue a fresh quote, including after a successful search.
+            $quote = $this->availability->quotes([$property], $arrival, $departure, $guests)['availability'][0];
+            if ($quote['available']) {
+                $response = $this->redirect($client->bookingUrl($property->getGuestLuckyId(), $arrival, $departure, $guests));
+                $response->headers->set('Cache-Control', 'no-store, private');
+                return $response;
             }
-
-            $payload['availability'][] = [
-                'name' => $property['name'],
-                'slug' => $property['slug'],
-                'city' => $property['city'],
-                'maxGuests' => $property['maxGuests'],
-                'bookingUrl' => $bookingUrl,
-                'available' => $available,
-                'price' => $price,
-                'currency' => $currency,
-                'nights' => $nights,
-                'error' => $error,
-                'image' => $image ? '/uploads/' . $image : null,
-            ];
-        }
-
-        return $this->json($payload);
+            $status = $quote['status'] === 'unavailable' ? 409 : 503;
+        } catch (\InvalidArgumentException) { $status = 400; }
+        return $this->render('calendar/unavailable.html.twig', ['property' => $property, 'navProperties' => $this->properties->findActive()], new Response('', $status, ['Cache-Control' => 'no-store, private']));
     }
 
-    private function fetchAvailability(string $apartmentId, \DateTimeImmutable $arrival, \DateTimeImmutable $departure, int $guests): array
+    private function integer(Request $request, string $key, int $default): int
     {
-        $query = [
-            'theme' => 'booking-tool',
-            'arrivalDate' => $arrival->format('d.m.y'),
-            'departureDate' => $departure->format('d.m.y'),
-            'userId' => self::SMOOBU_USER_ID,
-            'guests' => max(1, $guests),
-            'adults' => max(1, $guests),
-            'children' => 0,
-            'apartmentId' => $apartmentId,
-        ];
-
-        $response = $this->httpClient->request('GET', self::SMOOBU_BASE_URL . '/checkAvailability', [
-            'timeout' => 10,
-            'query' => $query,
-            'headers' => [
-                'user-agent' => 'RoamingLille/1.0 (+https://roaminglille.com)',
-            ],
-        ]);
-
-        return [
-            'status' => $response->getStatusCode(),
-            'data' => json_decode($response->getContent(false), true) ?? [],
-        ];
+        $raw = $request->query->get($key, (string) $default);
+        if (!is_scalar($raw) || !preg_match('/^\d{1,4}$/D', (string) $raw)) { throw new \InvalidArgumentException(); }
+        return (int) $raw;
     }
 
-    private function buildSmoobuUrl(string $apartmentId, \DateTimeImmutable $arrival, \DateTimeImmutable $departure, int $adults): string
+    private function canPreview(): bool
     {
-        $arrivalStr = $arrival->format('d/m/Y');
-        $departureStr = $departure->format('d/m/Y');
-
-        return sprintf(
-            'https://booking.smoobu.com/RoamingLille?apartmentId=%s&arrivalDate=%s&departureDate=%s&adults=%d&children=0&loadForCurrentDate=true',
-            $apartmentId,
-            $arrivalStr,
-            $departureStr,
-            max($adults, 1)
-        );
+        return $this->getParameter('kernel.environment') === 'dev' || $this->isGranted('ROLE_TESTER');
     }
 
-    private function findApartmentData(array $data, string $apartmentId): ?array
+    private function stay(Request $request): array
     {
-        $apartments = $data['data']['apartments'] ?? [];
-        foreach ($apartments as $apt) {
-            if ((string) ($apt['id'] ?? '') === (string) $apartmentId) {
-                return $apt;
-            }
-        }
-        return null;
+        $arrival = $request->query->getString('arrivalDate');
+        $departure = $request->query->getString('departureDate');
+        $guests = $this->integer($request, 'guests', 1);
+        BookingDates::stay($arrival, $departure, $guests);
+        return [$arrival, $departure, $guests];
     }
 
-    private function findPriceData(array $data, string $apartmentId): ?array
+    private function reply(array $payload, int $status = 200): JsonResponse
     {
-        $prices = $data['data']['availabilityResponse']['prices'][$apartmentId] ?? null;
-        if (!$prices) {
-            return null;
-        }
-        return [
-            'price' => $prices['price'] ?? null,
-            'currency' => $prices['currency'] ?? ($prices['priceElements'][0]['currencyCode'] ?? null),
-        ];
-    }
-
-    private function formatBookingUrl(?string $raw): ?string
-    {
-        if (!$raw) {
-            return null;
-        }
-        if (str_starts_with($raw, 'http')) {
-            return $raw;
-        }
-        return 'https://booking.smoobu.com' . $raw;
+        return $this->json($payload, $status, ['Cache-Control' => 'no-store, private']);
     }
 }

@@ -1,7 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ app.request.locale }}" data-bs-theme="dark">
+<html lang="{{ app.request.locale }}" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
+    <script>
+        try {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark' || theme === 'light') document.documentElement.dataset.bsTheme = theme;
+        } catch (e) {}
+    </script>
+    <link rel="preload" href="{{ asset('build/fonts/dm-sans-variable.ttf') }}" as="font" type="font/ttf" crossorigin>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Roaming Lille — Premium Stays{% endblock %}</title>
     
@@ -9,17 +16,20 @@
     <meta name="description" content="{% block meta_description %}{{ 'seo.default_description'|trans }}{% endblock %}">
     <meta name="keywords" content="{% block meta_keywords %}{{ 'seo.default_keywords'|trans }}{% endblock %}">
     <meta name="author" content="Roaming Lille">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="{% block canonical %}{{ app.request.uri }}{% endblock %}">
+    {% set publicRoute = app.request.attributes.get('_route') %}
+    {% set routeParams = app.request.attributes.get('_route_params')|default({}) %}
+    {% set canonicalUrl = publicRoute ? url(publicRoute, routeParams|merge({'_locale': app.request.locale})) : app.request.schemeAndHttpHost ~ app.request.pathInfo %}
+    <meta name="robots" content="{% block robots %}index, follow{% endblock %}">
+    <link rel="canonical" href="{% block canonical %}{{ canonicalUrl }}{% endblock %}">
     
     {# Open Graph / Facebook #}
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
-    <meta property="og:url" content="{{ app.request.uri }}">
+    <meta property="og:url" content="{{ block('canonical') }}">
     <meta property="og:title" content="{% block og_title %}{{ block('title') }}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{{ block('meta_description') }}{% endblock %}">
     <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('images/og-default.png')) }}{% endblock %}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    {% block og_dimensions %}<meta property="og:image:width" content="1536">
+    <meta property="og:image:height" content="1024">{% endblock %}
     <meta property="og:locale" content="{{ app.request.locale == 'fr' ? 'fr_FR' : 'en_US' }}">
     <meta property="og:site_name" content="Roaming Lille">
     
@@ -30,9 +40,11 @@
     <meta name="twitter:image" content="{{ block('og_image') }}">
     
     {# Alternate language versions #}
-    <link rel="alternate" hreflang="fr" href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'_locale': 'fr'})) }}">
-    <link rel="alternate" hreflang="en" href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'_locale': 'en'})) }}">
-    <link rel="alternate" hreflang="x-default" href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'_locale': 'fr'})) }}">
+    {% if publicRoute and not (block('robots') starts with 'noindex') %}
+    <link rel="alternate" hreflang="fr" href="{{ url(publicRoute, routeParams|merge({'_locale': 'fr'})) }}">
+    <link rel="alternate" hreflang="en" href="{{ url(publicRoute, routeParams|merge({'_locale': 'en'})) }}">
+    <link rel="alternate" hreflang="x-default" href="{{ url(publicRoute, routeParams|merge({'_locale': 'fr'})) }}">
+    {% endif %}
     
     {# Favicon adaptatif selon le thème du navigateur (blanc par défaut / noir pour thème clair) #}
     <link rel="icon" href="{{ asset('images/logo-footer-white.png') }}" media="(prefers-color-scheme: dark)">
@@ -51,9 +63,9 @@
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "Roaming Lille",
-        "url": "{{ url('app_home') }}",
-        "logo": "{{ absolute_url(asset('images/logo-footer-black.png')) }}",
-        "description": "{{ 'seo.default_description'|trans }}",
+        "url": {{ url('app_home')|json_encode(15)|raw }},
+        "logo": {{ absolute_url(asset('images/logo-footer-black.png'))|json_encode(15)|raw }},
+        "description": {{ 'seo.default_description'|trans|json_encode(15)|raw }},
         "address": {
             "@type": "PostalAddress",
             "addressLocality": "Lille",
@@ -75,43 +87,60 @@
         {{ encore_entry_script_tags('app') }}
     {% endblock %}
 </head>
-<body>
+<body data-controller="booking-journey site-shell">
+    <a class="skip-link" href="#main-content">{{ 'ui.skip_content'|trans }}</a>
+    {% if is_granted('ROLE_TESTER') %}
+    <aside class="team-banner" aria-label="{{ 'team.preview'|trans }}">
+        <div class="container d-flex flex-wrap align-items-center gap-3">
+            <span><strong>{{ 'team.preview'|trans }}</strong> · {{ 'team.real_actions'|trans }}</span>
+            <a href="{{ path('team_tickets') }}">{{ 'team.tickets'|trans }}</a>
+            <a href="{{ path('team_ticket_new', {page: app.request.pathInfo}) }}" data-team-report>{{ 'team.report'|trans }}</a>
+            <form method="post" action="{{ path('team_logout') }}" data-turbo="false"><input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}"><button class="btn btn-sm btn-outline-secondary">{{ 'team.logout'|trans }}</button></form>
+        </div>
+    </aside>
+    <dialog class="team-report-dialog" data-team-dialog aria-labelledby="team-report-title">
+        <div class="d-flex justify-content-between align-items-start gap-3"><h2 id="team-report-title">{{ 'team.report'|trans }}</h2><button type="button" class="btn btn-outline-secondary" data-team-close aria-label="{{ 'team.close'|trans }}">×</button></div>
+        <div data-team-form></div>
+    </dialog>
+    {% endif %}
     <header class="sticky-top bg-peps border-bottom">
-        <nav class="navbar navbar-expand-md py-3">
+        <nav class="navbar navbar-expand-xl py-3">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center gap-2" href="{{ path('app_home') }}">
-                    <img src="{{ asset('images/logo-footer-black.png') }}" alt="Roaming Lille" class="img-fluid logo-light">
-                    <img src="{{ asset('images/logo-footer-white.png') }}" alt="Roaming Lille" class="img-fluid logo-dark">
+                    <img src="{{ asset('images/logo-footer-black.png') }}" alt="Roaming Lille" width="168" height="190" class="img-fluid logo-light">
+                    <img src="{{ asset('images/logo-footer-white.png') }}" alt="Roaming Lille" width="168" height="190" class="img-fluid logo-dark">
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="{{ 'ui.navigation'|trans }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarContent">
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-medium">
                         <li class="nav-item">
-                            <a class="nav-link hover-teal" href="{{ path('app_home') }}">{{ 'menu.home'|trans }}</a>
+                            <a class="nav-link hover-teal {{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}" {% if app.request.attributes.get('_route') == 'app_home' %}aria-current="page"{% endif %} href="{{ path('app_home') }}">{{ 'menu.home'|trans }}</a>
                         </li>
+                        <li class="nav-item"><a class="nav-link hover-teal {{ app.request.attributes.get('_route') == 'app_calendar' ? 'active' : '' }}" {% if app.request.attributes.get('_route') == 'app_calendar' %}aria-current="page"{% endif %} href="{{ path('app_calendar') }}" data-booking-reset-property>{{ 'calendar.title'|trans }}</a></li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle hover-teal" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ 'menu.properties'|trans }}
                             </a>
-                            <ul class="dropdown-menu shadow-sm border-0">
+                            <ul class="dropdown-menu property-nav-menu">
                                 {% for p in navProperties|default([]) %}
-                                    <li><a class="dropdown-item" href="{{ path('app_property_show', {slug: p.slug}) }}">{{ p.title }}</a></li>
+                                    {% set currentProperty = app.request.attributes.get('_route') == 'app_property_show' and app.request.attributes.get('slug') == p.slug %}
+                                    <li><a class="dropdown-item {{ currentProperty ? 'active' : '' }}" {% if currentProperty %}aria-current="page"{% endif %} href="{{ path('app_property_show', {slug: p.slug}) }}">{{ p.title }}</a></li>
                                 {% else %}
-                                    <li><span class="dropdown-item text-muted">No properties yet</span></li>
+                                    <li><span class="dropdown-item text-muted">{{ 'home.no_properties'|trans }}</span></li>
                                 {% endfor %}
                             </ul>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link hover-teal" href="{{ path('app_contact') }}">{{ 'menu.contact'|trans }}</a>
+                            <a class="nav-link hover-teal {{ app.request.attributes.get('_route') == 'app_contact' ? 'active' : '' }}" {% if app.request.attributes.get('_route') == 'app_contact' %}aria-current="page"{% endif %} href="{{ path('app_contact') }}">{{ 'menu.contact'|trans }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link hover-teal" href="{{ path('app_about') }}">{{ 'menu.about'|trans }}</a>
+                            <a class="nav-link hover-teal {{ app.request.attributes.get('_route') == 'app_about' ? 'active' : '' }}" {% if app.request.attributes.get('_route') == 'app_about' %}aria-current="page"{% endif %} href="{{ path('app_about') }}">{{ 'menu.about'|trans }}</a>
                         </li>
                     </ul>
-                    <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="theme-toggle" aria-label="Toggle theme">
+                    <div class="header-controls d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="theme-toggle" aria-label="{{ 'ui.theme'|trans }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun-fill d-none" id="icon-light" viewBox="0 0 16 16">
                                 <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
                             </svg>
@@ -119,18 +148,18 @@
                                 <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
                             </svg>
                         </button>
-                        <div class="btn-group btn-group-sm" role="group">
+                        <div class="header-language btn-group btn-group-sm" role="group" aria-label="{{ 'ui.language'|trans }}">
                             <a href="{{ path('app_switch_locale', {'locale': 'en'}) }}" class="btn btn-outline-secondary {{ app.request.locale == 'en' ? 'active' : '' }}">EN</a>
                             <a href="{{ path('app_switch_locale', {'locale': 'fr'}) }}" class="btn btn-outline-secondary {{ app.request.locale == 'fr' ? 'active' : '' }}">FR</a>
                         </div>
-                        <a href="{{ path('app_home') }}#top" class="btn btn-primary fw-semibold text-white px-4">{{ 'menu.book_now'|trans }}</a>
+                        <a href="{{ path('app_calendar') }}" class="header-booking-cta btn btn-primary fw-semibold text-white px-4" data-booking-reset-property>{{ 'calendar.choose'|trans }}</a>
                     </div>
                 </div>
             </div>
         </nav>
     </header>
 
-    <main class="flex-grow-1">
+    <main id="main-content" class="flex-grow-1" tabindex="-1">
         {# Toast notifications - haut à droite #}
         <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
             {% for label, messages in app.flashes %}
@@ -143,7 +172,7 @@
                                 </svg>
                                 <span>{{ message|trans }}</span>
                             </div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="{{ 'ui.close'|trans }}"></button>
                         </div>
                     </div>
                 {% endfor %}
@@ -152,16 +181,16 @@
         {% block body %}{% endblock %}
     </main>
 
-    <footer class="mt-4 py-4 bg-peps">
+    <footer class="site-footer mt-4 py-5 bg-peps">
         <div class="container">
             <div class="row gy-3">
                 <div class="col-md-6">
-                    <img src="{{ asset('images/logo-footer-black.png') }}" alt="Roaming Lille" class="mb-2 logo-light" style="height: 40px;">
-                    <img src="{{ asset('images/logo-footer-white.png') }}" alt="Roaming Lille" class="mb-2 logo-dark" style="height: 40px;">
+                    <img src="{{ asset('images/logo-footer-black.png') }}" alt="Roaming Lille" width="168" height="190" class="mb-2 logo-light" style="height: 40px;">
+                    <img src="{{ asset('images/logo-footer-white.png') }}" alt="Roaming Lille" width="168" height="190" class="mb-2 logo-dark" style="height: 40px;">
                     <p class="text-muted small w-75 mb-0">{{ 'footer.description'|trans }}</p>
                 </div>
                 <div class="col-md-3">
-                    <h6 class="fw-bold mb-2">{{ 'footer.quick_links'|trans }}</h6>
+                    <h2 class="h6 fw-bold mb-2">{{ 'footer.quick_links'|trans }}</h2>
                     <ul class="list-unstyled text-muted small mb-0">
                         <li class="mb-1"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted hover-teal">{{ 'menu.home'|trans }}</a></li>
                         <li class="mb-1"><a href="{{ path('app_about') }}" class="text-decoration-none text-muted hover-teal">{{ 'menu.about'|trans }}</a></li>
@@ -169,7 +198,7 @@
                     </ul>
                 </div>
                 <div class="col-md-3">
-                    <h6 class="fw-bold mb-2">{{ 'footer.contact'|trans }}</h6>
+                    <h2 class="h6 fw-bold mb-2">{{ 'footer.contact'|trans }}</h2>
                     <ul class="list-unstyled text-muted small mb-0">
                         <li class="mb-1 d-flex align-items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
@@ -191,25 +220,6 @@
             </div>
         </div>
     </footer>
-</div>
-</body>
-    <script>
-        // If arriving with #top fragment, ensure a smooth scroll to top and remove the hash.
-        document.addEventListener('DOMContentLoaded', function () {
-            try {
-                if (window.location.hash === '#top') {
-                    setTimeout(function () {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        history.replaceState(null, '', window.location.pathname + window.location.search);
-                    }, 50);
-                }
-            } catch (e) {}
 
-            // Auto-initialize and hide toasts after 5 seconds
-            document.querySelectorAll('.toast.show').forEach(function(toastEl) {
-                var toast = new bootstrap.Toast(toastEl, { delay: 5000 });
-                toast.show();
-            });
-        });
-    </script>
+</body>
 </html>

@@ -33,6 +33,12 @@ class LocaleSubscriber implements EventSubscriberInterface
             return;
         }
 
+        // Public SEO language URLs must work without a pre-existing session.
+        $locale = $request->query->get('_locale');
+        if (is_string($locale) && in_array($locale, ['fr', 'en'], true)) {
+            $request->setLocale($locale);
+            return;
+        }
         // Check if session exists and has locale
         if ($request->hasSession() && $request->getSession()->has('_locale')) {
             $locale = $request->getSession()->get('_locale');

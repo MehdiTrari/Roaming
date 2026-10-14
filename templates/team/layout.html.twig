@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="{{ app.request.locale }}" data-bs-theme="light">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Roaming Lille{% endblock %}</title>
+    <meta name="robots" content="{% block robots %}noindex, nofollow{% endblock %}">
+    <link rel="canonical" href="{{ url('app_home', {'_locale': app.request.locale}) }}">
+    <link rel="icon" href="{{ asset('images/logo-footer-black.png') }}">
+    {{ encore_entry_link_tags('app') }}{{ encore_entry_script_tags('app') }}
+</head>
+<body>
+    <a class="skip-link" href="#main-content">{{ 'ui.skip_content'|trans }}</a>
+    <header class="team-header container d-flex flex-wrap align-items-center justify-content-between gap-3 py-4">
+        <a href="{{ path('app_home') }}"><img src="{{ asset('images/logo-footer-black.png') }}" width="150" alt="Roaming Lille"></a>
+        <nav class="d-flex flex-wrap gap-3 align-items-center" aria-label="{{ 'team.navigation'|trans }}">
+            <a href="?_locale=fr" lang="fr">FR</a><a href="?_locale=en" lang="en">EN</a>
+            {% if is_granted('ROLE_TESTER') %}
+                <a href="{{ path('app_home') }}">{{ 'team.visit'|trans }}</a><a href="{{ path('team_tickets') }}">{{ 'team.tickets'|trans }}</a>
+                <form method="post" action="{{ path('team_logout') }}" data-turbo="false"><input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}"><button class="btn btn-outline-secondary">{{ 'team.logout'|trans }}</button></form>
+            {% endif %}
+        </nav>
+    </header>
+    <main id="main-content" class="container team-main py-4">{% block body %}{% endblock %}</main>
+</body>
+</html>

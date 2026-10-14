@@ -1,0 +1,30 @@
+{
+  "source": "GuestLucky MCP",
+  "account": "SAS Roaming",
+  "verifiedAt": "2026-09-27T22:56:00+02:00",
+  "complete": true,
+  "total": 3,
+  "properties": [
+    {
+      "id": 2475,
+      "slug": "lambersart",
+      "name": "Appartement 10 personnes Lille Lambersart",
+      "city": "Lambersart",
+      "capacity": 10
+    },
+    {
+      "id": 2474,
+      "slug": "roubaix",
+      "name": "Charmant et confort Roubaix",
+      "city": "Roubaix",
+      "capacity": 10
+    },
+    {
+      "id": 2467,
+      "slug": "ecrin-noir-croix",
+      "name": "L’Écrin Noir – Maison Moderne & Accueillante",
+      "city": "Croix",
+      "capacity": 8
+    }
+  ]
+}

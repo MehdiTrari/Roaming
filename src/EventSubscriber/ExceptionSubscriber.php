@@ -65,6 +65,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
         $path = trim($request->getPathInfo(), '/');
+        if (str_starts_with($path, 'api/')) { return; }
         
         // Supprimer le préfixe de locale si présent (fr/, en/)
         $pathWithoutLocale = preg_replace('#^(fr|en)/#', '', $path);
@@ -85,56 +86,25 @@ class ExceptionSubscriber implements EventSubscriberInterface
     {
         // 1. Vérifier les redirections legacy statiques
         $pathLower = strtolower($path);
+        // Canonical missing/archived property URLs must remain 404.
+        if (str_starts_with($pathLower, 'property/')) { return null; }
         
         foreach (self::LEGACY_REDIRECTS as $oldPath => $target) {
             if ($pathLower === $oldPath || str_starts_with($pathLower, $oldPath . '/')) {
                 // Déterminer si c'est une page statique
                 if (in_array($target, ['home', 'contact', 'about', 'property'])) {
-                    return $this->urlGenerator->generate('app_' . $target, ['_locale' => $locale]);
+                    return $this->urlGenerator->generate($target === 'property' ? 'app_calendar' : 'app_' . $target, ['_locale' => $locale]);
                 }
                 
                 // C'est une propriété
-                $property = $this->propertyRepository->findOneBy(['slug' => $target]);
+                $property = $this->propertyRepository->findActiveSlug($target);
                 if ($property) {
                     return $this->urlGenerator->generate('app_property_show', [
                         'slug' => $property->getSlug(),
                         '_locale' => $locale
                     ]);
                 }
-            }
-        }
-
-        // 2. Recherche intelligente dans les propriétés
-        $property = $this->findPropertyByPath($pathLower);
-        if ($property) {
-            return $this->urlGenerator->generate('app_property_show', [
-                'slug' => $property->getSlug(),
-                '_locale' => $locale
-            ]);
-        }
-
-        return null;
-    }
-
-    private function findPropertyByPath(string $path): ?object
-    {
-        // Extraire les mots-clés du path
-        $keywords = preg_split('/[-_\/]/', $path);
-        $keywords = array_filter($keywords, fn($k) => strlen($k) > 2);
-
-        foreach ($keywords as $keyword) {
-            // Rechercher par slug partiel
-            $properties = $this->propertyRepository->createQueryBuilder('p')
-                ->where('LOWER(p.slug) LIKE :keyword')
-                ->orWhere('LOWER(p.title) LIKE :keyword')
-                ->orWhere('LOWER(p.city) LIKE :keyword')
-                ->setParameter('keyword', '%' . strtolower($keyword) . '%')
-                ->setMaxResults(1)
-                ->getQuery()
-                ->getResult();
-
-            if (!empty($properties)) {
-                return $properties[0];
+                return null;
             }
         }
 
@@ -152,10 +122,11 @@ class ExceptionSubscriber implements EventSubscriberInterface
 
         try {
             // Récupérer quelques propriétés pour les suggestions
-            $suggestedProperties = $this->propertyRepository->findBy([], ['title' => 'ASC'], 3);
+            $suggestedProperties = $this->propertyRepository->findActiveWithImages(['title' => 'ASC'], 3);
 
             $content = $this->twig->render('bundles/TwigBundle/Exception/error404.html.twig', [
                 'suggestedProperties' => $suggestedProperties,
+                'navProperties' => $suggestedProperties,
                 'requestedPath' => $request->getPathInfo(),
             ]);
 

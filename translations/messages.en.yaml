@@ -1,3 +1,8 @@
+journey:
+  all_properties: All properties
+audit:
+  availability_description: "Check availability at Roaming properties in Lambersart, Roubaix and Croix. Choose your dates and guests to check your stay."
+
 menu:
     home: Home
     about: About us
@@ -15,9 +20,9 @@ footer:
 # Home page
 home:
     title: Roaming Lille | Find Your Next Escape
-    hero_badge: Find Your Next Escape With Roaming
-    hero_title: Find Your Next Escape With Roaming
-    hero_description: Discover beautifully curated vacation rentals designed for comfort, adventure, and unforgettable stays. Explore all 5 of our unique properties and book your perfect getaway.
+    hero_badge: "Your stay in the Lille metropolitan area"
+    hero_title: "A place of your own. Lille to explore."
+    hero_description: "Furnished homes for business trips and group stays. Find your place and plan your stay with Roaming."
     browse_properties: Browse properties
     contact_us: Contact us
     plan_stay: Plan your stay
@@ -30,7 +35,7 @@ home:
     amenities_subtitle: Everything you need for a smooth stay
     amenity_verified: Curated and verified for every property.
     featured_properties: Featured properties
-    featured_subtitle: Pick your next address
+    featured_subtitle: "Find your home away from home"
     need_help: Need help choosing?
     view_details: View details
     no_properties: No properties yet.
@@ -42,8 +47,8 @@ home:
     testimonials_title: What Our Clients Are Saying
     testimonials_subtitle: Testimonials coming soon
     testimonials_description: We're gathering stories from recent stays. In the meantime, reach out and we'll share references.
-    contact_title: Contact Us
-    contact_subtitle: Tell us about your stay
+    contact_title: "Let’s plan your stay"
+    contact_subtitle: "A team ready to help"
     contact_description: Email us at %email% or call %phone%. Or drop a line below and we'll reply quickly.
     contact_note: We send messages to the configured recipient; you can change it later in CONTACT_RECIPIENT_EMAIL.
 
@@ -149,3 +154,139 @@ seo:
     about_description: "Discover Roaming Lille: human-scale rental management, carefully maintained properties for discerning travelers in the Lille metropolis."
     contact_description: "Contact Roaming Lille to book your furnished apartment. Quick response, personalized advice for your stay in Lille."
     property_description: "%title% in %city%. %bedrooms% bedrooms, %beds% beds, %bathrooms% bathrooms. Perfect for %travelers% travelers. Direct booking."
+
+calendar:
+    pick_property: "Choose your property"
+    view_availability: "View availability"
+    change_property: "Change property"
+    clear_dates: "Clear dates"
+    checkout_only: "Check-out only"
+    book_stay: "Book your stay"
+    eyebrow: "Your stay in the Lille area"
+    select_hint: "Select your arrival and departure, or enter your dates below."
+    scroll_hint: "Scroll the calendar horizontally to explore the month."
+    closed_notice: "Online booking is temporarily paused while we verify our calendars. Contact us with your dates and we will confirm which properties are available."
+    dev_notice: "Local development: publication is disabled. The test page lets you read GuestLucky calendars and check a quote without booking. Roubaix data still needs comparison with the management calendar."
+    open_test: "Open the test calendar"
+    title: "Availability"
+    intro: "Choose your property, then find dates for your next stay."
+    previous: "Previous month"
+    next: "Next month"
+    today: "Today"
+    loading: "Loading calendar…"
+    available: "Available"
+    unavailable: "Unavailable"
+    unverified: "Unverified"
+    choose: "Choose a stay"
+    property: "Property"
+    quote: "Check your stay"
+    quote_note: "Nightly prices are indicative. A quote checks the entire stay and its fees before booking."
+    contact: "Contact Roaming"
+    confirm: "Availability to be confirmed"
+    retry_note: "This stay cannot be confirmed right now. Check other dates or contact us."
+    photo_pending: "Photos coming soon"
+    test_title: "Local test page — read only"
+    test_notice: "Calendars and quotes from the GuestLucky Booking Engine. Booking is disabled here. Roubaix availability still needs verification against the management calendar; this page is for development only."
+
+ui:
+    skip_content: "Skip to content"
+    navigation: "Open navigation"
+    theme: "Change theme"
+    language: "Language"
+    close: "Close"
+    choose_dates: "Choose dates"
+    stay_dates: "Stay dates"
+    date_hint: "Select your arrival, then your departure."
+    cancel: "Clear"
+    apply: "Apply"
+    one_guest: "1 guest"
+    guest_hint: "Adults and children"
+    previous: "Previous"
+    next: "Next"
+    airbnb: "View on Airbnb"
+    fewer_guests: "Fewer guests"
+    more_guests: "More guests"
+    contact_name: "Name"
+    contact_email: "Email"
+    contact_phone: "Phone"
+    contact_subject: "Subject"
+    contact_message: "Message"
+    send: "Send message"
+    placeholder_name: "Your name"
+    placeholder_email: "you@example.com"
+    placeholder_phone: "+33 6 00 00 00 00"
+    placeholder_subject: "Your stay enquiry"
+    placeholder_message: "Your dates, number of guests and what you need"
+
+listing:
+    facts: "Property at a glance"
+    photos_of: "Photos of %name%"
+    discover: "Discover %name%"
+    region: "Lille metropolitan area"
+    breadcrumb: "Breadcrumb"
+    photo_position: "Photo %index% of %total%"
+    choose_photo: "Choose a photo"
+    no_photos: "Photos of this property have not been provided yet."
+    sections: "Explore this property"
+    your_place: "Your home away from home"
+    no_description: "Contact us to learn more about this property."
+    no_amenities: "The amenities for this property have not been provided yet."
+    ask_amenities: "Ask us about amenities"
+    city_map_note: "The map shows the town, not the exact property address."
+    map_of: "Map of %city%"
+    your_stay: "Plan your stay"
+    stay_intro: "Check availability for this property or contact us with your dates."
+    other_places: "Explore our other places to stay"
+    back_catalogue: "All our properties"
+
+team:
+  maintenance_title: 'We are preparing our new website'
+  maintenance_description: 'We are updating our website to welcome you better. In the meantime, our team is available to help you plan your stay in Lille.'
+  contact_intro: 'For a booking or a question, contact us:'
+  access: 'Team access'
+  navigation: 'Team navigation'
+  visit: 'Visit website'
+  tickets: 'Test tickets'
+  logout: 'Log out'
+  invited_only: 'Access is reserved for invited team members.'
+  login_error: 'Unable to sign in. Check your credentials or try again later.'
+  email: 'Email address'
+  password: 'Password'
+  login: 'Log in'
+  report: 'Report a problem'
+  title: 'Title'
+  category: 'Category'
+  category_bug: 'Bug'
+  category_display: 'Display'
+  category_suggestion: 'Suggestion'
+  description: 'Problem or suggestion description'
+  steps: 'Steps to reproduce (if applicable)'
+  expected: 'Expected result'
+  capture: 'Screenshot (optional)'
+  capture_help: 'PNG, JPEG or WebP · maximum 5 MiB. Avoid personal data in screenshots.'
+  send: 'Send'
+  status: 'Status'
+  priority: 'Priority'
+  status_new: 'New'
+  status_in_progress: 'In progress'
+  status_retest: 'Retest'
+  status_resolved: 'Resolved'
+  status_dismissed: 'Dismissed'
+  priority_low: 'Low'
+  priority_normal: 'Normal'
+  priority_high: 'High'
+  all: 'All'
+  filter: 'Filter'
+  empty: 'No tickets yet.'
+  pagination: 'Ticket pages'
+  previous: 'Previous'
+  next: 'Next'
+  page: 'Affected page'
+  view_capture: 'View screenshot'
+  save: 'Save'
+  comments: 'Comments'
+  add_comment: 'Add a comment'
+  comment_invalid: 'The comment must contain 1 to 10,000 characters.'
+  preview: 'Test version'
+  real_actions: 'Bookings and messages have real effects.'
+  close: 'Close'

@@ -2,6 +2,12 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Temporary upload shield, independent of Symfony and its dependencies.
+    RewriteCond %{DOCUMENT_ROOT}/.maintenance -f
+    RewriteCond %{REQUEST_URI} !^/(maintenance\.php|robots\.txt)(\?|$)
+    RewriteCond %{REQUEST_URI} !^/\.well-known/
+    RewriteRule ^ maintenance.php [L]
+
     # Force HTTPS (active in production)
     RewriteCond %{HTTPS} off
     RewriteCond %{HTTP_HOST} !^localhost [NC]

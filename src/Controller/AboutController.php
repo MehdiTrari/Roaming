@@ -12,7 +12,7 @@ class AboutController extends AbstractController
     #[Route('/about-us', name: 'app_about', methods: ['GET'])]
     public function __invoke(PropertyRepository $propertyRepository): Response
     {
-        $navProperties = $propertyRepository->findBy([], ['title' => 'ASC']);
+        $navProperties = $propertyRepository->findActive();
         $popularAmenities = [
             'amenities.fast_wifi',
             'amenities.self_checkin',

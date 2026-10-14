@@ -1,0 +1,13 @@
+{% extends 'team/layout.html.twig' %}
+{% block title %}{{ 'team.maintenance_title'|trans }} · Roaming Lille{% endblock %}
+{% block robots %}index, follow{% endblock %}
+{% block body %}
+<section class="team-maintenance text-center mx-auto">
+    <p class="text-uppercase text-primary">Roaming Lille</p>
+    <h1>{{ 'team.maintenance_title'|trans }}</h1>
+    <p class="lead my-4">{{ 'team.maintenance_description'|trans }}</p>
+    <p>{{ 'team.contact_intro'|trans }}</p>
+    <p><a href="mailto:contact@roamingfr.com">contact@roamingfr.com</a><br><a href="tel:+33660344071">+33 6 60 34 40 71</a></p>
+    <a class="btn btn-outline-secondary btn-sm mt-4" href="{{ path('team_login', {'_locale': app.request.locale}) }}">{{ 'team.access'|trans }}</a>
+</section>
+{% endblock %}

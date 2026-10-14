@@ -8,8 +8,20 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PropertyRepository::class)]
+#[ORM\UniqueConstraint(name: 'uniq_property_guest_lucky', columns: ['guest_lucky_id'])]
 class Property
 {
+    #[ORM\Column(nullable: true)]
+    private ?int $guestLuckyId = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $active = false;
+
+    public function getGuestLuckyId(): ?int { return $this->guestLuckyId; }
+    public function setGuestLuckyId(?int $id): self { $this->guestLuckyId = $id; return $this; }
+    public function isActive(): bool { return $this->active; }
+    public function setActive(bool $active): self { $this->active = $active; return $this; }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

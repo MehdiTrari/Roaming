@@ -1,0 +1,6 @@
+<ul class="property-facts {{ compact|default(false) ? 'property-facts-compact' : '' }}" aria-label="{{ 'listing.facts'|trans }}">
+    <li><strong>{{ property.travelers }}</strong> {{ 'property.travelers'|trans }}</li>
+    {% if property.bedrooms > 0 %}<li><strong>{{ property.bedrooms }}</strong> {{ 'property.bedrooms'|trans }}</li>{% endif %}
+    {% if property.beds > 0 %}<li><strong>{{ property.beds }}</strong> {{ 'property.beds'|trans }}</li>{% endif %}
+    {% if property.bathrooms > 0 %}<li><strong>{{ property.bathrooms }}</strong> {{ 'property.baths'|trans }}</li>{% endif %}
+</ul>

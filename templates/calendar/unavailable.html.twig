@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ 'calendar.confirm'|trans }} | Roaming Lille{% endblock %}
+{% block robots %}noindex, follow{% endblock %}
+{% block body %}
+<section class="container py-5 booking-return">
+    <div class="booking-feedback">
+    <p class="calendar-eyebrow">{{ property.title }}</p>
+    <h1>{{ 'calendar.confirm'|trans }}</h1>
+    <p>{{ 'calendar.retry_note'|trans }}</p>
+    <a class="btn btn-primary text-white" href="{{ path('app_property_show', {slug: property.slug}) }}#availability">{{ 'calendar.choose'|trans }}</a>
+    <a class="btn btn-outline-secondary" href="{{ path('app_contact') }}">{{ 'calendar.contact'|trans }}</a>
+    </div>
+</section>
+{% endblock %}

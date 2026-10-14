@@ -2,13 +2,19 @@
 
 {% block title %}{{ property.title }} | Roaming Lille{% endblock %}
 
-{% block meta_description %}{{ 'seo.property_description'|trans({'%title%': property.title, '%city%': property.city, '%bedrooms%': property.bedrooms, '%beds%': property.beds, '%bathrooms%': property.bathrooms, '%travelers%': property.travelers}) }}{% endblock %}
+{% block meta_description %}{% if property.bedrooms > 0 %}{{ 'seo.property_description'|trans({'%title%': property.title, '%city%': property.city, '%bedrooms%': property.bedrooms, '%beds%': property.beds, '%bathrooms%': property.bathrooms, '%travelers%': property.travelers}) }}{% else %}{{ property.title }} - {{ property.city }}{% endif %}{% endblock %}
 
 {% block meta_keywords %}{{ property.title }}, {{ property.city }}, location appartement {{ property.city }}, hébergement {{ property.city }}, Roaming Lille{% endblock %}
 
 {% block og_type %}product{% endblock %}
 
 {% block og_image %}{% if property.images|length > 0 %}{{ absolute_url(asset('uploads/' ~ property.images|first.filename)) }}{% else %}{{ parent() }}{% endif %}{% endblock %}
+{% block og_dimensions %}
+{% if property.images|length > 0 %}
+    {% set optimized = responsive_image((property.images|first).filename) %}
+    {% if optimized %}<meta property="og:image:width" content="{{ optimized.width }}"><meta property="og:image:height" content="{{ optimized.height }}">{% endif %}
+{% else %}{{ parent() }}{% endif %}
+{% endblock %}
 
 {% block structured_data %}
 {{ parent() }}
@@ -16,27 +22,23 @@
 {
     "@context": "https://schema.org",
     "@type": "LodgingBusiness",
-    "name": "{{ property.title }}",
-    "description": "{{ property.about|default(property.description)|default('')|slice(0, 200)|e('js') }}",
-    "url": "{{ url('app_property_show', {slug: property.slug}) }}",
+    "name": {{ property.title|json_encode(15)|raw }},
+    "description": {{ property.about|default(property.description)|default('')|slice(0, 200)|json_encode(15)|raw }},
+    "url": {{ url('app_property_show', {slug: property.slug})|json_encode(15)|raw }},
     {% if property.images|length > 0 %}
     "image": [
         {% for image in property.images|slice(0, 5) %}
-        "{{ absolute_url(asset('uploads/' ~ image.filename)) }}"{% if not loop.last %},{% endif %}
+        {{ absolute_url(asset('uploads/' ~ image.filename))|json_encode(15)|raw }}{% if not loop.last %},{% endif %}
         {% endfor %}
     ],
     {% endif %}
     "address": {
         "@type": "PostalAddress",
-        "addressLocality": "{{ property.city }}",
+        "addressLocality": {{ property.city|json_encode(15)|raw }},
         "addressRegion": "Hauts-de-France",
         "addressCountry": "FR"
     },
-    "amenityFeature": [
-        {"@type": "LocationFeatureSpecification", "name": "Wi-Fi", "value": true},
-        {"@type": "LocationFeatureSpecification", "name": "Self Check-in", "value": true}
-    ],
-    "numberOfRooms": {{ property.bedrooms }},
+    {% if property.bedrooms > 0 %}"numberOfRooms": {{ property.bedrooms }},{% endif %}
     "occupancy": {
         "@type": "QuantitativeValue",
         "maxValue": {{ property.travelers }}
@@ -49,11 +51,11 @@
     }{% if property.airbnbRating and property.airbnbReviewsCount %},
     "aggregateRating": {
         "@type": "AggregateRating",
-        "ratingValue": "{{ property.airbnbRating }}",
+        "ratingValue": {{ property.airbnbRating|json_encode(15)|raw }},
         "bestRating": "5",
         "worstRating": "1",
-        "ratingCount": "{{ property.airbnbReviewsCount }}",
-        "reviewCount": "{{ property.airbnbReviewsCount }}"
+        "ratingCount": {{ property.airbnbReviewsCount|json_encode(15)|raw }},
+        "reviewCount": {{ property.airbnbReviewsCount|json_encode(15)|raw }}
     }{% endif %}
 }
 </script>
@@ -65,20 +67,20 @@
         {
             "@type": "ListItem",
             "position": 1,
-            "name": "{{ 'menu.home'|trans }}",
-            "item": "{{ url('app_home') }}"
+            "name": {{ 'menu.home'|trans|json_encode(15)|raw }},
+            "item": {{ url('app_home')|json_encode(15)|raw }}
         },
         {
             "@type": "ListItem",
             "position": 2,
-            "name": "{{ 'menu.properties'|trans }}",
-            "item": "{{ url('app_home') }}#properties"
+            "name": {{ 'menu.properties'|trans|json_encode(15)|raw }},
+            "item": {{ (url('app_home') ~ '#featured')|json_encode(15)|raw }}
         },
         {
             "@type": "ListItem",
             "position": 3,
-            "name": "{{ property.title }}",
-            "item": "{{ url('app_property_show', {slug: property.slug}) }}"
+            "name": {{ property.title|json_encode(15)|raw }},
+            "item": {{ url('app_property_show', {slug: property.slug})|json_encode(15)|raw }}
         }
     ]
 }
@@ -87,189 +89,83 @@
 
 {% block body %}
 {% set locale = app.request.locale %}
-<section class="bg-teal-fade py-5">
-    <div class="container py-4 reveal">
-        <div class="d-flex justify-content-between align-items-start gap-4 mb-5 flex-wrap">
-            <div>
-                <p class="text-teal fw-bold mb-1">{{ property.city }}</p>
-                <h1 class="display-5 fw-bold text-dark mb-3">{{ property.title }}</h1>
-                <div class="d-flex flex-wrap gap-2 text-muted small mb-3">
-                    <span class="badge property-info-badge fw-normal p-2 hover-lift">👥 {{ property.travelers }} {{ 'property.travelers'|trans }}</span>
-                    <span class="badge property-info-badge fw-normal p-2 hover-lift">🛏️ {{ property.bedrooms }} {{ 'property.bedrooms'|trans }}</span>
-                    <span class="badge property-info-badge fw-normal p-2 hover-lift">🛌 {{ property.beds }} {{ 'property.beds'|trans }}</span>
-                    <span class="badge property-info-badge fw-normal p-2 hover-lift">🛁 {{ property.bathrooms }} {{ 'property.baths'|trans }}</span>
-                </div>
-                
-                {# Airbnb Badge #}
-                {% if property.airbnbUrl %}
-                <a href="https://{{ property.airbnbUrl }}" target="_blank" rel="noopener noreferrer" class="airbnb-badge badge fw-normal p-2 d-inline-flex align-items-center gap-2 text-decoration-none" title="{{ 'property.view_on_airbnb'|trans|default('Voir sur Airbnb') }}">
-                    <img src="{{ asset('images/Airbnb-Logo.png') }}" alt="Airbnb" height="18" style="object-fit: contain;">
-                    {% if property.airbnbRating %}
-                    <span class="d-flex align-items-center gap-1">
-                        <span class="rating-star">★</span>
-                        <span class="fw-bold rating-value">{{ property.airbnbRating|number_format(2, ',') }}</span>
-                    </span>
-                    {% endif %}
-                    {% if property.airbnbReviewsCount %}
-                    <span class="small reviews-count">({{ property.airbnbReviewsCount }} {{ 'property.reviews'|trans|default('avis') }})</span>
-                    {% endif %}
-                </a>
-                {% endif %}
-            </div>
-            <a href="{{ path('app_home') }}#top" class="btn btn-primary text-white fw-semibold px-4 hover-lift">{{ 'property.book_now'|trans }}</a>
-        </div>
+{% set about = locale == 'en' and property.aboutEn ? property.aboutEn : (property.about ?: property.description) %}
+{% set accommodation = locale == 'en' and property.accommodationEn ? property.accommodationEn : property.accommodation %}
+{% set guestAccess = locale == 'en' and property.guestAccessEn ? property.guestAccessEn : property.guestAccess %}
+{% set remarks = locale == 'en' and property.otherRemarksEn ? property.otherRemarksEn : property.otherRemarks %}
+<article class="property-page">
+    <div class="container">
+        <nav class="property-breadcrumb" aria-label="{{ 'listing.breadcrumb'|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'menu.home'|trans }}</a><span aria-hidden="true">/</span>
+            <a href="{{ path('app_home') }}#featured">{{ 'menu.properties'|trans }}</a><span aria-hidden="true">/</span>
+            <span aria-current="page">{{ property.city }}</span>
+        </nav>
+        <header class="property-heading">
+            <div><p class="calendar-eyebrow">{{ property.city }} · {{ 'listing.region'|trans }}</p><h1>{{ property.title }}</h1></div>
+            <a class="btn btn-primary" href="#availability">{{ 'calendar.choose'|trans }}</a>
+        </header>
+        {% include 'components/_property_facts.html.twig' with {property: property} only %}
 
-        <div class="row g-5">
-            <div class="col-lg-8">
-                {% if property.images|length > 0 %}
-                <div id="propertyCarousel" class="carousel slide property-card-carousel mb-5 rounded-4 overflow-hidden shadow-sm hover-lift">
-                    <div class="carousel-indicators">
+        {% if property.images|length > 0 %}
+            <section id="propertyGallery" class="carousel slide property-gallery" {% if property.images|length > 1 %}data-controller="property-gallery"{% endif %} aria-label="{{ 'listing.photos_of'|trans({'%name%': property.title}) }}" aria-roledescription="{{ 'property.image_carousel'|trans }}" tabindex="0">
+                <div class="carousel-inner property-gallery-main">
+                    {% for image in property.images %}
+                        <div class="carousel-item {{ loop.first ? 'active' : '' }} h-100" role="group" aria-label="{{ 'listing.photo_position'|trans({'%index%': loop.index, '%total%': property.images|length}) }}">
+                            {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: 'd-block w-100 h-100 object-fit-cover', alt: image.alt ?: property.title, sizes: '(min-width: 1400px) 1296px, (min-width: 1200px) 1116px, (min-width: 992px) 936px, (min-width: 768px) 696px, calc(100vw - 24px)', priority: loop.first} only %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if property.images|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#propertyGallery" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">{{ 'property.carousel_prev'|trans }}</span></button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#propertyGallery" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">{{ 'property.carousel_next'|trans }}</span></button>
+                    <div class="carousel-indicators property-gallery-thumbs" aria-label="{{ 'listing.choose_photo'|trans }}">
                         {% for image in property.images %}
-                            <button type="button" data-bs-target="#propertyCarousel" data-bs-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ loop.index }}"></button>
+                            <button type="button" data-bs-target="#propertyGallery" data-bs-slide-to="{{ loop.index0 }}" class="{{ loop.first ? 'active' : '' }}" {% if loop.first %}aria-current="true"{% endif %} aria-label="{{ 'listing.photo_position'|trans({'%index%': loop.index, '%total%': property.images|length}) }}">{% include 'components/_picture.html.twig' with {filename: image.filename, alt: '', sizes: '80px', width: 80, height: 60} only %}</button>
                         {% endfor %}
                     </div>
-                    <div class="carousel-inner" style="aspect-ratio: 16/9;">
-                        {% for image in property.images %}
-                            <div class="carousel-item {% if loop.first %}active{% endif %} h-100">
-                                <img src="{{ asset('uploads/' ~ image.filename) }}" class="d-block w-100 h-100 object-fit-cover" alt="{{ image.alt ?? property.title }}" loading="{% if loop.first %}eager{% else %}lazy{% endif %}">
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">{{ 'property.carousel_prev'|trans }}</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">{{ 'property.carousel_next'|trans }}</span>
-                    </button>
-                </div>
-                {% else %}
-                <div class="bg-secondary bg-opacity-10 rounded-4 d-flex align-items-center justify-content-center mb-5 hover-lift" style="aspect-ratio: 16/9;">
-                    <span class="text-muted">{{ 'property.image_carousel'|trans }}</span>
-                </div>
                 {% endif %}
+            </section>
+        {% else %}
+            <div class="property-gallery-main property-photo-placeholder"><span>{{ 'calendar.photo_pending'|trans }}</span><small>{{ 'listing.no_photos'|trans }}</small></div>
+        {% endif %}
 
-                <div class="mb-5 reveal">
-                    <h2 class="h4 fw-bold mb-3">{{ 'property.about_title'|trans }}</h2>
-                    {% if locale == 'en' and property.aboutEn %}
-                        <p class="text-dark lh-lg" style="white-space: pre-line;">{{ property.aboutEn }}</p>
-                    {% else %}
-                        <p class="text-dark lh-lg" style="white-space: pre-line;">{{ property.about ?? property.description ?? 'property.about_default'|trans }}</p>
-                    {% endif %}
-                </div>
-
-                <div class="mb-5 reveal">
-                    <h2 class="h4 fw-bold mb-3">{{ 'property.accommodation_title'|trans }}</h2>
-                    {% if locale == 'en' and property.accommodationEn %}
-                        <p class="text-dark lh-lg" style="white-space: pre-line;">{{ property.accommodationEn }}</p>
-                    {% else %}
-                        <p class="text-dark lh-lg" style="white-space: pre-line;">{{ property.accommodation ?? 'property.accommodation_default'|trans }}</p>
-                    {% endif %}
-                </div>
-
-                <div class="mb-5 reveal">
-                    <h2 class="h4 fw-bold mb-3">{{ 'property.guest_access_title'|trans }}</h2>
-                    {% if locale == 'en' and property.guestAccessEn %}
-                        <p class="text-dark lh-lg" style="white-space: pre-line;">{{ property.guestAccessEn }}</p>
-                    {% else %}
-                        <p class="text-dark lh-lg" style="white-space: pre-line;">{{ property.guestAccess ?? 'property.guest_access_default'|trans }}</p>
-                    {% endif %}
-                </div>
-
-                {% set otherRemarks = locale == 'en' and property.otherRemarksEn ? property.otherRemarksEn : property.otherRemarks %}
-                {% if otherRemarks %}
-                <div class="mb-5 reveal">
-                    <h2 class="h4 fw-bold mb-3">{{ 'property.other_remarks_title'|trans }}</h2>
-                    <p class="text-dark lh-lg" style="white-space: pre-line;">{{ otherRemarks }}</p>
-                </div>
-                {% endif %}
-
-                <div class="mb-5 reveal" id="availability">
-                    {# <h2 class="h4 fw-bold mb-2">{{ 'property.availability_title'|trans }}</h2>
-                    <p class="text-muted small mb-3">{{ 'property.availability_intro'|trans }}</p> #}
-
-                    {# {% if availability.nextAvailable is defined and availability.nextAvailable %}
-                        <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
-                            <span class="fw-semibold text-teal">{{ 'property.availability_next'|trans({'%date%': availability.nextAvailable|date('d M Y')}) }}</span>
-                        </div>
-                    {% endif %}
-
-                    {% if availability.booked is defined and availability.booked|length > 0 %}
-                        <div class="list-group">
-                            <div class="list-group-item border-0 px-0 fw-semibold text-muted small">{{ 'property.availability_booked'|trans }}</div>
-                            {% for range in availability.booked %}
-                                <div class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
-                                    <span>{{ range.start|date('d M Y') }} - {{ range.end|date('d M Y') }}</span>
-                                    <span class="badge bg-light text-teal border border-teal-subtle">{{ 'property.occupied'|trans }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="alert alert-light border text-muted small mb-0">
-                            {{ 'property.availability_all_open'|trans }}
-                        </div>
-                    {% endif %} #}
-
-                    {# <div class="alert alert-info border-0 bg-info bg-opacity-10 text-muted small mt-3 mb-0">
-                        {{ 'property.availability_note'|trans({'%source%': availability.source|default('demo')}) }}
-                    </div> #}
-                </div>
+        <nav class="property-section-nav" aria-label="{{ 'listing.sections'|trans }}">
+            <a href="#property-details">{{ 'property.about_title'|trans }}</a><a href="#property-amenities">{{ 'property.popular_amenities'|trans }}</a><a href="#property-location">{{ 'property.location'|trans }}</a><a href="#availability">{{ 'calendar.title'|trans }}</a>
+        </nav>
+        <div class="property-layout">
+            <div class="property-description" id="property-details">
+                <section class="property-panel" aria-labelledby="property-about-heading">
+                    <p class="calendar-eyebrow">{{ 'listing.your_place'|trans }}</p><h2 id="property-about-heading">{{ 'property.about_title'|trans }}</h2>
+                    {% if about %}<p class="property-prose">{{ about }}</p>{% else %}<p class="property-muted">{{ 'listing.no_description'|trans }}</p>{% endif %}
+                    {% if property.airbnbUrl %}<a class="airbnb-badge property-airbnb" href="{{ property.airbnbUrl starts with 'https://' or property.airbnbUrl starts with 'http://' ? property.airbnbUrl : 'https://' ~ property.airbnbUrl }}" target="_blank" rel="noopener noreferrer"><img src="{{ asset('images/Airbnb-Logo.png') }}" alt="Airbnb" height="18"><span>{{ 'property.view_on_airbnb'|trans }}</span>{% if property.airbnbRating %}<strong>★ {{ property.airbnbRating|number_format(2, locale == 'fr' ? ',' : '.') }}</strong>{% endif %}{% if property.airbnbReviewsCount %}<span>({{ property.airbnbReviewsCount }} {{ 'property.reviews'|trans }})</span>{% endif %}</a>{% endif %}
+                </section>
+                {% for section in [{title: 'property.accommodation_title', text: accommodation}, {title: 'property.guest_access_title', text: guestAccess}, {title: 'property.other_remarks_title', text: remarks}] %}
+                    {% if section.text %}<section class="property-panel"><h2>{{ section.title|trans }}</h2><p class="property-prose">{{ section.text }}</p></section>{% endif %}
+                {% endfor %}
+                <section class="property-panel" id="property-amenities" aria-labelledby="property-amenities-heading">
+                    <h2 id="property-amenities-heading">{{ 'property.popular_amenities'|trans }}</h2>
+                    <ul class="property-amenities">
+                        {% for amenity in property.amenities %}<li>{% if amenity.icon %}<span class="property-amenity-icon" aria-hidden="true">{{ amenity.icon|raw }}</span>{% endif %}<span>{{ amenity.name|trans }}</span></li>{% else %}<li class="property-empty-state"><p>{{ 'listing.no_amenities'|trans }}</p><a href="{{ path('app_contact') }}">{{ 'listing.ask_amenities'|trans }}</a></li>{% endfor %}
+                    </ul>
+                </section>
+                <section class="property-panel" id="property-location" aria-labelledby="property-location-heading">
+                    <h2 id="property-location-heading">{{ 'property.location'|trans }}</h2><p>{{ property.city }} · {{ 'listing.region'|trans }}</p>
+                    <p class="property-muted">{{ 'listing.city_map_note'|trans }}</p>
+                    <div class="property-map"><iframe title="{{ 'listing.map_of'|trans({'%city%': property.city}) }}" src="https://www.google.com/maps?q={{ property.city|url_encode }}&amp;t=&amp;z=13&amp;ie=UTF8&amp;iwloc=&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
+                </section>
             </div>
-
-            <div class="col-lg-4 reveal" style="transition-delay: 0.2s;">
-                <div class="card border-0 shadow-sm mb-4 hover-lift">
-                    <div class="card-body p-4">
-                        <h3 class="h5 fw-bold mb-3">{{ 'property.popular_amenities'|trans }}</h3>
-                        <div class="d-flex flex-wrap gap-3">
-                            {% for amenity in property.amenities %}
-                                <span class="amenity-icon text-teal" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ amenity.name }}">
-                                    {{ amenity.icon|raw }}
-                                </span>
-                            {% else %}
-                                <span class="text-muted small">{{ 'property.amenities_coming'|trans }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <div class="card border-0 shadow-sm hover-lift">
-                    <div class="card-body p-4">
-                        <h3 class="h5 fw-bold mb-3">{{ 'property.location'|trans }}</h3>
-                        <div class="rounded-3 overflow-hidden" style="aspect-ratio: 4/3;">
-                            <iframe 
-                                width="100%" 
-                                height="100%" 
-                                frameborder="0" 
-                                style="border:0" 
-                                src="https://www.google.com/maps?q={{ property.city|url_encode }}&t=&z=13&ie=UTF8&iwloc=&output=embed" 
-                                allowfullscreen>
-                            </iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <aside id="availability" class="property-availability" aria-labelledby="property-stay-heading">
+                <div class="property-stay-intro"><p class="property-muted">{{ property.title }}</p><h2 id="property-stay-heading">{{ 'calendar.book_stay'|trans }}</h2></div>
+                {% include 'calendar/_planning.html.twig' with {calendarUrl: path('api_property_availability', {slug: property.slug}), compact: true} %}
+            </aside>
         </div>
+        {% set otherProperties = navProperties|filter(item => item.slug != property.slug) %}
+        {% if otherProperties|length > 0 %}
+            <section class="property-other" aria-labelledby="property-other-heading">
+                <div class="property-other-heading"><div><p class="calendar-eyebrow">{{ 'menu.properties'|trans }}</p><h2 id="property-other-heading">{{ 'listing.other_places'|trans }}</h2></div><a href="{{ path('app_home') }}#featured">{{ 'listing.back_catalogue'|trans }} <span aria-hidden="true">↗</span></a></div>
+                <div class="row g-4">{% for item in otherProperties %}<div class="col-md-6">{% include 'components/_property_card.html.twig' with {property: item} only %}</div>{% endfor %}</div>
+            </section>
+        {% endif %}
     </div>
-</section>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    {% if property.slug == 'lambersart' %}
-        <script src="https://login.smoobu.com/js/Settings/BookingToolIframe.js"></script>
-        <script>
-            const initSmoobuIframe = () => {
-                if (window.BookingToolIframe && document.querySelector('#apartmentIframeAll')) {
-                    BookingToolIframe.initialize({
-                        url: 'https://login.smoobu.com/fr/booking-tool/iframe/1213908',
-                        baseUrl: 'https://login.smoobu.com/',
-                        target: '#apartmentIframeAll'
-                    });
-                }
-            };
-
-            document.addEventListener('DOMContentLoaded', initSmoobuIframe);
-            document.addEventListener('turbo:load', initSmoobuIframe);
-        </script>
-    {% endif %}
+</article>
 {% endblock %}

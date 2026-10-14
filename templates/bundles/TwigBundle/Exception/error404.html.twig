@@ -4,6 +4,8 @@
 
 {% block meta_description %}{{ 'error.404.meta'|trans|default('La page que vous recherchez n\'existe pas ou a été déplacée.') }}{% endblock %}
 
+{% block robots %}noindex, follow{% endblock %}
+
 {% block body %}
 <section class="min-vh-75 d-flex align-items-center py-5">
     <div class="container">
@@ -12,7 +14,7 @@
                 {# Illustration 404 #}
                 <div class="mb-4">
                     <div class="position-relative d-inline-block">
-                        <span class="display-1 fw-bold text-teal opacity-25" style="font-size: 12rem; line-height: 1;">404</span>
+                        <span class="display-1 fw-bold text-teal opacity-25" style="font-size: clamp(7rem, 30vw, 12rem); line-height: 1;">404</span>
                         <div class="position-absolute top-50 start-50 translate-middle">
                             <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="text-teal" viewBox="0 0 16 16">
                                 <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4H2.5z"/>
@@ -54,25 +56,7 @@
                     <div class="row g-4">
                         {% for property in suggestedProperties %}
                         <div class="col-md-4">
-                            <a href="{{ path('app_property_show', {slug: property.slug}) }}" class="text-decoration-none">
-                                <div class="card h-100 border-0 shadow-sm hover-lift">
-                                    <div class="ratio ratio-4x3">
-                                        <img src="{{ asset('uploads/' ~ property.image) }}" 
-                                             class="card-img-top object-fit-cover" 
-                                             alt="{{ property.title }}"
-                                             loading="lazy">
-                                    </div>
-                                    <div class="card-body">
-                                        <h3 class="h6 card-title mb-1">{{ property.title }}</h3>
-                                        <p class="small text-muted mb-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16">
-                                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
-                                            </svg>
-                                            {{ property.city }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </a>
+                            {% include 'components/_property_card.html.twig' with {property: property} %}
                         </div>
                         {% endfor %}
                     </div>
@@ -83,19 +67,5 @@
     </div>
 </section>
 
-<style>
-.min-vh-75 {
-    min-height: 75vh;
-}
-.hover-lift {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
-}
-.text-teal {
-    color: var(--bs-teal, #20c997);
-}
-</style>
+
 {% endblock %}

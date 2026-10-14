@@ -19,8 +19,8 @@ class HomeController extends AbstractController
         PropertyRepository $propertyRepository,
         ContactService $contactService
     ): Response {
-        $featured = $propertyRepository->findBy([], ['createdAt' => 'DESC'], 5);
-        $navProperties = $propertyRepository->findBy([], ['title' => 'ASC']);
+        $featured = $propertyRepository->findActiveWithImages(['createdAt' => 'DESC']);
+        $navProperties = $propertyRepository->findActive();
 
         $popularAmenities = [
             'amenities.fast_wifi',
@@ -47,6 +47,6 @@ class HomeController extends AbstractController
             'navProperties' => $navProperties,
             'popularAmenities' => $popularAmenities,
             'contactForm' => $form->createView(),
-        ]);
+        ], new Response('', $form->isSubmitted() ? 422 : 200));
     }
 }

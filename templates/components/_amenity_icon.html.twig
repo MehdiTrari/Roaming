@@ -1,0 +1,27 @@
+{# Decorative icons: the adjacent translated text supplies the accessible label. #}
+<svg xmlns="http://www.w3.org/2000/svg" class="roaming-amenity-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    {% if amenity == 'amenities.fast_wifi' %}
+        <path d="M3 8.5a14 14 0 0 1 18 0M6 12a9.3 9.3 0 0 1 12 0M9 15.5a4.7 4.7 0 0 1 6 0"/>
+        <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/>
+    {% elseif amenity == 'amenities.self_checkin' %}
+        <circle cx="8" cy="9" r="5"/>
+        <path d="m11.5 12.5 8 8H22V18h-3v-3h-3"/>
+        <circle cx="6.5" cy="7.5" r=".8" fill="currentColor" stroke="none"/>
+    {% elseif amenity == 'amenities.equipped_accommodation' %}
+        <path d="M4 9h13v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4ZM17 10h1.5a3 3 0 0 1 0 6H17M7 3v3M11 2v4M15 3v3M3 22h16"/>
+    {% elseif amenity == 'amenities.comfortable_bedding' %}
+        <path d="M3 18V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11M2 21v-6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v6M2 18h20"/>
+        <rect x="6" y="9" width="5" height="4" rx="1"/>
+        <rect x="13" y="9" width="5" height="4" rx="1"/>
+    {% elseif amenity == 'amenities.ideal_for_pros' %}
+        <rect x="3" y="7" width="18" height="14" rx="2"/>
+        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12a22 22 0 0 0 18 0M10 14h4"/>
+    {% elseif amenity == 'amenities.commission_free' %}
+        <path d="M3 3h8l10 10-8 8L3 11Z"/>
+        <circle cx="7" cy="7" r="1"/>
+        <path d="m10 13 2 2 4-4"/>
+    {% else %}
+        <circle cx="12" cy="12" r="9"/>
+        <path d="m8 12 3 3 5-6"/>
+    {% endif %}
+</svg>

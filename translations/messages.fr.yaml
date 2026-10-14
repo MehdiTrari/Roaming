@@ -15,9 +15,9 @@ footer:
 # Page d'accueil
 home:
   title: Roaming Lille | Votre pied-à-terre à Lille
-  hero_badge: Votre pied-à-terre à Lille
-  hero_title: Trouvez votre prochaine escapade avec Roaming
-  hero_description: Découvrez des locations de vacances soigneusement sélectionnées, conçues pour votre confort, votre aventure et des séjours inoubliables. Explorez nos 5 propriétés uniques et réservez votre escapade idéale.
+  hero_badge: "Votre séjour dans la métropole lilloise"
+  hero_title: "Une adresse à vous. Lille à découvrir."
+  hero_description: "Des logements meublés pour vos déplacements professionnels et vos séjours en groupe. Trouvez votre adresse et préparez votre séjour avec Roaming."
   browse_properties: Voir nos logements
   contact_us: Nous contacter
   plan_stay: Préparez votre séjour
@@ -30,7 +30,7 @@ home:
   amenities_subtitle: L'essentiel pour un séjour sans accroc
   amenity_verified: Vérifié dans chaque logement.
   featured_properties: Nos logements
-  featured_subtitle: Trouvez votre prochaine adresse
+  featured_subtitle: "Choisissez votre pied-à-terre"
   need_help: Besoin d'un coup de main ?
   view_details: En savoir plus
   no_properties: Aucun logement disponible.
@@ -42,8 +42,8 @@ home:
   testimonials_title: Ils nous ont fait confiance
   testimonials_subtitle: Témoignages à venir
   testimonials_description: On rassemble les retours de nos derniers voyageurs. En attendant, n'hésitez pas à nous demander des références.
-  contact_title: Une question ?
-  contact_subtitle: Parlons de votre projet
+  contact_title: "Préparons votre séjour"
+  contact_subtitle: "Une équipe à votre écoute"
   contact_description: Écrivez-nous à %email% ou appelez-nous au %phone%. Nous répondrons rapidement afin de vous aider.
 # Page À propos
 about:
@@ -152,3 +152,143 @@ seo:
   about_description: "Découvrez Roaming Lille : une gestion locative à taille humaine, des logements soignés pour les voyageurs exigeants dans la métropole lilloise."
   contact_description: "Contactez Roaming Lille pour réserver votre appartement meublé. Réponse rapide, conseils personnalisés pour votre séjour à Lille."
   property_description: "%title% à %city%. %bedrooms% chambres, %beds% lits, %bathrooms% salles de bain. Idéal pour %travelers% voyageurs. Réservation directe."
+
+calendar:
+    pick_property: "Choisissez votre logement"
+    view_availability: "Voir les disponibilités"
+    change_property: "Changer de logement"
+    clear_dates: "Effacer les dates"
+    checkout_only: "Départ uniquement"
+    book_stay: "Réservez votre séjour"
+    eyebrow: "Votre séjour dans la métropole lilloise"
+    select_hint: "Sélectionnez votre arrivée puis votre départ, ou renseignez vos dates ci-dessous."
+    scroll_hint: "Faites défiler le planning horizontalement pour parcourir le mois."
+    closed_notice: "La réservation en ligne est temporairement suspendue pendant la vérification de nos calendriers. Contactez-nous avec vos dates : nous vous confirmerons les logements disponibles."
+    dev_notice: "En local : le verrou de publication est actif. La page de test permet de consulter GuestLucky et de vérifier un devis sans réserver. Les données de Roubaix restent à comparer au calendrier de gestion."
+    open_test: "Ouvrir le planning de test"
+    title: "Disponibilités"
+    intro: "Choisissez votre logement, puis trouvez les dates de votre prochain séjour."
+    previous: "Mois précédent"
+    next: "Mois suivant"
+    today: "Aujourd’hui"
+    loading: "Chargement du planning…"
+    available: "Disponible"
+    unavailable: "Indisponible"
+    unverified: "Non vérifié"
+    choose: "Choisir un séjour"
+    property: "Logement"
+    quote: "Vérifier le séjour"
+    quote_note: "Le prix par nuit est indicatif. Le devis vérifie le séjour complet et ses frais avant la réservation."
+    contact: "Contacter Roaming"
+    confirm: "Disponibilités à confirmer"
+    retry_note: "Ce séjour ne peut pas être confirmé actuellement. Vérifiez de nouvelles dates ou contactez-nous."
+    photo_pending: "Photos à venir"
+    test_title: "Page de test locale — lecture seule"
+    test_notice: "Calendriers et devis issus du Booking Engine GuestLucky. Aucune réservation possible ici. Les disponibilités de Roubaix restent à valider face au calendrier de gestion ; cette page est réservée au développement."
+
+ui:
+    skip_content: "Aller au contenu"
+    navigation: "Ouvrir la navigation"
+    theme: "Changer de thème"
+    language: "Langue"
+    close: "Fermer"
+    choose_dates: "Choisir des dates"
+    stay_dates: "Dates du séjour"
+    date_hint: "Sélectionnez votre arrivée puis votre départ."
+    cancel: "Effacer"
+    apply: "Valider"
+    one_guest: "1 voyageur"
+    guest_hint: "Adultes et enfants"
+    previous: "Précédent"
+    next: "Suivant"
+    airbnb: "Voir sur Airbnb"
+    fewer_guests: "Moins de voyageurs"
+    more_guests: "Plus de voyageurs"
+    contact_name: "Nom"
+    contact_email: "Email"
+    contact_phone: "Téléphone"
+    contact_subject: "Objet"
+    contact_message: "Message"
+    send: "Envoyer le message"
+    placeholder_name: "Votre nom"
+    placeholder_email: "vous@exemple.fr"
+    placeholder_phone: "+33 6 00 00 00 00"
+    placeholder_subject: "Votre demande de séjour"
+    placeholder_message: "Vos dates, le nombre de voyageurs et vos besoins"
+
+listing:
+    facts: "Le logement en chiffres"
+    photos_of: "Photos de %name%"
+    discover: "Découvrir %name%"
+    region: "Métropole lilloise"
+    breadcrumb: "Fil d’Ariane"
+    photo_position: "Photo %index% sur %total%"
+    choose_photo: "Choisir une photo"
+    no_photos: "Les photos de ce logement ne sont pas encore renseignées."
+    sections: "Explorer le logement"
+    your_place: "Votre pied-à-terre"
+    no_description: "Contactez-nous pour en savoir plus sur ce logement."
+    no_amenities: "Les équipements de ce logement ne sont pas encore renseignés."
+    ask_amenities: "Nous demander les équipements"
+    city_map_note: "La carte situe la commune, pas l’adresse exacte du logement."
+    map_of: "Carte de %city%"
+    your_stay: "Préparez votre séjour"
+    stay_intro: "Consultez les disponibilités de ce logement ou contactez-nous avec vos dates."
+    other_places: "Découvrez aussi nos autres adresses"
+    back_catalogue: "Tous nos logements"
+journey:
+  all_properties: Tous les logements
+audit:
+  availability_description: "Consultez les disponibilités des logements Roaming à Lambersart, Roubaix et Croix. Choisissez vos dates et voyageurs pour vérifier votre séjour."
+
+team:
+  maintenance_title: 'Nous préparons notre nouveau site'
+  maintenance_description: 'Notre site évolue pour mieux vous accueillir. Pendant cette période, notre équipe reste disponible pour vous aider à organiser votre séjour à Lille.'
+  contact_intro: 'Pour une réservation ou une question, contactez-nous :'
+  access: 'Accès équipe'
+  navigation: 'Navigation équipe'
+  visit: 'Visiter le site'
+  tickets: 'Tickets de test'
+  logout: 'Déconnexion'
+  invited_only: 'Cet accès est réservé aux membres invités de notre équipe.'
+  login_error: 'Connexion impossible. Vérifiez vos identifiants ou réessayez plus tard.'
+  email: 'Adresse e-mail'
+  password: 'Mot de passe'
+  login: 'Se connecter'
+  report: 'Signaler un problème'
+  title: 'Titre'
+  category: 'Catégorie'
+  category_bug: 'Bug'
+  category_display: 'Affichage'
+  category_suggestion: 'Suggestion'
+  description: 'Description du problème ou de la suggestion'
+  steps: 'Étapes pour reproduire (si applicable)'
+  expected: 'Résultat attendu'
+  capture: 'Capture d’écran (facultative)'
+  capture_help: 'PNG, JPEG ou WebP · 5 Mo maximum. Évitez les données personnelles dans vos captures.'
+  send: 'Envoyer'
+  status: 'Statut'
+  priority: 'Priorité'
+  status_new: 'Nouveau'
+  status_in_progress: 'En cours'
+  status_retest: 'À retester'
+  status_resolved: 'Résolu'
+  status_dismissed: 'Classé sans suite'
+  priority_low: 'Faible'
+  priority_normal: 'Normale'
+  priority_high: 'Haute'
+  all: 'Tous'
+  filter: 'Filtrer'
+  empty: 'Aucun ticket pour le moment.'
+  pagination: 'Pages de tickets'
+  previous: 'Précédent'
+  next: 'Suivant'
+  page: 'Page concernée'
+  view_capture: 'Voir la capture'
+  save: 'Enregistrer'
+  comments: 'Commentaires'
+  add_comment: 'Ajouter un commentaire'
+  comment_invalid: 'Le commentaire doit contenir entre 1 et 10 000 caractères.'
+  preview: 'Version en test'
+  real_actions: 'Les réservations et messages produisent des effets réels.'
+  close: 'Fermer'

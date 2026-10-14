@@ -23,10 +23,17 @@ class PropertyFixtures extends Fixture
         }
 
         $properties = $this->getPropertiesData();
+        $catalogue = json_decode(file_get_contents(dirname(__DIR__, 2).'/config/guestlucky/catalogue.json'), true, 512, JSON_THROW_ON_ERROR);
+        $current = array_column(\App\Integration\GuestLucky\CatalogueImporter::validate($catalogue), null, 'slug');
 
         foreach ($properties as $data) {
             $property = new Property();
             $property->setTitle($data['title']);
+            if (isset($current[$data['slug']])) {
+                $row = $current[$data['slug']];
+                $property->setGuestLuckyId($row['id'])->setActive(true)->setTitle($row['name']);
+                unset($current[$data['slug']]);
+            }
             $property->setSlug($data['slug']);
             $property->setType($data['type']);
             $property->setCity($data['city']);
@@ -93,6 +100,10 @@ class PropertyFixtures extends Fixture
             }
         }
 
+        foreach ($current as $row) {
+            $property = (new Property())->setSlug($row['slug'])->setTitle($row['name'])->setCity($row['city'])->setTravelers($row['capacity'])->setGuestLuckyId($row['id'])->setActive(true);
+            $manager->persist($property);
+        }
         $manager->flush();
     }
 

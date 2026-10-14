@@ -1,0 +1,5 @@
+{% set optimized = responsive_image(filename) %}
+<picture class="responsive-picture">
+    {% if optimized %}<source type="image/webp" srcset="{% for variant in optimized.variants %}{{ asset(variant.url) }} {{ variant.width }}w{{ not loop.last ? ', ' : '' }}{% endfor %}" sizes="{{ sizes }}">{% endif %}
+    <img src="{{ asset('uploads/' ~ filename) }}" class="{{ imageClass|default('') }}" alt="{{ alt|default('') }}" width="{{ optimized.width|default(width|default(800)) }}" height="{{ optimized.height|default(height|default(600)) }}" decoding="async" {% if priority|default(false) %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+</picture>

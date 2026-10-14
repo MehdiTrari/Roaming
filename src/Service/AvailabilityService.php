@@ -1,24 +1,100 @@
 <?php
-
 namespace App\Service;
-
+use App\Booking\BookingDates;
 use App\Entity\Property;
+use App\Integration\GuestLucky\GuestLuckyClient;
+use App\Integration\GuestLucky\StayUnavailable;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Log\LoggerInterface;
 
-class AvailabilityService
+final class AvailabilityService
 {
-    public function getAvailability(Property $property): array
+    public function __construct(private GuestLuckyClient $client, private CacheItemPoolInterface $cache, private LoggerInterface $logger, private bool $enabled) {}
+    public function isEnabled(): bool { return $this->enabled; }
+
+    public function calendars(array $properties, int $year, int $month): array
     {
-        $today = new \DateTimeImmutable('today');
+        return $this->readCalendars($properties, $year, $month, $this->enabled);
+    }
 
-        $booked = [
-            ['start' => $today->modify('+2 days')->format('Y-m-d'), 'end' => $today->modify('+4 days')->format('Y-m-d')],
-            ['start' => $today->modify('+10 days')->format('Y-m-d'), 'end' => $today->modify('+12 days')->format('Y-m-d')],
-        ];
+    /** Read-only preview used exclusively by the local development test page. */
+    public function calendarsForTest(array $properties, int $year, int $month): array
+    {
+        return $this->readCalendars($properties, $year, $month, true);
+    }
 
-        return [
-            'source' => 'demo',
-            'nextAvailable' => $today->modify('+5 days')->format('Y-m-d'),
-            'booked' => $booked,
-        ];
+    private function readCalendars(array $properties, int $year, int $month, bool $useProvider): array
+    {
+        BookingDates::month($year, $month);
+        $rows = $pending = [];
+        foreach ($properties as $property) {
+            $slug = $property->getSlug();
+            $rows[$slug] = $this->describe($property) + ['status' => 'unverified', 'days' => [], 'fetchedAt' => null];
+            if (!$useProvider || !$property->isActive() || !$property->getGuestLuckyId()) { continue; }
+            try {
+                $item = $this->cache->getItem('guestlucky.'.$this->client->cacheNamespace().'.'.$property->getGuestLuckyId().'.'.$year.'.'.$month);
+                if ($item->isHit()) {
+                    $rows[$slug] = array_replace($rows[$slug], $item->get());
+                    continue;
+                }
+                // Start every request before waiting for responses (HttpClient is lazy).
+                $pending[$slug] = [$this->client->startCalendar($property->getGuestLuckyId(), $year, $month), $property, $item];
+            } catch (\Throwable) { $this->logFailure($slug, 'calendar'); }
+        }
+        foreach ($pending as $slug => [$response, $property, $item]) {
+            try {
+                $result = ['status' => 'fresh', 'days' => $this->client->readCalendar($response, $property->getGuestLuckyId(), $year, $month), 'fetchedAt' => gmdate(DATE_ATOM)];
+                $item->set($result)->expiresAfter(60);
+                $this->cache->save($item);
+                $rows[$slug] = array_replace($rows[$slug], $result);
+            } catch (\Throwable) { $this->logFailure($slug, 'calendar'); }
+        }
+        return ['enabled' => $useProvider, 'year' => $year, 'month' => $month, 'properties' => array_values($rows)];
+    }
+
+    public function quotes(array $properties, string $arrival, string $departure, int $guests): array
+    {
+        return $this->readQuotes($properties, $arrival, $departure, $guests, $this->enabled);
+    }
+
+    /** Development preview: pricing is a GET and never creates a booking. */
+    public function quotesForTest(array $properties, string $arrival, string $departure, int $guests): array
+    {
+        return $this->readQuotes($properties, $arrival, $departure, $guests, true);
+    }
+
+    private function readQuotes(array $properties, string $arrival, string $departure, int $guests, bool $useProvider): array
+    {
+        BookingDates::stay($arrival, $departure, $guests);
+        $rows = $pending = [];
+        foreach ($properties as $property) {
+            $slug = $property->getSlug();
+            $rows[$slug] = $this->describe($property) + ['status' => 'unverified', 'available' => false, 'price' => null, 'currency' => 'EUR', 'nights' => null, 'fees' => [], 'error' => null];
+            if (!$useProvider || !$property->isActive() || !$property->getGuestLuckyId()) { continue; }
+            if ($guests > $property->getTravelers()) { $rows[$slug]['status'] = 'unavailable'; continue; }
+            try { $pending[$slug] = [$this->client->startQuote($property->getGuestLuckyId(), $arrival, $departure, $guests), $property]; }
+            catch (\Throwable) { $this->logFailure($slug, 'quote'); }
+        }
+        foreach ($pending as $slug => [$response, $property]) {
+            try {
+                $quote = $this->client->readQuote($response, $property->getGuestLuckyId(), $arrival, $departure, $guests);
+                $rows[$slug] = array_replace($rows[$slug], $quote, ['status' => 'available', 'available' => true]);
+            } catch (StayUnavailable) { $rows[$slug]['status'] = 'unavailable'; }
+            catch (\Throwable) { $this->logFailure($slug, 'quote'); }
+        }
+        return ['enabled' => $useProvider, 'arrivalDate' => $arrival, 'departureDate' => $departure, 'guests' => $guests, 'availability' => array_values($rows)];
+    }
+
+    private function describe(Property $property): array
+    {
+        $image = $property->getImages()->first();
+        foreach ($property->getImages() as $candidate) { if ($candidate->isCover()) { $image = $candidate; break; } }
+        return ['name' => $property->getTitle(), 'slug' => $property->getSlug(), 'city' => $property->getCity(), 'maxGuests' => $property->getTravelers(), 'image' => $image ? '/uploads/'.$image->getFilename() : null];
+    }
+
+    private function logFailure(string $slug, string $operation): void
+    {
+        // Transport exceptions can contain the key; never log their message or URL.
+        $this->logger->warning('GuestLucky read failed', ['property' => $slug, 'operation' => $operation]);
     }
 }

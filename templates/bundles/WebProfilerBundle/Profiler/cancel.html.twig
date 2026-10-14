@@ -1,0 +1,5 @@
+{% block toolbar %}
+    {# The loading placeholder has no AJAX panel. Do not expose its text as the
+       live AJAX counter to callbacks from the previous Turbo visit. #}
+    {{ include('@!WebProfiler/Profiler/cancel.html.twig')|replace({' sf-toolbar-ajax-request-counter': ''})|raw }}
+{% endblock %}
