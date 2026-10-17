@@ -25,6 +25,15 @@ jobs:
       with:
         php-version: '8.5'
     - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: npm
+        cache-dependency-path: package-lock.json
+    - name: Install JavaScript dependencies
+      run: npm ci
+    - name: Build frontend assets
+      run: npm run build
     - name: Copy .env.test.local
       run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
     - name: Cache Composer packages
