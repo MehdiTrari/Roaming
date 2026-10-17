@@ -2,6 +2,10 @@
 
 ## Fonctionnement
 
+Le gestionnaire de tickets propose des badges colorés (statut, catégorie, priorité), une recherche et des filtres cumulables sans rechargement. Plusieurs statuts ou catégories se combinent par « ou » ; les groupes et les étiquettes se combinent par « et ». Les filtres sont conservés dans l’URL et la pagination porte sur tous les tickets filtrés, pas seulement ceux déjà affichés. Les formulaires GET continuent de fonctionner sans JavaScript.
+
+Chaque ticket peut avoir jusqu’à huit étiquettes de 32 caractères, séparées par des virgules à la création, puis modifiables par un administrateur. La migration `Version20261017000000` ajoute les étiquettes sans effacer les tickets existants. Les statistiques en haut du gestionnaire portent sur l’ensemble des tickets de l’équipe.
+
 `SITE_MAINTENANCE=1` ferme le nouveau site aux visiteurs anonymes. L'accueil affiche une page Roaming en français ou anglais, avec téléphone, e-mail et « Accès équipe ». Les liens directs sont redirigés temporairement vers l'accueil ; les API et le sitemap répondent 503 sans données. L'accueil répond 200 pour cette période de validation prolongée. Les assets et `robots.txt` restent accessibles.
 
 La connexion est disponible sur `/equipe/connexion`. Les comptes individuels ont accès au site, aux pages de test GuestLucky et aux tickets sur `/equipe/tickets`. Le bouton « Signaler un problème » ouvre une fenêtre sur la page visitée ; sans JavaScript, une page complète prend le relais. La création du ticket ouvre sa fiche ; les erreurs conservent le formulaire. Les tickets et captures restent privés même après ouverture publique.

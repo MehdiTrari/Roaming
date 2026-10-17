@@ -34,6 +34,8 @@ class TestTicket
     public string $status = 'new';
     #[ORM\Column(length: 20)]
     public string $priority = 'normal';
+    #[ORM\Column(type: 'json')]
+    public array $labels = [];
     #[ORM\Column(length: 64, nullable: true)]
     public ?string $attachment = null;
     #[ORM\Column(length: 30, nullable: true)]

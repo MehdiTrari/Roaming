@@ -3,6 +3,7 @@ import { French } from 'flatpickr/dist/l10n/fr.js';
 import { language, t, renderQuotes, clearQuotes, showBookingError } from './booking-ui';
 import { readStay, writeStay, validStay, realDate, parisToday, bookingHorizon } from './booking-state';
 import {CalendarAvailability} from './calendar-availability';
+import {SearchProgress} from './search-progress';
 
 let cleanup = () => {};
 function initialize() {
@@ -15,6 +16,7 @@ function initialize() {
     const arrival = document.getElementById('arrival-date'), departure = document.getElementById('departure-date');
     const guests = document.getElementById('guests-count'), property = document.getElementById('booking-property');
     const results = document.getElementById('results-list'), status = document.getElementById('booking-search-status');
+    const progress = new SearchProgress(status);
     const submit = form.querySelector('[type="submit"]');
     const panel = document.getElementById('date-panel'), toggle = document.getElementById('date-toggle');
     const display = document.getElementById('date-display-text'), dateButton = document.getElementById('date-display');
@@ -23,6 +25,42 @@ function initialize() {
     const propertyButton = document.getElementById('property-display'), propertyPanel = document.getElementById('property-panel');
     const propertyToggle = document.getElementById('property-toggle');
     const panels = [[panel, dateButton], [guestsPanel, guestsButton], [propertyPanel, propertyButton]];
+    const guide = document.getElementById('booking-guide');
+    let guideStep = 0, guideRequest;
+    let spotlight, spotlightAnimation, spotlightMaskAnimation;
+    const updateSpotlight = () => {
+        if (!spotlight) return;
+        const box = submit.getBoundingClientRect(), style = getComputedStyle(submit);
+        const scale = style.transform === 'none' ? 1 : new DOMMatrixReadOnly(style.transform).a;
+        const width = box.width / scale, height = box.height / scale;
+        const radius = Math.min(Number.parseFloat(style.borderTopLeftRadius) || 0, height / 2);
+        // The opening has no padding/ring. Its own synchronized scale follows
+        // the button, so measure its untransformed bounds on scroll/resize.
+        Object.assign(spotlight.style, {left: `${box.left + (box.width - width) / 2}px`, top: `${box.top + (box.height - height) / 2}px`, width: `${width}px`, height: `${height}px`, borderRadius: `${radius}px`});
+    };
+    const setSpotlight = active => {
+        if (!active) {
+            spotlightAnimation?.cancel(); spotlightAnimation = null;
+            spotlightMaskAnimation?.cancel(); spotlightMaskAnimation = null;
+            spotlight?.remove(); spotlight = null;
+            return;
+        }
+        if (!spotlight) {
+            // A transparent opening over the real button: no cloned controls,
+            // stacking-context changes or layout movement in the search bar.
+            spotlight = document.createElement('div');
+            spotlight.className = 'booking-search-spotlight'; spotlight.setAttribute('aria-hidden', 'true');
+            document.body.append(spotlight);
+            const frames = [{transform: 'scale(1)'}, {transform: 'scale(1.06)'}, {transform: 'scale(1)'}];
+            const timing = {duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 2600 : 1800, iterations: Infinity, easing: 'ease-in-out'};
+            spotlightAnimation = submit.animate?.(frames, timing);
+            spotlightMaskAnimation = spotlight.animate?.(frames, timing);
+            // Keep the transparent opening exactly on the growing button.
+            const start = document.timeline.currentTime;
+            if (start !== null) for (const animation of [spotlightAnimation, spotlightMaskAnimation]) if (animation) animation.startTime = start;
+        }
+        updateSpotlight();
+    };
     const saved = readStay();
     property.value = Array.from(property.options).some(option => option.value === saved.slug) ? saved.slug : '';
     guests.value = Array.from(guests.options).some(option => option.value === saved.guests) ? saved.guests : '1';
@@ -32,6 +70,7 @@ function initialize() {
     const activeProperties = () => availability.properties.filter(item => !property.value || item.slug === property.value);
     const calendarUrl = () => property.value ? property.selectedOptions[0].dataset.calendarUrl : form.dataset.calendarUrl;
     const calendarStatus = document.getElementById('date-availability-status');
+    const calendarSurface = document.getElementById('date-calendar-surface');
     const clearButton = document.getElementById('date-cancel'), applyButton = document.getElementById('date-apply');
     const criteria = () => ({arrivalDate: arrival.value, departureDate: departure.value, guests: guests.value, slug: property.value});
     const capacity = () => Number(property.selectedOptions[0].dataset.capacity || guests.options[guests.options.length - 1].value);
@@ -67,18 +106,84 @@ function initialize() {
         }
         button.setAttribute('aria-expanded', String(open));
     };
+    const setGuideStep = step => {
+        guideStep = step;
+        guide.hidden = !step;
+        document.getElementById('booking-guide-property').textContent = property.selectedOptions[0].textContent;
+        guide.querySelectorAll('[data-guide-step]').forEach(item => {
+            const number = Number(item.dataset.guideStep);
+            if (number === step) item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
+            item.classList.toggle('is-done', Boolean(step) && number < step);
+        });
+        propertyToggle.classList.toggle('is-guide-current', step === 1);
+        toggle.classList.toggle('is-guide-current', step === 2);
+        guestsToggle.classList.toggle('is-guide-current', step === 3);
+        submit.classList.toggle('is-guide-current', step === 4);
+        setSpotlight(step === 4);
+        propertyPanel.classList.toggle('is-guided', step === 1);
+        panel.classList.toggle('is-guided', step === 2);
+        guestsPanel.classList.toggle('is-guided', step === 3);
+        document.querySelectorAll('[data-guide-hint]').forEach(hint => { hint.hidden = !step; });
+    };
+    const stopGuide = () => { guideRequest?.abort(); guideRequest = null; setGuideStep(0); };
+    const scrollToSearch = signal => new Promise(resolve => {
+        const bar = form.closest('.booking-bar'), header = document.querySelector('header.sticky-top');
+        const top = Math.max(0, scrollY + bar.getBoundingClientRect().top - (header?.offsetHeight || 80) - 18);
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({top, behavior:reduced ? 'instant' : 'smooth'});
+        if (reduced) { resolve(); return; }
+        let previous = scrollY, stable = 0;
+        const started = performance.now();
+        const frame = () => {
+            if (signal.aborted) { resolve(); return; }
+            stable = Math.abs(scrollY - previous) < 1 ? stable + 1 : 0; previous = scrollY;
+            if (performance.now() - started > 1200 || stable > 4 && performance.now() - started > 160) { resolve(); return; }
+            requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+    });
+    const showSearchStep = () => {
+        setGuideStep(4);
+        submit.focus({preventScroll: true});
+        const box = submit.getBoundingClientRect();
+        const headerBottom = document.querySelector('header.sticky-top')?.getBoundingClientRect().bottom || 0;
+        if (box.top < headerBottom + 16 || box.bottom > innerHeight - 16) submit.scrollIntoView({block: 'center', inline: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+        updateSpotlight();
+    };
     for (const [element, button] of panels) {
-        on(element, 'cancel', event => { event.preventDefault(); setPanel(element, button, false); });
+        on(element, 'cancel', event => { event.preventDefault(); stopGuide(); setPanel(element, button, false); });
         on(element, 'click', event => {
             const rect = element.getBoundingClientRect();
-            if (event.target === element && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) setPanel(element, button, false);
+            if (event.target === element && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) {
+                const guestsConfirmed = guideStep === 3 && element === guestsPanel && validStay(criteria(), capacity());
+                setPanel(element, button, false);
+                if (guestsConfirmed) { event.stopPropagation(); showSearchStep(); } else stopGuide();
+            }
         });
-        element.querySelectorAll('[data-search-dismiss]').forEach(close => on(close, 'click', () => setPanel(element, button, false)));
+        element.querySelectorAll('[data-search-dismiss]').forEach(close => on(close, 'click', event => {
+            setPanel(element, button, false);
+            if (guideStep === 3 && element === guestsPanel && validStay(criteria(), capacity())) {
+                event.stopPropagation(); showSearchStep();
+            } else if (guideStep) stopGuide();
+        }));
     }
-    const reposition = () => panels.forEach(([element, button]) => positionPanel(element, button));
+    const reposition = () => { panels.forEach(([element, button]) => positionPanel(element, button)); updateSpotlight(); };
+    on(submit, 'pointerenter', () => { spotlightAnimation?.pause(); spotlightMaskAnimation?.pause(); });
+    on(submit, 'pointerleave', () => {
+        if (!spotlightAnimation || !spotlightMaskAnimation) return;
+        const start = document.timeline.currentTime - spotlightAnimation.currentTime;
+        for (const animation of [spotlightAnimation, spotlightMaskAnimation]) { animation.play(); animation.startTime = start; }
+    });
     on(window, 'resize', reposition); on(window, 'scroll', reposition);
     on(window.visualViewport, 'resize', reposition); on(window.visualViewport, 'scroll', reposition);
-    const busy = value => { submit.disabled = value; form.setAttribute('aria-busy', String(value)); results.setAttribute('aria-busy', String(value)); };
+    const busy = (value, complete = false) => {
+        submit.disabled = value;
+        form.setAttribute('aria-busy', String(value));
+        results.setAttribute('aria-busy', String(value));
+        if (value) progress.start();
+        else if (complete) progress.finish();
+        else progress.cancel();
+    };
     const syncGuests = () => {
         document.getElementById('guests-display-text').textContent = `${guests.value} ${t(Number(guests.value) === 1 ? 'traveler' : 'travelers')}`;
         currentGuests.value = guests.value;
@@ -101,34 +206,60 @@ function initialize() {
         const date = dateKey(value), stay = criteria();
         if (!published || calendarRequest) return true;
         if (date === stay.departureDate && !availability.issue(stay, activeProperties())) return false;
-        if (stay.arrivalDate && !stay.departureDate && date > stay.arrivalDate) return availability.state(date, activeProperties()) !== 'open' && !availability.canDepart(date, stay, activeProperties());
-        return availability.state(date, activeProperties()) !== 'open';
+        if (stay.arrivalDate && !stay.departureDate && date > stay.arrivalDate) return !availability.canDepart(date, stay, activeProperties());
+        return !availability.canArrive(date, stay, activeProperties());
+    };
+    const renderRange = (hoverDate = '') => {
+        if (!picker?.daysContainer) return;
+        const stay = criteria();
+        const preview = published && !calendarRequest && availability.canDepart(hoverDate, stay, activeProperties());
+        const end = preview ? hoverDate : stay.departureDate;
+        for (const day of picker.daysContainer.querySelectorAll('.flatpickr-day')) {
+            const date = day.dataset.date;
+            // Flatpickr treats every disabled checkout as a blocked NIGHT and
+            // marks later dates notAllowed. Our availability rules distinguish
+            // checkout eligibility from the nights actually occupied.
+            day.classList.remove('notAllowed');
+            day.classList.toggle('selected', Boolean(date && (date === stay.arrivalDate || date === stay.departureDate)));
+            day.classList.toggle('startRange', Boolean(stay.arrivalDate && date === stay.arrivalDate));
+            day.classList.toggle('endRange', Boolean(end && date === end));
+            day.classList.toggle('inRange', Boolean(stay.arrivalDate && end && date > stay.arrivalDate && date < end));
+        }
     };
     const refreshCalendar = () => {
+        const checking = Boolean(calendarRequest);
+        calendarSurface.classList.toggle('is-checking', checking);
+        calendarSurface.setAttribute('aria-busy', String(checking));
+        panel.classList.toggle('is-calendar-loading', checking);
+        calendarStatus.classList.toggle('visually-hidden', checking);
         clearButton.disabled = !arrival.value && !departure.value;
         const issue = availability.issue(criteria(), activeProperties());
         applyButton.disabled = !published || Boolean(calendarRequest) || !validStay(criteria(), capacity()) || Boolean(issue);
-        if (!calendarRequest) calendarStatus.textContent = !published ? t('closed') : !availability.properties.length ? t('empty') : issue && arrival.value && departure.value ? t(issue) : t('dateHint');
+        if (!calendarRequest) calendarStatus.textContent = !published ? t('closed') : !availability.properties.length ? t('empty') : issue && arrival.value && departure.value ? t(issue) : '';
         if (published && !calendarRequest && arrival.value && !departure.value) {
             const minimums = activeProperties().filter(property => Number(guests.value) <= property.capacity).map(property => availability.day(property.slug, arrival.value)).filter(day => day?.available).map(day => day.minStay);
-            if (minimums.length) calendarStatus.textContent += ` · ${Math.min(...minimums)} ${t('minimum')}`;
+            if (minimums.length) calendarStatus.textContent = `${t('chooseDeparture')} · ${Math.min(...minimums)} ${t('minimum')}`;
         }
-        document.getElementById('date-calendar-contact').hidden = published && !issue;
+        document.getElementById('date-calendar-contact').hidden = checking || published && !issue;
         if (picker) {
             const selected = [arrival.value, departure.value].filter(realDate);
             if (JSON.stringify(picker.selectedDates.map(dateKey)) !== JSON.stringify(selected)) {
                 picker.set('disable', []); picker.setDate(selected, false); picker.set('disable', [disabledDate]);
             } else picker.redraw();
+            renderRange();
+            picker.daysContainer.inert = checking;
+            if (panel.open) calendarSurface.style.setProperty('--calendar-loader-top', `${Math.max(0, picker.daysContainer.getBoundingClientRect().top - calendarSurface.getBoundingClientRect().top)}px`);
         }
         if (panel.open) positionPanel(panel, dateButton);
     };
     const loadCalendar = async () => {
         if (!published || !availability.properties.length || !picker || !panel.open) { refreshCalendar(); return; }
         calendarRequest?.abort(); const request = new AbortController(); calendarRequest = request;
-        calendarStatus.textContent = t('loading'); calendarStatus.dataset.state = 'loading'; refreshCalendar();
+        calendarStatus.textContent = t('checkingDates'); calendarStatus.dataset.state = 'loading'; refreshCalendar();
         const index = picker.currentYear * 12 + picker.currentMonth;
         try {
             await Promise.all([index, index + 1].map(month => availability.load(month, calendarUrl(), request.signal)));
+            await availability.loadArrivalNights([index, index + 1], calendarUrl(), request.signal);
             if (request.signal.aborted) return;
             if (availability.issue(criteria(), activeProperties())) clearQuotes(results);
             calendarStatus.dataset.state = [index, index + 1].every(month => activeProperties().every(property => availability.months.get(month)?.rows.some(row => row.slug === property.slug && row.status === 'fresh'))) ? 'fresh' : 'unverified';
@@ -150,20 +281,27 @@ function initialize() {
         mode: 'range', inline: true, minDate: parisToday(), maxDate: bookingHorizon(), dateFormat: 'Y-m-d',
         locale: language() === 'fr' ? French : 'default', appendTo: document.getElementById('date-calendar'),
         disable: [disabledDate], onMonthChange: monthChanged, onYearChange: monthChanged,
+        onKeyDown() {
+            // Native arrow navigation also invokes Flatpickr's range hover.
+            // Restore the supplier-aware preview after it has moved focus.
+            renderRange(document.activeElement?.closest('.flatpickr-day')?.dataset.date);
+        },
         onDayCreate(_, __, instance, element) {
             const date = dateKey(element.dateObj), state = availability.state(date, activeProperties());
             element.dataset.date = date;
             if (date < parisToday()) return;
             element.classList.add('stay-' + state);
             const checkout = availability.checkoutOnly(date, criteria(), activeProperties());
-            const description = t(checkout ? 'checkoutOnly' : state === 'open' ? 'candidate' : state === 'closed' ? 'unavailable' : 'unverified');
+            const noArrival = state === 'open' && !availability.canArrive(date, criteria(), activeProperties());
+            if (noArrival) element.classList.add('stay-no-arrival');
+            const description = t(checkout ? 'checkoutOnly' : noArrival ? 'noArrival' : state === 'open' ? 'candidate' : state === 'closed' ? 'unavailable' : 'unverified');
             element.setAttribute('aria-label', `${date}, ${description}`); element.title = element.getAttribute('aria-label');
             if (state === 'unknown') element.dataset.hint = '?';
             if (checkout) { element.classList.add('stay-checkout-only'); element.dataset.hint = t('checkoutOnly'); }
         },
         onChange(dates, _, instance) {
             let selected = dates.map(date => instance.formatDate(date, 'Y-m-d'));
-            if (selected.length === 1 && availability.state(selected[0], activeProperties()) !== 'open') selected = [arrival.value, departure.value].filter(Boolean);
+            if (selected.length === 1 && !availability.canArrive(selected[0], criteria(), activeProperties())) selected = [arrival.value, departure.value].filter(Boolean);
             if (selected.length === 2) {
                 if (!arrival.value) {
                     if (availability.issue({...criteria(), arrivalDate: selected[0], departureDate: selected[1]}, activeProperties())) selected = [];
@@ -195,19 +333,50 @@ function initialize() {
     };
     on(picker.calendarContainer, 'click', selectCalendarDay, {capture: true});
     on(picker.calendarContainer, 'keydown', selectCalendarDay, {capture: true});
+    on(picker.calendarContainer, 'mouseover', event => {
+        if (!picker.daysContainer.contains(event.target)) return;
+        event.stopImmediatePropagation();
+        renderRange(event.target.closest('.flatpickr-day')?.dataset.date);
+    }, {capture: true});
+    on(picker.daysContainer, 'focusin', event => renderRange(event.target.closest('.flatpickr-day')?.dataset.date));
+    on(picker.daysContainer, 'mouseleave', () => renderRange());
     if ((saved.arrivalDate || saved.departureDate) && !validStay(criteria(), capacity())) status.textContent = t('invalid');
     const togglePanel = (element, button) => { panels.filter(([other]) => other !== element).forEach(([other, trigger]) => setPanel(other, trigger, false)); setPanel(element, button, !element.open); };
-    on(dateButton, 'click', () => { togglePanel(panel, dateButton); if (panel.open) loadCalendar(); });
-    on(document.getElementById('date-apply'), 'click', () => { if (validStay(criteria())) { setPanel(panel, dateButton, false); dateButton.focus(); } });
+    on(dateButton, 'click', () => { if (guideStep) setGuideStep(2); togglePanel(panel, dateButton); if (panel.open) loadCalendar(); });
+    on(document.getElementById('date-apply'), 'click', event => {
+        if (!validStay(criteria(), capacity())) return;
+        setPanel(panel, dateButton, false);
+        if (guideStep) { event.stopPropagation(); setGuideStep(3); setPanel(guestsPanel, guestsButton, true); }
+        else dateButton.focus();
+    });
     on(clearButton, 'click', () => { const month = new Date(picker.currentYear, picker.currentMonth, 1); picker.clear(); picker.jumpToDate(month, false); setPanel(panel, dateButton, false); dateButton.focus(); });
-    on(document, 'click', event => { if (!toggle.contains(event.target)) setPanel(panel, dateButton, false); if (!guestsToggle.contains(event.target)) setPanel(guestsPanel, guestsButton, false); if (!propertyToggle.contains(event.target)) setPanel(propertyPanel, propertyButton, false); });
-    on(guestsButton, 'click', () => togglePanel(guestsPanel, guestsButton));
-    on(propertyButton, 'click', () => { togglePanel(propertyPanel, propertyButton); if (propertyPanel.open) propertyPanel.querySelector('[aria-pressed="true"]').focus({preventScroll: true}); });
+    on(document, 'click', event => { if (guideStep === 4 && !submit.contains(event.target)) stopGuide(); if (!toggle.contains(event.target)) setPanel(panel, dateButton, false); if (!guestsToggle.contains(event.target)) setPanel(guestsPanel, guestsButton, false); if (!propertyToggle.contains(event.target)) setPanel(propertyPanel, propertyButton, false); });
+    on(document, 'focusin', event => { if (guideStep === 4 && !submit.contains(event.target)) stopGuide(); });
+    on(guestsButton, 'click', () => { if (guideStep) setGuideStep(3); togglePanel(guestsPanel, guestsButton); });
+    on(propertyButton, 'click', () => {
+        stopGuide();
+        // Reveal the guide before positioning the popover: its heading adds
+        // height to the bar, especially when the fields stack on mobile.
+        if (!propertyPanel.open) setGuideStep(1);
+        togglePanel(propertyPanel, propertyButton);
+        if (propertyPanel.open) propertyPanel.querySelector('[aria-pressed="true"]').focus({preventScroll: true});
+    });
     on(propertyPanel, 'click', event => {
         const option = event.target.closest('[data-property-option]');
         if (!option) return;
-        if (property.value !== option.dataset.propertyOption) { property.value = option.dataset.propertyOption; property.dispatchEvent(new Event('change', {bubbles: true})); }
+        event.stopPropagation();
+        if (property.value !== option.dataset.propertyOption) {
+            property.value = option.dataset.propertyOption;
+            // Dates come before guests in the guide. A smaller property must
+            // remain bookable when the previous search had more travelers.
+            guests.value = String(Math.max(1, Math.min(Number(guests.value) || 1, capacity())));
+            property.dispatchEvent(new Event('change', {bubbles: true}));
+        }
         setPanel(propertyPanel, propertyButton, false);
+        // Selecting even the current option (including all properties) is an
+        // explicit confirmation. Advance without sending a quote request.
+        setGuideStep(2);
+        setPanel(panel, dateButton, true); loadCalendar();
     });
     on(propertyPanel, 'keydown', event => {
         if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
@@ -219,27 +388,46 @@ function initialize() {
     });
     on(form, 'keydown', event => {
         if (event.key !== 'Escape') return;
+        stopGuide();
         panels.forEach(([element, button]) => setPanel(element, button, false));
     });
     const adjustGuests = amount => { guests.value = String(Math.max(1, Math.min(capacity(), Number(guests.value) + amount))); changed(); };
     on(document.getElementById('guests-decrease'), 'click', () => adjustGuests(-1));
     on(document.getElementById('guests-increase'), 'click', () => adjustGuests(1));
-    on(guests, 'change', changed); on(property, 'change', () => { calendarRequest?.abort(); calendarRequest = null; availability.clear(); arrival.value = departure.value = ''; picker.clear(); changed(); if (panel.open) loadCalendar(); });
+    on(guests, 'change', changed); on(property, 'change', () => { stopGuide(); calendarRequest?.abort(); calendarRequest = null; availability.clear(); arrival.value = departure.value = ''; picker.clear(); changed(); if (panel.open) loadCalendar(); });
+    on(document.getElementById('booking-guide-close'), 'click', () => { stopGuide(); panels.forEach(([element, button]) => setPanel(element, button, false)); });
+    on(document, 'booking:guide', async event => {
+        const slug = event.detail?.slug;
+        if (!slug || !Array.from(property.options).some(option => option.value === slug)) return;
+        event.preventDefault();
+        stopGuide(); panels.forEach(([element, button]) => setPanel(element, button, false));
+        property.value = slug;
+        guests.value = String(Math.min(Number(guests.value) || 1, capacity()));
+        property.dispatchEvent(new Event('change', {bubbles:true}));
+        const request = new AbortController(); guideRequest = request; setGuideStep(2);
+        await scrollToSearch(request.signal);
+        if (request.signal.aborted) return;
+        setPanel(panel, dateButton, true); loadCalendar();
+    });
     const search = async event => {
         event?.preventDefault();
         if (pending) return;
-        clearQuotes(results); document.getElementById('booking-results').classList.remove('d-none');
+        stopGuide();
+        progress.cancel();
+        clearQuotes(results); document.getElementById('booking-results').classList.add('d-none');
         const stay = criteria();
         if (!validStay(stay, capacity())) {
             const overCapacity = Number(stay.guests) > capacity(); status.textContent = t(overCapacity ? 'capacity' : 'invalid');
             (overCapacity ? guestsButton : dateButton).focus(); return;
         }
         writeStay(stay); const signature = JSON.stringify(stay);
-        const request = new AbortController(); pending = request; busy(true); status.textContent = t('pending');
+        const request = new AbortController(); pending = request; busy(true);
+        let complete = false;
         try {
             if (!published) { status.textContent = ''; renderQuotes(results, {enabled: false, availability: []}, {criteria: stay}); return; }
             await availability.loadStay(stay, calendarUrl(), request.signal);
             if (request.signal.aborted) return;
+            progress.update(58);
             const issue = availability.issue(stay, activeProperties());
             if (issue) { status.textContent = ''; showBookingError(results, issue, search); return; }
             const params = new URLSearchParams(stay); if (!stay.slug) params.delete('slug');
@@ -247,14 +435,19 @@ function initialize() {
             if (!response.ok) throw new Error(response.status === 400 ? 'invalid' : response.status === 422 ? 'refused' : 'failed');
             const data = await response.json();
             if (!request.signal.aborted && signature === JSON.stringify(criteria())) {
-                renderQuotes(results, data, {criteria: stay, isCurrent: () => signature === JSON.stringify(criteria()), onRefresh: search}); status.textContent = '';
+                renderQuotes(results, data, {criteria: stay, isCurrent: () => signature === JSON.stringify(criteria()), onRefresh: search}); complete = true;
             }
         } catch (error) {
             if (error.name !== 'AbortError' && !request.signal.aborted) { status.textContent = ''; showBookingError(results, ['invalid', 'refused'].includes(error.message) ? error.message : 'failed', search); }
-        } finally { if (pending === request) { pending = null; busy(false); } }
+        } finally {
+            if (pending === request) {
+                pending = null; busy(false, complete);
+                document.getElementById('booking-results').classList.toggle('d-none', !results.hasChildNodes());
+            }
+        }
     };
     on(form, 'submit', search);
-    cleanup = () => { panels.forEach(([element, button]) => setPanel(element, button, false)); clearInterval(calendarTimer); listeners.abort(); pending?.abort(); calendarRequest?.abort(); clearQuotes(results); busy(false); picker.destroy(); cleanup = () => {}; };
+    cleanup = () => { stopGuide(); panels.forEach(([element, button]) => setPanel(element, button, false)); clearInterval(calendarTimer); listeners.abort(); pending?.abort(); pending = null; calendarRequest?.abort(); calendarRequest = null; clearQuotes(results); busy(false); status.textContent = ''; picker.destroy(); cleanup = () => {}; };
 }
 document.addEventListener('DOMContentLoaded', initialize);
 document.addEventListener('turbo:load', initialize);

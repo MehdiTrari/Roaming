@@ -7,7 +7,11 @@
     <header class="calendar-intro"><p class="calendar-eyebrow">{{ 'calendar.eyebrow'|trans }}</p>
     <h1>{{ 'calendar.title'|trans }}</h1>
     <p>{{ 'calendar.intro'|trans }}</p></header>
-    {% include 'calendar/_planning.html.twig' with {calendarUrl: path('api_calendar'), propertyPicker: true} %}
+    {% set chosenProperty = navProperties|filter(item => item.slug == app.request.query.get('slug'))|first %}
+    <div class="{{ chosenProperty ? 'availability-plan-layout' : '' }}">
+      {% include 'calendar/_planning.html.twig' with {calendarUrl: path('api_calendar'), propertyPicker: true} %}
+      {% if chosenProperty %}<aside class="availability-location-aside">{% include 'components/_property_map.html.twig' with {properties: [chosenProperty], selectedSlug: chosenProperty.slug} only %}</aside>{% endif %}
+    </div>
   </div>
 </section>
 {% endblock %}

@@ -6,6 +6,7 @@ use App\Entity\TestTicket;
 use App\Entity\TicketComment;
 use App\Form\TestTicketType;
 use App\Service\TicketContext;
+use App\Service\TicketLabels;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -24,15 +25,40 @@ final class TicketController extends AbstractController
     #[Route('', name: 'team_tickets', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        $criteria = [];
-        foreach (['status' => TestTicket::STATUSES, 'category' => TestTicket::CATEGORIES] as $key => $values) {
-            $value = $request->query->getString($key);
-            if (in_array($value, $values, true)) { $criteria[$key] = $value; }
+        $query = $request->query->all();
+        $filters = ['q' => mb_substr(is_string($query['q'] ?? null) ? trim($query['q']) : '', 0, 180)];
+        $qb = $this->em->getRepository(TestTicket::class)->createQueryBuilder('t')->join('t.author', 'a')->addSelect('a');
+        foreach (['status' => TestTicket::STATUSES, 'category' => TestTicket::CATEGORIES, 'priority' => TestTicket::PRIORITIES] as $key => $values) {
+            $selected = $query[$key] ?? [];
+            $filters[$key] = array_values(array_intersect($values, is_array($selected) ? array_filter($selected, 'is_string') : (is_string($selected) ? [$selected] : [])));
+            if ($filters[$key]) { $qb->andWhere('t.'.$key.' IN (:'.$key.')')->setParameter($key, $filters[$key]); }
         }
+        $labelRows = $this->em->createQuery('SELECT t.id, t.labels FROM App\\Entity\\TestTicket t')->getArrayResult();
+        $labels = [];
+        foreach ($labelRows as $row) { foreach ($row['labels'] ?? [] as $label) { $labels[$label] = $label; } }
+        natcasesort($labels); $labels = array_values($labels);
+        $selected = $query['label'] ?? [];
+        $filters['label'] = array_values(array_intersect($labels, is_array($selected) ? array_filter($selected, 'is_string') : (is_string($selected) ? [$selected] : [])));
+        if ($filters['label']) {
+            $matchingIds = [];
+            foreach ($labelRows as $row) { if (!array_diff($filters['label'], $row['labels'] ?? [])) { $matchingIds[] = $row['id']; } }
+            $qb->andWhere('t.id IN (:labelMatches)')->setParameter('labelMatches', $matchingIds ?: [-1]);
+        }
+        if ($filters['q'] !== '') {
+            $qb->andWhere("(LOWER(t.title) LIKE :search ESCAPE '!' OR LOWER(t.description) LIKE :search ESCAPE '!' OR LOWER(a.name) LIKE :search ESCAPE '!' OR LOWER(t.page) LIKE :search ESCAPE '!' OR t.id = :ticketId)")
+                ->setParameter('search', '%'.strtr(mb_strtolower($filters['q']), ['!' => '!!', '%' => '!%', '_' => '!_']).'%')->setParameter('ticketId', ctype_digit(ltrim($filters['q'], '#')) ? (int) ltrim($filters['q'], '#') : -1);
+        }
+        $filters['sort'] = ($query['sort'] ?? '') === 'oldest' ? 'oldest' : 'newest';
+        $total = (int) (clone $qb)->select('COUNT(t.id)')->getQuery()->getSingleScalarResult();
         $page = max(1, min(100000, $request->query->getInt('page', 1)));
-        $repo = $this->em->getRepository(TestTicket::class);
-        return $this->render('team/tickets.html.twig', ['tickets' => $repo->findBy($criteria, ['createdAt' => 'DESC', 'id' => 'DESC'], 30, ($page - 1) * 30),
-            'total' => $repo->count($criteria), 'page' => $page, 'filters' => $criteria, 'statuses' => TestTicket::STATUSES, 'categories' => TestTicket::CATEGORIES]);
+        $page = min($page, max(1, (int) ceil($total / 30)));
+        $direction = $filters['sort'] === 'oldest' ? 'ASC' : 'DESC';
+        $stats = array_fill_keys(TestTicket::STATUSES, 0);
+        foreach ($this->em->createQuery('SELECT t.status, COUNT(t.id) AS amount FROM App\\Entity\\TestTicket t GROUP BY t.status')->getArrayResult() as $row) { $stats[$row['status']] = (int) $row['amount']; }
+        return $this->render($request->query->getBoolean('_fragment') ? 'team/_ticket_results.html.twig' : 'team/tickets.html.twig', [
+            'tickets' => $qb->orderBy('t.createdAt', $direction)->addOrderBy('t.id', $direction)->setMaxResults(30)->setFirstResult(($page - 1) * 30)->getQuery()->getResult(),
+            'total' => $total, 'page' => $page, 'filters' => $filters, 'stats' => $stats, 'labels' => $labels,
+            'statuses' => TestTicket::STATUSES, 'categories' => TestTicket::CATEGORIES, 'priorities' => TestTicket::PRIORITIES]);
     }
     #[Route('/nouveau', name: 'team_ticket_new', methods: ['GET', 'POST'])]
     public function create(Request $request): Response
@@ -44,6 +70,7 @@ final class TicketController extends AbstractController
             $data = $form->getData(); $ticket = new TestTicket();
             $user = $this->getUser(); assert($user instanceof TeamUser); $ticket->author = $user;
             foreach (['title', 'category', 'description', 'steps', 'expected'] as $field) { $ticket->$field = (string) $data[$field]; }
+            $ticket->labels = TicketLabels::parse((string) ($data['labels'] ?? ''));
             $ticket->page = $this->context->page((string) $data['page']);
             $ticket->screen = (string) $data['screen'];
             $ticket->browser = mb_substr($request->headers->get('User-Agent', ''), 0, 500);
@@ -76,7 +103,9 @@ final class TicketController extends AbstractController
                 $this->denyAccessUnlessGranted('ROLE_ADMIN');
                 $status = $request->request->getString('status'); $priority = $request->request->getString('priority');
                 if (!in_array($status, TestTicket::STATUSES, true) || !in_array($priority, TestTicket::PRIORITIES, true)) { throw $this->createNotFoundException(); }
-                $ticket->status = $status; $ticket->priority = $priority;
+                try { $labels = TicketLabels::parse($request->request->getString('labels', implode(', ', $ticket->labels))); }
+                catch (\InvalidArgumentException) { $error = 'team.labels_invalid'; }
+                if (!$error) { $ticket->status = $status; $ticket->priority = $priority; $ticket->labels = $labels; }
             } else {
                 $body = trim($request->request->getString('comment'));
                 if ($body === '' || mb_strlen($body) > 10000) { $error = 'team.comment_invalid'; }

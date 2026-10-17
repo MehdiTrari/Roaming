@@ -6,6 +6,9 @@ use App\Entity\Property;
 use App\Entity\PropertyImage;
 use App\Integration\GuestLucky\CatalogueImporter;
 use App\Integration\GuestLucky\GuestLuckyClient;
+use App\Integration\GuestLucky\McpClient;
+use App\Integration\GuestLucky\CatalogueSynchronizer;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 use App\Repository\PropertyRepository;
 use App\Service\AvailabilityService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -55,6 +58,71 @@ final class CatalogueAndRoutesTest extends WebTestCase
     }
     private function catalogue(): array { return json_decode(file_get_contents(dirname(__DIR__, 2).'/config/guestlucky/catalogue.json'), true); }
     private function importer(): CatalogueImporter { return self::getContainer()->get(CatalogueImporter::class); }
+    private function synchronizer(array $rows, int $account = 123): CatalogueSynchronizer
+    {
+        $mcp = new McpClient(new MockHttpClient(static function ($method, $url, $options) use ($rows, $account) {
+            $payload = json_decode($options['body'], true);
+            if ($payload['method'] === 'notifications/initialized') { return new MockResponse('', ['http_code' => 202]); }
+            if ($payload['method'] === 'initialize') { $result = ['protocolVersion' => '2025-11-25']; }
+            else {
+                $data = $payload['params']['name'] === 'gl-whoami' ? ['account_owner_id' => $account, 'company' => 'Test account'] : ['total' => count($rows), 'page' => 1, 'per_page' => 50, 'count' => count($rows), 'properties' => $rows];
+                $result = ['structuredContent' => $data];
+            }
+            return new MockResponse(json_encode(['jsonrpc' => '2.0', 'id' => $payload['id'], 'result' => $result]));
+        }), 'https://app.guestlucky.io/api/mcp', 'test-secret');
+        return new CatalogueSynchronizer($mcp, $this->importer(), self::getContainer()->get(PropertyRepository::class), new AsciiSlugger(), 123);
+    }
+    public function testLiveSyncAddsAPropertyIdempotentlyWithoutLosingExistingContent(): void
+    {
+        $this->importer()->import($this->catalogue(), true);
+        $rows = array_map(static fn ($row) => $row + ['address' => '1 rue du Test 59000 Lille'], $this->catalogue()['properties']);
+        $rows[0]['min_stay'] = 2;
+        $rows[] = ['id' => 9999, 'name' => "L’Élégante • 4 chambres", 'address' => '118 rue du Test 59500 Douai', 'capacity' => 8, 'min_stay' => 3];
+        $repo = self::getContainer()->get(PropertyRepository::class);
+        $this->synchronizer($rows)->synchronize(); self::assertCount(3, $repo->findActive());
+        $this->synchronizer($rows)->synchronize(true);
+        $this->synchronizer($rows)->synchronize(true);
+        self::assertCount(4, $repo->findActive());
+        self::assertSame('l-elegante-4-chambres-9999', $repo->findOneBy(['guestLuckyId' => 9999])->getSlug());
+        self::assertSame('Douai', $repo->findOneBy(['guestLuckyId' => 9999])->getCity());
+        self::assertSame('Existing content', $repo->findActiveSlug('lambersart')->getAbout());
+        self::assertSame('existing.jpg', $repo->findActiveSlug('lambersart')->getImages()->first()->getFilename());
+        self::assertSame(2, $repo->findActiveSlug('lambersart')->getMinimumStay());
+        self::assertSame(3, $repo->findOneBy(['guestLuckyId' => 9999])->getMinimumStay());
+        $this->importer()->import($this->catalogue(), true, archiveMissing: false);
+        self::assertSame(2, $repo->findActiveSlug('lambersart')->getMinimumStay(), 'Historical snapshots omit the minimum and must preserve it.');
+        $rows[0]['min_stay'] = null;
+        $this->synchronizer([$rows[0]])->synchronize(true);
+        self::assertNull($repo->findActiveSlug('lambersart')->getMinimumStay(), 'Explicit live null clears the old restriction.');
+        self::assertCount(4, $repo->findActive(), 'Scheduled sync must not archive an absent property.');
+    }
+    public function testWrongAccountAndMissingCityNeverChangeTheCatalogue(): void
+    {
+        $rows = [['id' => 9999, 'name' => 'New home', 'address' => null, 'capacity' => 8]];
+        try { $this->synchronizer($rows, 456)->synchronize(true); self::fail(); } catch (\RuntimeException $e) { self::assertStringContainsString('compte', $e->getMessage()); }
+        try { $this->synchronizer($rows)->synchronize(true); self::fail(); } catch (\RuntimeException $e) { self::assertStringContainsString('Ville', $e->getMessage()); }
+        self::assertCount(5, self::getContainer()->get(PropertyRepository::class)->findActive());
+    }
+    public function testLiveAddressChangesInvalidateCoordinatesAndSnapshotsPreserveTheAddress(): void
+    {
+        $this->importer()->import($this->catalogue(), true);
+        $row = ['id' => 2475, 'name' => 'Lambersart', 'capacity' => 10, 'city' => 'Lambersart', 'address' => '256 Avenue de Dunkerque, 59130 Lambersart'];
+        $this->synchronizer([$row])->synchronize(true);
+        $property = self::getContainer()->get(PropertyRepository::class)->findOneBy(['guestLuckyId' => 2475]);
+        self::assertSame($row['address'], $property->getAddress());
+        $property->setCoordinates(50.637488, 3.024341); $this->em->flush();
+        $row['address'] = '256 Avenue de Dunkerque 59130 Lambersart, France';
+        $this->synchronizer([$row])->synchronize(true);
+        self::assertSame(50.637488, $property->getLatitude());
+        $row['address'] = '1 Rue du Test, 59130 Lambersart';
+        $this->synchronizer([$row])->synchronize(true);
+        self::assertSame($row['address'], $property->getAddress()); self::assertNull($property->getLatitude()); self::assertNull($property->getLongitude());
+        $row['address'] = null;
+        $this->synchronizer([$row])->synchronize(true);
+        self::assertSame('1 Rue du Test, 59130 Lambersart', $property->getAddress());
+        $this->importer()->import($this->catalogue(), true, archiveMissing: false);
+        self::assertSame('1 Rue du Test, 59130 Lambersart', $property->getAddress());
+    }
     public function testDryRunThenRepeatedImportPreservesContentAndArchives(): void
     {
         $repo = self::getContainer()->get(PropertyRepository::class);

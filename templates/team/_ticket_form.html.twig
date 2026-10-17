@@ -2,6 +2,7 @@
 {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
 {{ form_errors(form) }}
 {{ form_row(form.title) }}{{ form_row(form.category) }}{{ form_row(form.description) }}{{ form_row(form.steps) }}{{ form_row(form.expected) }}
+{{ form_row(form.labels) }}
 {{ form_row(form.capture) }}<p class="small">{{ 'team.capture_help'|trans }}</p>
 {{ form_widget(form.page) }}{{ form_widget(form.screen) }}
 <button type="submit" class="btn btn-primary">{{ 'team.send'|trans }}</button>

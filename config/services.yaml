@@ -44,3 +44,13 @@ services:
         arguments:
             $cache: '@cache.app'
             $enabled: '%env(bool:GUESTLUCKY_AVAILABILITY_ENABLED)%'
+
+    # Dedicated untraced client: private bearer credentials never enter web profiler traces.
+    guestlucky.mcp.http_client:
+        class: Symfony\Component\HttpClient\NativeHttpClient
+
+    App\Integration\GuestLucky\McpClient:
+        arguments:
+            $mcpHttpClient: '@guestlucky.mcp.http_client'
+            $mcpUrl: '%env(GUESTLUCKY_MCP_URL)%'
+            $mcpToken: '%env(GUESTLUCKY_MCP_TOKEN)%'

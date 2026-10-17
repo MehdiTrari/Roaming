@@ -1,0 +1,48 @@
+.legal-footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem 1.25rem; padding: .5rem 0; font-size: .85rem; }
+.legal-footer-links a { color: var(--roaming-muted); text-decoration: none; }
+.legal-footer-links a:hover { color: var(--roaming-accent); text-decoration: underline; }
+.legal-page { max-width: 1000px; }
+.legal-page-heading h1 { font-size: clamp(2rem, 4vw, 3.1rem); font-weight: 750; letter-spacing: -.035em; }
+.legal-eyebrow { color: var(--roaming-accent); font-size: .75rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 .65rem; }
+.legal-page-nav { display: flex; flex-wrap: wrap; gap: .5rem; padding: 1rem 0 1.5rem; }
+.legal-page-nav a { padding: .7rem 1rem; min-height: 44px; border: 1px solid var(--roaming-border); border-radius: 999px; color: var(--roaming-muted); text-decoration: none; }
+.legal-page-nav a[aria-current="page"] { color: var(--roaming-accent); border-color: var(--roaming-accent); background: var(--teal-fade); }
+.legal-draft { border-left: 3px solid var(--roaming-accent); border-radius: 0 .5rem .5rem 0; padding: 1rem 1.25rem; background: var(--teal-fade); margin: 0 0 2rem; font-size: .9rem; }
+.legal-draft p { margin: .35rem 0 0; color: var(--roaming-muted); }
+.legal-content { line-height: 1.8; overflow-wrap: anywhere; }
+.legal-content a, .privacy-details { color: var(--roaming-accent); }
+.legal-content h2 { font-size: 1.45rem; margin: 2.5rem 0 1rem; font-weight: 700; }
+.legal-content h3 { font-size: 1.05rem; font-weight: 700; }
+.legal-introduction { font-size: 1.1rem; color: var(--roaming-muted); }
+.legal-facts { margin: 1rem 0; border: 1px solid var(--roaming-border); border-radius: 1rem; overflow: hidden; }
+.legal-facts > div { display: grid; grid-template-columns: minmax(160px, 1fr) 1.6fr; gap: 1rem; padding: .85rem 1.1rem; }
+.legal-facts > div + div { border-top: 1px solid var(--roaming-border); }
+.legal-facts dt { font-size: .9rem; color: var(--roaming-muted); font-weight: 500; }
+.legal-facts dd { margin: 0; }
+.legal-purpose { padding: 1rem 0; border-bottom: 1px solid var(--roaming-border); }
+.legal-purpose p:last-child { margin-bottom: 0; }
+.privacy-dialog { width: min(600px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); padding: 1.5rem; margin: auto; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--roaming-border); border-radius: 1.25rem; color: var(--roaming-text); background: var(--roaming-card-bg); box-shadow: 0 24px 80px rgb(0 0 0 / .22); }
+.privacy-dialog::backdrop { background: rgb(0 0 0 / .5); }
+.privacy-dialog-heading { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.privacy-dialog-heading h2 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+.privacy-dialog-heading .search-popover-close { flex-shrink: 0; }
+.privacy-category { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--roaming-border); }
+.privacy-category h3 { font-size: 1rem; font-weight: 700; }
+.privacy-category p { font-size: .9rem; color: var(--roaming-muted); margin-bottom: .5rem; }
+.privacy-badge { color: var(--roaming-accent); font-size: .75rem; flex-shrink: 0; }
+.privacy-current { color: var(--roaming-accent) !important; }
+.privacy-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: 1rem 0; }
+.privacy-actions button { min-height: 44px; white-space: normal; }
+.privacy-actions .btn { color: var(--roaming-text); border-color: var(--roaming-muted); }
+.privacy-actions .btn:hover, .privacy-actions .btn:focus-visible { color: var(--roaming-text); background: var(--roaming-bg); border-color: var(--roaming-accent); }
+.privacy-details { font-size: .85rem; }
+.privacy-save { width: 100%; min-height: 44px; margin-bottom: 1rem; }
+.privacy-service-toggle { display: flex; align-items: center; gap: .6rem; font-size: .9rem; min-height: 44px; cursor: pointer; }
+.privacy-service-toggle input { width: 18px; height: 18px; accent-color: var(--roaming-primary); }
+.contact-privacy-note { line-height: 1.6; }
+@media (max-width: 575px) {
+    .legal-facts > div { grid-template-columns: 1fr; gap: .15rem; }
+    .privacy-dialog { padding: 1.15rem; }
+    .privacy-category { flex-wrap: wrap; gap: .25rem; }
+    .privacy-actions { grid-template-columns: 1fr; }
+}

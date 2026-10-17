@@ -11,7 +11,7 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
 
 (async () => {
     const browser = await chromium.launch({channel: 'chrome', headless: true});
-    const context = await browser.newContext();
+    const context = await browser.newContext(process.env.ROAMING_BROWSER_STORAGE ? {storageState: process.env.ROAMING_BROWSER_STORAGE} : {});
     const page = await context.newPage(), calls = [], errors = [];
     let enabled = true;
     await context.route('**/*', route => {
@@ -30,10 +30,13 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
     });
     page.on('pageerror', error => errors.push(error.message));
     const fresh = () => page.waitForFunction(() => !document.documentElement.hasAttribute('data-turbo-preview') && !document.documentElement.hasAttribute('aria-busy'));
-    const chooser = async () => { await page.waitForSelector('.stay-property-picker:not([hidden])'); await fresh(); assert.equal(await page.locator('.availability-property-card').count(), 3); assert.equal(await page.locator('[data-calendar-target="stage"]').isVisible(), false); await page.waitForFunction(() => document.activeElement.id === 'availability-choice-title'); };
+    const chooser = async () => { await page.waitForSelector('.stay-property-picker:not([hidden])'); await fresh(); assert.equal(await page.locator('.availability-property-card').count(), catalogue.length); assert.equal(await page.locator('[data-calendar-target="stage"]').isVisible(), false); await page.waitForFunction(() => document.activeElement.id === 'availability-choice-title'); };
     const ready = async slug => { await page.waitForFunction(() => !document.querySelector('[data-calendar-target="fields"]').disabled); await fresh(); assert.equal(new URL(page.url()).searchParams.get('slug'), slug); assert.equal(await page.locator('[data-calendar-target="propertyName"]').evaluate(e => e === document.activeElement), true); };
     let layouts = 0;
     try {
+        await page.goto(base + '/');
+        const extra = await page.locator('#booking-property option:not([value=""])').evaluateAll(options => options.map(option => ({slug: option.value, capacity: Number(option.dataset.capacity), name: option.textContent})));
+        catalogue.push(...extra.filter(property => !catalogue.some(existing => existing.slug === property.slug)));
         for (const locale of ['fr', 'en']) for (const theme of ['light', 'dark']) for (const width of [1440, 390, 320]) {
             await page.setViewportSize({width, height: 950});
             await page.goto(base + '/disponibilites'); await page.evaluate(value => localStorage.setItem('theme', value), theme);
@@ -43,14 +46,15 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
             assert.equal(await page.locator('html').getAttribute('lang'), locale);
             assert.equal(await page.locator('html').getAttribute('data-bs-theme'), theme);
             assert.equal(await page.locator('.availability-property-card img').count(), 2);
-            assert.equal(await page.locator('.availability-property-card.without-photo').count(), 1);
+            assert.equal(await page.locator('.availability-property-card.without-photo').count(), catalogue.length - 2);
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
             if (process.env.ROAMING_BROWSER_SCREENSHOTS === '1') await page.screenshot({path: `var/availability-choices-${locale}-${theme}-${width}.png`, fullPage: true});
             for (const property of catalogue) {
                 await page.goto(base + '/disponibilites?' + new URLSearchParams({...stay, _locale: locale})); await chooser();
                 const count = calls.length;
+                await page.locator('[data-availability-explorer-target="select"]').selectOption(property.slug);
                 await page.locator(`[data-booking-slug="${property.slug}"]`).focus(); await page.keyboard.press('Enter'); await ready(property.slug);
-                assert.equal(calls.length, count + 2, 'only the two selected-property months are requested');
+                assert.equal(calls.length, count + 3, 'the two selected-property months plus minimum-stay lookahead are requested');
                 assert.ok(calls.slice(count).every(url => url.pathname === '/api/properties/' + property.slug + '/availability'));
                 assert.equal(await page.locator('[data-calendar-target="arrival"]').inputValue(), stay.arrivalDate);
                 assert.equal(await page.locator('[data-calendar-target="departure"]').inputValue(), stay.departureDate);
@@ -64,6 +68,7 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
                 assert.equal(new URL(page.url()).searchParams.get('guests'), stay.guests);
                 assert.equal(new URL(page.url()).searchParams.get('_locale'), locale);
             }
+            await page.locator('[data-availability-explorer-target="select"]').selectOption(catalogue[0].slug);
             await page.locator(`[data-booking-slug="${catalogue[0].slug}"]`).click(); await ready(catalogue[0].slug);
             await page.locator('[data-calendar-target="arrival"]').fill(stay.arrivalDate);
             await page.locator('[data-calendar-target="departure"]').fill(stay.departureDate);
@@ -80,6 +85,7 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
         // Genuine Turbo history, invalid slug, quote invalidation and no restored old quote.
         await page.goto(base + '/disponibilites?' + new URLSearchParams({...stay, _locale: 'en', slug: 'unknown'})); await chooser();
         assert.equal(new URL(page.url()).searchParams.get('slug'), null);
+        await page.locator('[data-availability-explorer-target="select"]').selectOption(catalogue[0].slug);
         await page.locator(`[data-booking-slug="${catalogue[0].slug}"]`).click(); await ready(catalogue[0].slug);
         await page.locator('[data-calendar-target="submit"]').click(); await page.waitForSelector('.booking-quote-card');
         await page.locator('.availability-change-property').click(); await chooser();
@@ -88,7 +94,9 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
         await page.goBack(); await chooser();
         await page.goForward(); await ready(catalogue[0].slug);
         await page.locator('[data-calendar-target="submit"]').click(); await page.waitForSelector('.booking-quote-card');
-        await page.locator('.booking-module-actions button').click(); await page.waitForSelector('.booking-modal[open]');
+        await page.locator('.booking-module-actions button').click();
+        if (await page.locator('#privacy-preferences').isVisible()) await page.locator('[data-privacy-allow]').click();
+        await page.waitForSelector('.booking-modal[open]');
         await page.evaluate(() => document.querySelector('.stay-clear').click());
         assert.equal(await page.locator('.booking-quote-card, .guestlucky-booking-frame').count(), 0);
         assert.equal(await page.locator('.booking-modal').count(), 0);
@@ -100,6 +108,6 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
         assert.equal(await page.locator('.booking-module-actions').count(), 0);
         await page.locator('.availability-change-property').click(); await chooser();
         assert.deepEqual(errors, []);
-        console.log(`PASS: ${layouts} FR/EN light/dark 1440/390/320 layouts; all 3 real properties, photo fallback, zero initial API calls, targeted months, dates/locale/menu, clear/disable, keyboard/focus, Turbo history, invalid slug, quote invalidation and closed publication. No provider traffic or bookings.`);
+        console.log(`PASS: ${layouts} FR/EN light/dark 1440/390/320 layouts; all ${catalogue.length} real properties, photo fallback, zero initial API calls, targeted months and minimum-stay lookahead, dates/locale/menu, clear/disable, keyboard/focus, Turbo history, invalid slug, quote invalidation and closed publication. No provider traffic or bookings.`);
     } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

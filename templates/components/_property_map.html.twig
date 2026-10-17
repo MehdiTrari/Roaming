@@ -1,0 +1,27 @@
+{% set mapItems = [] %}
+{% for item in properties %}
+    {% set mapItems = mapItems|merge([{slug: item.slug, name: item.title, city: item.city, address: item.address, latitude: item.latitude, longitude: item.longitude, directionsUrl: item.directionsUrl}]) %}
+{% endfor %}
+<section class="stay-map" data-controller="property-map" data-reveal="fade" data-property-map-properties-value="{{ mapItems|json_encode|e('html_attr') }}" data-property-map-selected-value="{{ selectedSlug|default('') }}" aria-label="{{ 'locations.map_title'|trans }}">
+    <div class="stay-map-surface">
+        <div class="stay-map-canvas" data-property-map-target="canvas" aria-label="{{ 'locations.map_title'|trans }}"></div>
+        <div class="stay-map-placeholder" data-property-map-target="placeholder">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m9 18-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Zm0 0V3m6 3v15"/></svg>
+            <h3>{{ 'locations.explore'|trans }}</h3>
+            <p>{{ 'locations.map_permission'|trans }}</p>
+            <button type="button" class="btn btn-primary text-white" data-action="property-map#allow" data-property-map-target="activate">{{ 'locations.show_map'|trans }}</button>
+            <a class="small" href="{{ path('app_cookies', {_locale: app.request.locale}) }}" data-privacy-open>{{ 'locations.map_preferences'|trans }}</a>
+        </div>
+        <button type="button" class="stay-map-overview" data-action="property-map#overview" data-property-map-target="overview" hidden>{{ 'locations.overview'|trans }}</button>
+        <p class="stay-map-error" data-property-map-target="error" role="status" hidden>{{ 'locations.map_error'|trans }}</p>
+    </div>
+    <div class="stay-map-address" aria-live="polite" aria-atomic="true">
+        <div><p class="stay-map-city" data-property-map-target="city"></p><h3 data-property-map-target="name"></h3><p data-property-map-target="address"></p></div>
+        <a class="stay-map-directions" data-property-map-target="directions" target="_blank" rel="noopener noreferrer" hidden>
+            <svg class="stay-map-directions-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 3-6.5 18-3.5-8-8-3.5L21 3Z"/><path d="m11 13 5-5"/></svg>
+            <span>{{ 'locations.directions'|trans }}</span>
+            <svg class="stay-map-directions-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        </a>
+    </div>
+    <noscript><div class="p-3">{% for item in properties %}<p><strong>{{ item.title }}</strong><br>{{ item.address ?: item.city }}{% if item.directionsUrl %}<br><a href="{{ item.directionsUrl }}" target="_blank" rel="noopener noreferrer">{{ 'locations.directions'|trans }}</a>{% endif %}</p>{% endfor %}</div></noscript>
+</section>

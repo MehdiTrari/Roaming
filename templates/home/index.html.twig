@@ -63,8 +63,32 @@
         <div class="row justify-content-center reveal" style="transition-delay: 0.2s;">
             <div class="col-xl-10">
                 <div class="booking-bar shadow-sm p-2 position-relative z-2">
+                    <div id="booking-guide" class="booking-guide" hidden>
+                        <div class="booking-guide-heading"><p>{{ 'showcase.guide_title'|trans }} <strong id="booking-guide-property"></strong></p><button type="button" id="booking-guide-close" aria-label="{{ 'showcase.exit_guide'|trans }}">×</button></div>
+                        <ol class="booking-guide-steps" aria-label="{{ 'showcase.guide_steps'|trans }}"><li data-guide-step="1"><span>1</span>{{ 'calendar.property'|trans }}</li><li data-guide-step="2"><span>2</span>{{ 'ui.stay_dates'|trans }}</li><li data-guide-step="3"><span>3</span>{{ 'home.guests'|trans }}</li><li data-guide-step="4"><span>4</span>{{ 'home.search'|trans }}</li></ol>
+                    </div>
                     <form id="booking-search-form" data-calendar-url="{{ path('api_calendar') }}" data-availability-enabled="{{ booking_availability_enabled ? 'true' : 'false' }}" class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center">
                         
+                        <!-- Property -->
+                        <div class="booking-field-horizontal flex-grow-1 position-relative px-4 py-2 border-end-lg" id="property-toggle">
+                            <span id="property-label" class="small fw-bold text-muted d-block mb-1">{{ 'calendar.property'|trans }}</span>
+                            <button type="button" id="property-display" class="booking-selector property-selector" aria-haspopup="dialog" aria-expanded="false" aria-controls="property-panel" aria-labelledby="property-label property-display-text">
+                                <span id="property-display-text">{{ 'journey.all_properties'|trans }}</span>
+                            </button>
+                            <select id="booking-property" class="d-none" name="slug" tabindex="-1" aria-hidden="true">
+                                <option value="">{{ 'journey.all_properties'|trans }}</option>
+                                {% for item in featuredProperties %}<option value="{{ item.slug }}" data-capacity="{{ item.travelers }}" data-calendar-url="{{ path('api_property_availability', {slug: item.slug}) }}">{{ item.city }}</option>{% endfor %}
+                            </select>
+                            <dialog id="property-panel" class="selector-panel home-search-popover property-search-popover d-none" aria-labelledby="property-panel-title">
+                                <div class="search-popover-heading"><h5 id="property-panel-title">{{ 'calendar.property'|trans }}</h5><button type="button" class="search-popover-close" data-search-dismiss aria-label="{{ 'ui.close'|trans }}">×</button></div>
+                                <p class="booking-guide-panel-hint" data-guide-hint="property" hidden>{{ 'showcase.guide_property'|trans }}</p>
+                                <div class="property-search-options">
+                                    <button type="button" data-property-option="" aria-pressed="false">{{ 'journey.all_properties'|trans }}</button>
+                                    {% for item in featuredProperties %}<button type="button" data-property-option="{{ item.slug }}" aria-pressed="false">{{ item.city }}</button>{% endfor %}
+                                </div>
+                            </dialog>
+                        </div>
+
                         <!-- Dates -->
                         <div class="booking-field-horizontal flex-grow-1 position-relative px-4 py-2 border-end-lg" id="date-toggle" data-open="false">
                             <span id="date-label" class="small fw-bold text-muted d-block mb-1">{{ 'home.arrival_date'|trans }} - {{ 'home.departure_date'|trans }}</span>
@@ -84,9 +108,13 @@
                             <!-- Hidden Panel -->
                             <dialog class="selector-panel home-search-popover d-none" id="date-panel" aria-labelledby="date-panel-title">
                                 <div class="search-popover-heading"><h5 id="date-panel-title">{{ 'ui.stay_dates'|trans }}</h5><button type="button" class="search-popover-close" data-search-dismiss aria-label="{{ 'ui.close'|trans }}">×</button></div>
+                                <p class="booking-guide-panel-hint" data-guide-hint="dates" hidden>{{ 'showcase.guide_dates'|trans }}</p>
                                 <p class="small text-muted mb-2">{{ 'ui.date_hint'|trans }}</p>
                                 <p id="date-availability-status" class="small search-calendar-status" role="status" aria-live="polite"></p>
-                                <div id="date-calendar" class="date-calendar"></div>
+                                <div id="date-calendar-surface" class="calendar-fetch-surface">
+                                    <div id="date-calendar" class="date-calendar"></div>
+                                    {% include 'components/_calendar_loading.html.twig' only %}
+                                </div>
                                 <input type="text" id="date-range" class="visually-hidden" aria-label="{{ 'ui.stay_dates'|trans }}" tabindex="-1">
                                 <input type="hidden" id="arrival-date">
                                 <input type="hidden" id="departure-date">
@@ -100,23 +128,6 @@
                         </div>
 
                         <!-- Guests -->
-                        <div class="booking-field-horizontal flex-grow-1 position-relative px-4 py-2 border-end-lg" id="property-toggle">
-                            <span id="property-label" class="small fw-bold text-muted d-block mb-1">{{ 'calendar.property'|trans }}</span>
-                            <button type="button" id="property-display" class="booking-selector property-selector" aria-haspopup="dialog" aria-expanded="false" aria-controls="property-panel" aria-labelledby="property-label property-display-text">
-                                <span id="property-display-text">{{ 'journey.all_properties'|trans }}</span><span aria-hidden="true">⌄</span>
-                            </button>
-                            <select id="booking-property" class="d-none" name="slug" tabindex="-1" aria-hidden="true">
-                                <option value="">{{ 'journey.all_properties'|trans }}</option>
-                                {% for item in featuredProperties %}<option value="{{ item.slug }}" data-capacity="{{ item.travelers }}" data-calendar-url="{{ path('api_property_availability', {slug: item.slug}) }}">{{ item.city }}</option>{% endfor %}
-                            </select>
-                            <dialog id="property-panel" class="selector-panel home-search-popover property-search-popover d-none" aria-labelledby="property-panel-title">
-                                <div class="search-popover-heading"><h5 id="property-panel-title">{{ 'calendar.property'|trans }}</h5><button type="button" class="search-popover-close" data-search-dismiss aria-label="{{ 'ui.close'|trans }}">×</button></div>
-                                <div class="property-search-options">
-                                    <button type="button" data-property-option="" aria-pressed="false">{{ 'journey.all_properties'|trans }}</button>
-                                    {% for item in featuredProperties %}<button type="button" data-property-option="{{ item.slug }}" aria-pressed="false">{{ item.city }}</button>{% endfor %}
-                                </div>
-                            </dialog>
-                        </div>
                         <div class="booking-field-horizontal flex-grow-1 position-relative px-4 py-2" id="guests-toggle" data-open="false">
                             <span id="guests-label" class="small fw-bold text-muted d-block mb-1">{{ 'home.guests'|trans }}</span>
                             <button type="button" class="booking-selector d-flex align-items-center" id="guests-display" aria-haspopup="dialog" aria-expanded="false" aria-controls="guests-panel" aria-labelledby="guests-label guests-display-text">
@@ -136,6 +147,7 @@
                             <!-- Hidden Panel -->
                             <dialog class="selector-panel home-search-popover d-none" id="guests-panel" aria-labelledby="guests-panel-title">
                                 <div class="search-popover-heading"><h5 id="guests-panel-title">{{ 'home.guests'|trans }}</h5><button type="button" class="search-popover-close" data-search-dismiss aria-label="{{ 'ui.close'|trans }}">×</button></div>
+                                <p class="booking-guide-panel-hint" data-guide-hint="guests" hidden>{{ 'showcase.guide_guests'|trans }}</p>
                                 <div class="guests-body">
                                     <div class="guests-labels">
                                         <span class="hint">{{ 'ui.guest_hint'|trans }}</span>
@@ -146,7 +158,7 @@
                                         <button type="button" id="guests-increase" aria-label="{{ 'ui.more_guests'|trans }}">+</button>
                                     </div>
                                 </div>
-                                <div class="panel-actions"><button type="button" class="btn btn-primary btn-sm text-white" data-search-dismiss>{{ 'ui.apply'|trans }}</button></div>
+                                <div class="panel-actions"><button type="button" class="btn btn-primary btn-sm text-white" data-search-dismiss id="guests-apply">{{ 'ui.apply'|trans }}</button></div>
                             </dialog>
                             <select class="form-select d-none" id="guests-count" aria-label="{{ 'home.guests'|trans }}">
                                 {% set maxGuests = 1 %}
@@ -190,18 +202,7 @@
             </div>
             <a href="{{ path('app_calendar') }}" class="text-teal text-decoration-none fw-bold hover-lift">{{ 'calendar.title'|trans }}</a>
         </div>
-        <div class="row g-4 reveal-group">
-            {% set locale = app.request.locale %}
-            {% for property in featuredProperties %}
-                <div class="col-md-6 col-lg-4 reveal">
-                    {% include 'components/_property_card.html.twig' with {property: property} only %}
-                </div>
-            {% else %}
-                <div class="col-12">
-                    <p class="text-muted">{{ 'home.no_properties'|trans }}</p>
-                </div>
-            {% endfor %}
-        </div>
+        {% include 'home/_property_showcase.html.twig' %}
     </div>
 </section>
 

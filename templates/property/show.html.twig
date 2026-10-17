@@ -150,8 +150,7 @@
                 </section>
                 <section class="property-panel" id="property-location" aria-labelledby="property-location-heading">
                     <h2 id="property-location-heading">{{ 'property.location'|trans }}</h2><p>{{ property.city }} · {{ 'listing.region'|trans }}</p>
-                    <p class="property-muted">{{ 'listing.city_map_note'|trans }}</p>
-                    <div class="property-map"><iframe title="{{ 'listing.map_of'|trans({'%city%': property.city}) }}" src="https://www.google.com/maps?q={{ property.city|url_encode }}&amp;t=&amp;z=13&amp;ie=UTF8&amp;iwloc=&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
+                    {% include 'components/_property_map.html.twig' with {properties: [property], selectedSlug: property.slug} only %}
                 </section>
             </div>
             <aside id="availability" class="property-availability" aria-labelledby="property-stay-heading">

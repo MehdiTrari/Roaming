@@ -1,0 +1,6 @@
+{% trans_default_domain 'legal' %}
+<nav class="legal-footer-links" aria-label="{{ 'legal.footer_navigation'|trans }}">
+    <a href="{{ path('app_legal_notice', {_locale: app.request.locale}) }}">{{ 'legal.notice.title'|trans }}</a>
+    <a href="{{ path('app_privacy', {_locale: app.request.locale}) }}">{{ 'legal.privacy.short_title'|trans }}</a>
+    <a href="{{ path('app_cookies', {_locale: app.request.locale}) }}" data-privacy-open aria-haspopup="dialog">{{ 'legal.cookies.title'|trans }}</a>
+</nav>

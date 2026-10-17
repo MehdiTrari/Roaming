@@ -9,7 +9,7 @@ const date = d => new Date(Date.UTC(year, month, d)).toISOString().slice(0, 10);
 const target = name => `[data-calendar-target="${name}"]`;
 (async () => {
     const browser = await chromium.launch({headless: true, channel: 'chrome'});
-    const context = await browser.newContext(); const page = await context.newPage();
+    const context = await browser.newContext(process.env.ROAMING_BROWSER_STORAGE ? {storageState: process.env.ROAMING_BROWSER_STORAGE} : {}); const page = await context.newPage();
     const errors = [], forbidden = []; page.on('pageerror', e => errors.push(e.message));
     await context.route('**/*', async route => {
         const url = new URL(route.request().url());
@@ -43,6 +43,8 @@ const target = name => `[data-calendar-target="${name}"]`;
             await page.setViewportSize({width, height: width === 320 ? 568 : 900});
             await page.emulateMedia({reducedMotion:'no-preference'});
             await page.goto(base + '/?_locale=' + locale);
+            const extra = await page.locator('#booking-property option:not([value=""])').evaluateAll(options => options.map(option => ({slug: option.value})));
+            catalogue.push(...extra.filter(property => !catalogue.some(existing => existing.slug === property.slug)));
             await page.evaluate(t => localStorage.setItem('theme',t),theme);
             await page.reload(); await page.waitForFunction(() => !!document.querySelector('#date-range')._flatpickr);
             await page.locator('#date-display').click();

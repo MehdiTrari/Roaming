@@ -1,6 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
     globals:
+        legal_information: '%app.legal%'
         booking_availability_enabled: '%env(bool:GUESTLUCKY_AVAILABILITY_ENABLED)%'
 
 when@test:

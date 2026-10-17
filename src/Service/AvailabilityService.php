@@ -49,6 +49,14 @@ final class AvailabilityService
                 $rows[$slug] = array_replace($rows[$slug], $result);
             } catch (\Throwable) { $this->logFailure($slug, 'calendar'); }
         }
+        // The booking API can advertise one-night gaps despite the listing's
+        // minimum. Apply the synchronized floor on every read, including cache hits.
+        foreach ($properties as $property) {
+            foreach ($rows[$property->getSlug()]['days'] as &$day) {
+                $day['minStay'] = max($day['minStay'], $property->getMinimumStay() ?? 1);
+            }
+            unset($day);
+        }
         return ['enabled' => $useProvider, 'year' => $year, 'month' => $month, 'properties' => array_values($rows)];
     }
 
@@ -71,7 +79,8 @@ final class AvailabilityService
             $slug = $property->getSlug();
             $rows[$slug] = $this->describe($property) + ['status' => 'unverified', 'available' => false, 'price' => null, 'currency' => 'EUR', 'nights' => null, 'fees' => [], 'error' => null];
             if (!$useProvider || !$property->isActive() || !$property->getGuestLuckyId()) { continue; }
-            if ($guests > $property->getTravelers()) { $rows[$slug]['status'] = 'unavailable'; continue; }
+            $nights = (new \DateTimeImmutable($arrival))->diff(new \DateTimeImmutable($departure))->days;
+            if ($guests > $property->getTravelers() || $nights < ($property->getMinimumStay() ?? 1)) { $rows[$slug]['status'] = 'unavailable'; continue; }
             try { $pending[$slug] = [$this->client->startQuote($property->getGuestLuckyId(), $arrival, $departure, $guests), $property]; }
             catch (\Throwable) { $this->logFailure($slug, 'quote'); }
         }

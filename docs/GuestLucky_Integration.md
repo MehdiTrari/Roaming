@@ -2,6 +2,8 @@
 
 État vérifié le 27 septembre 2026. Ce fichier complète Guestlucky_MCP.md : il décrit **l'implémentation effective** et évite de rechercher à nouveau les contrats et correspondances.
 
+**Mise à jour du 17 octobre 2026 :** le catalogue local est désormais synchronisé en lecture depuis le MCP toutes les cinq minutes sur Windows. Douai a été ajouté, soit quatre logements actifs. Voir [MCP et synchronisation automatique](GuestLucky_MCP_et_Synchronisation.md) pour les clés distinctes, la tâche, les commandes et les limites. Les observations ci-dessous restent historiques ; l’ancien JSON manuel contient seulement trois logements et ne doit pas servir à actualiser le catalogue courant.
+
 ## État et condition d'ouverture
 
 Le code remplace l'ancienne intégration de réservation par GuestLucky. La disponibilité publique est **désactivée par défaut**, y compris les devis et le point de redirection. Les routes publiques ne font aucun appel GuestLucky lorsque ce verrou est fermé. Les routes de test réservées à `dev` et la commande explicite de diagnostic peuvent effectuer des lectures sans ouvrir ce verrou.
@@ -21,7 +23,7 @@ Anomalie fournisseur toujours reproduite pendant l'implémentation :
 - GuestLuckyClient : requêtes GET du Booking Engine, validation du contrat, normalisation de la devise Euro en EUR.
 - AvailabilityService : calendrier partagé par les fiches et la vue globale, cache 60 secondes, devis non mis en cache, traitement indépendant des erreurs de chaque logement.
 - AvailabilityController : planning, API publique et redirection avec une nouvelle lecture du devis.
-- CatalogueImporter / app:guestlucky:catalogue : import complet et transactionnel des correspondances. Aucun accès MCP au runtime du site.
+- CatalogueImporter / app:guestlucky:catalogue : import manuel complet et transactionnel des correspondances. `app:guestlucky:sync` lit maintenant le MCP en tâche de fond ; les requêtes publiques du site ne consultent pas directement le MCP.
 - Le paiement et la création de réservation restent chez GuestLucky.
 - Après un devis accepté, le visiteur peut ouvrir le module GuestLucky en iframe dans la page ou dans un nouvel onglet. Les deux passent par `/reservation/{slug}` pour relire un devis frais avant de charger le moteur avec les dates et voyageurs. Aucun iframe de réservation n'est chargé automatiquement, ni proposé dans la page de test. Le verrou de publication protège aussi ce parcours.
 
@@ -137,7 +139,7 @@ Réponse mensuelle complète attendue :
       "... une entrée par jour du mois ..."
     ]}
 
-Le mois courant peut être partiel dans la réponse GuestLucky ; les dates absentes restent « non vérifiées » dans Roaming. Le client refuse les dates hors du mois demandé, les dates dupliquées, les types incorrects et une réponse pour le mauvais mois/logement. La disponibilité, le tarif et le minimum sont consommés tels que fournis. La cause d'une indisponibilité et les restrictions détaillées d'arrivée/départ ne sont pas exposées : elles ne sont pas inventées.
+Le mois courant peut être partiel dans la réponse GuestLucky ; les dates absentes restent « non vérifiées » dans Roaming. Le client refuse les dates hors du mois demandé, les dates dupliquées, les types incorrects et une réponse pour le mauvais mois/logement. La disponibilité et le tarif sont consommés tels que fournis. Le minimum de la date d’arrivée respecte aussi le minimum du logement synchronisé par MCP : le calendrier peut annoncer un trou d’une nuit alors que le devis exige deux nuits. Voir [le fonctionnement de la synchronisation](GuestLucky_MCP_et_Synchronisation.md). La cause d'une indisponibilité et les restrictions détaillées d'arrivée/départ ne sont pas exposées : elles ne sont pas inventées.
 
     GET /api/v1/booking/listings/{id}/pricing?key=…&checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&guests=2&pets=0
 
@@ -163,7 +165,7 @@ Depuis le 9 octobre 2026, le planning affiche un seul logement choisi par bouton
 
 La navigation avance d'un mois, sur une fenêtre de douze mois au total ; la dernière paire contient les mois 11 et 12. Un changement de logement efface dates et devis. Les dates occupées sont barrées ; une date occupée peut servir de départ, mais une sélection ne peut traverser une nuit occupée ou non vérifiée. Le minimum de nuits est pris en compte pour les départs proposés. Les saisies manuelles et toutes les réservations sont toujours validées par un devis frais. « Effacer les dates » invalide aussi le devis et retire toute iframe ouverte.
 
-Le planning se rafraîchit toutes les 60 secondes s'il est visible et lorsque l'onglet revient au premier plan. Les contrôleurs Stimulus annulent leurs requêtes et timers à la déconnexion Turbo. Les états en erreur désactivent la sélection et le devis. Validation navigateur de la refonte : changement de logement, deux requêtes par logement, séjour octobre/novembre, minimum de nuits, départ sur une nuit occupée, intervalle bloqué, décembre/janvier, panne, thèmes clair/sombre et écrans 1440/390/320 px. Les cas de sélection sont testés avec réponses contrôlées ; les lectures réelles et le rendu des fiches sont aussi vérifiés, sans soumettre de réservation.
+Le planning se rafraîchit toutes les 60 secondes s'il est visible et lorsque l'onglet revient au premier plan. Les contrôleurs Stimulus annulent leurs requêtes et timers à la déconnexion Turbo. Les états en erreur désactivent la sélection et le devis. Une arrivée exige désormais assez de nuits consécutives libres dans un même logement ; les jours de départ trop proches sont désactivés. Les deux mois affichés sont lus, ainsi que les mois supplémentaires nécessaires au minimum de séjour des arrivées en bord de calendrier. Validation navigateur : changement de logement, séjour octobre/novembre, minimum de nuits, départ sur une nuit occupée, intervalle bloqué, décembre/janvier, panne, thèmes clair/sombre et écrans 1440/390/320 px. Les cas de sélection sont testés avec réponses contrôlées ; les lectures réelles et le rendu des fiches sont aussi vérifiés, sans soumettre de réservation.
 
 En cas d'échec, les dates concernées redeviennent « non vérifié » et la réservation n'est pas proposée. fetchedAt est l'heure de lecture par Roaming, pas une promesse sur la dernière synchronisation Airbnb/Booking du fournisseur.
 

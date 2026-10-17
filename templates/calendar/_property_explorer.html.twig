@@ -1,0 +1,31 @@
+{% set firstPhotoProperty = calendarProperties|filter(item => item.images|length > 0)|first %}
+{% set initialProperty = selectedProperty ?: firstPhotoProperty ?: calendarProperties|first %}
+<div class="availability-explorer" data-controller="availability-explorer" data-explorer-slug="{{ initialProperty.slug|default('') }}" data-action="showcase:change->availability-explorer#changed map:select->availability-explorer#mapSelected">
+    <div class="availability-explorer-heading">
+        <div><h2 id="availability-choice-title" class="h4" tabindex="-1">{{ 'calendar.pick_property'|trans }}</h2><p>{{ 'locations.explorer_hint'|trans }}</p></div>
+        <label class="availability-explorer-select"><span>{{ 'calendar.property'|trans }}</span><select class="form-select" data-availability-explorer-target="select" data-action="change->availability-explorer#selected">{% for item in calendarProperties %}<option value="{{ item.slug }}" {% if item == initialProperty %}selected{% endif %}>{{ item.city }} · {{ item.title }}</option>{% endfor %}</select></label>
+    </div>
+    <div class="availability-explorer-layout">
+        <div class="property-showcase availability-showcase" data-controller="property-showcase" data-property-showcase-animated-value="true" data-availability-explorer-target="carousel" data-active-slug="{{ initialProperty.slug|default('') }}" role="region" aria-roledescription="{{ 'showcase.carousel'|trans }}" aria-label="{{ 'calendar.pick_property'|trans }}" data-action="keydown->property-showcase#keyboard">
+            <div class="showcase-stage" data-property-showcase-target="stage" data-action="pointerdown->property-showcase#pointerDown pointermove->property-showcase#pointerMove pointerup->property-showcase#pointerUp pointercancel->property-showcase#pointerCancel dragstart->property-showcase#preventNativeDrag click->property-showcase#preventDraggedClick:capture">
+                {% for item in calendarProperties %}
+                <div class="showcase-slide" data-property-showcase-target="slide" data-slug="{{ item.slug }}" data-has-photo="{{ item.images|length ? 'true' : 'false' }}" role="group" aria-roledescription="{{ 'showcase.slide'|trans }}" aria-label="{{ loop.index }} / {{ loop.length }} · {{ item.city }}">
+                    <article class="availability-property-card {{ not item.images|length ? 'without-photo' : '' }}" data-showcase-card>
+                        {% if item.images|length %}{% set image = item.images|first %}{% include 'components/_picture.html.twig' with {filename: image.filename, alt: image.alt ?: item.title, sizes: '(min-width: 992px) 380px, 75vw'} only %}
+                        {% else %}<span class="availability-photo-pending">{{ 'calendar.photo_pending'|trans }}</span>{% endif %}
+                        <div class="availability-property-overlay"><span class="availability-property-city">{{ item.city }}</span><h3>{{ item.title }}</h3><p class="availability-property-address">{{ item.address ?: item.city }}</p><a class="availability-property-cta" href="{{ path('app_calendar', {_locale: app.request.locale, slug: item.slug}) }}" data-booking-slug="{{ item.slug }}">{{ 'calendar.view_availability'|trans }} <span aria-hidden="true">→</span></a></div>
+                    </article>
+                    <button type="button" class="showcase-side-select" data-action="property-showcase#selectSide" data-index="{{ loop.index0 }}" aria-label="{{ 'showcase.select'|trans({'%name%': item.title}) }}" tabindex="-1" hidden></button>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="showcase-controls" data-property-showcase-target="controls" hidden>
+                <button type="button" class="showcase-arrow" data-action="property-showcase#previous" aria-label="{{ 'showcase.previous'|trans }}">‹</button>
+                <div class="showcase-picker" aria-label="{{ 'showcase.pick'|trans }}">{% for item in calendarProperties %}<button type="button" data-property-showcase-target="choice" data-index="{{ loop.index0 }}" data-action="property-showcase#selectChoice" aria-label="{{ 'showcase.select'|trans({'%name%': item.title}) }}"><span class="showcase-choice-dot" aria-hidden="true"></span>{{ item.city }}</button>{% endfor %}</div>
+                <button type="button" class="showcase-arrow" data-action="property-showcase#next" aria-label="{{ 'showcase.next'|trans }}">›</button>
+            </div>
+            <p class="showcase-position" data-property-showcase-target="position" role="status" aria-live="polite" aria-atomic="true"></p>
+        </div>
+        {% include 'components/_property_map.html.twig' with {properties: calendarProperties, selectedSlug: initialProperty.slug|default('')} only %}
+    </div>
+</div>

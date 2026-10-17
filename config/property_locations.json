@@ -1,0 +1,10 @@
+{
+  "source": "Adresses fournies par le propriétaire ; coordonnées au numéro géocodées avec IGN / Base Adresse Nationale",
+  "verifiedAt": "2026-10-18",
+  "properties": [
+    {"guestLuckyId": 2475, "address": "256 Avenue de Dunkerque, 59130 Lambersart", "latitude": 50.637488, "longitude": 3.024341, "banId": "740e7901-8f0d-4d99-b8f1-2b5bf1f69f14"},
+    {"guestLuckyId": 2474, "address": "195 Rue du Collège, 59100 Roubaix", "latitude": 50.698811, "longitude": 3.176124, "banId": "65f5a387-908d-4c4b-9ab8-d4218ec6a776"},
+    {"guestLuckyId": 2630, "address": "118 Rue de l’Hippodrome, 59500 Douai", "latitude": 50.363717, "longitude": 3.082143, "banId": "e15376ba-cf04-433c-9886-4f417cf33c22"},
+    {"guestLuckyId": 2467, "address": "34 Rue Paul Bert, 59170 Croix", "latitude": 50.689014, "longitude": 3.150681, "banId": "3edea492-96f5-474f-b24b-4c4be0df6985"}
+  ]
+}

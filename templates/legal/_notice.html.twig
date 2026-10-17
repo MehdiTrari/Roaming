@@ -1,0 +1,21 @@
+{% trans_default_domain 'legal' %}
+<h2>{{ 'legal.notice.publisher'|trans }}</h2>
+<p>{{ 'legal.notice.intro'|trans }}</p>
+<dl class="legal-facts">
+    {% for key in ['company', 'form', 'capital', 'address', 'siren', 'siret', 'registry', 'vat', 'publication_director'] %}
+    <div><dt>{{ ('legal.fields.' ~ key)|trans }}</dt><dd>{{ attribute(legal_information, key) ?: 'legal.pending'|trans }}</dd></div>
+    {% endfor %}
+    <div><dt>{{ 'legal.fields.email'|trans }}</dt><dd><a href="mailto:{{ legal_information.email }}">{{ legal_information.email }}</a></dd></div>
+    <div><dt>{{ 'legal.fields.phone'|trans }}</dt><dd>{{ legal_information.phone }}</dd></div>
+</dl>
+<h2>{{ 'legal.notice.hosting'|trans }}</h2>
+<p>{{ legal_information.host_brand }}.{% if not legal_information.host_entity or not legal_information.host_address or not legal_information.host_phone %} {{ 'legal.notice.hosting_note'|trans }}{% endif %}</p>
+<dl class="legal-facts">
+    {% for key in ['host_entity', 'host_address', 'host_phone'] %}
+    <div><dt>{{ ('legal.fields.' ~ key)|trans }}</dt><dd>{{ attribute(legal_information, key) ?: 'legal.pending'|trans }}</dd></div>
+    {% endfor %}
+    <div><dt>{{ 'legal.notice.host_contact'|trans }}</dt><dd><a href="{{ legal_information.host_url }}" target="_blank" rel="noopener noreferrer">Hostinger</a></dd></div>
+</dl>
+<h2>{{ 'legal.notice.content_title'|trans }}</h2><p>{{ 'legal.notice.content'|trans }}</p>
+<h2>{{ 'legal.notice.booking_title'|trans }}</h2><p>{{ 'legal.notice.booking'|trans }}</p>
+<h2>{{ 'legal.notice.data_title'|trans }}</h2><p>{{ 'legal.notice.data'|trans }} <a href="{{ path('app_privacy', {_locale: app.request.locale}) }}">{{ 'legal.privacy.title'|trans }}</a>.</p>

@@ -1,14 +1,41 @@
 {% extends 'team/layout.html.twig' %}
 {% block title %}{{ 'team.tickets'|trans }} · Roaming Lille{% endblock %}
 {% block body %}
-<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><h1>{{ 'team.tickets'|trans }}</h1><a class="btn btn-primary align-self-start" href="{{ path('team_ticket_new') }}">{{ 'team.report'|trans }}</a></div>
-<form method="get" class="d-flex flex-wrap gap-3 mb-4">
-    <div><label for="filter-status">{{ 'team.status'|trans }}</label><select id="filter-status" name="status" class="form-select"><option value="">{{ 'team.all'|trans }}</option>{% for status in statuses %}<option value="{{ status }}" {{ filters.status|default('') == status ? 'selected' : '' }}>{{ ('team.status_' ~ status)|trans }}</option>{% endfor %}</select></div>
-    <div><label for="filter-category">{{ 'team.category'|trans }}</label><select id="filter-category" name="category" class="form-select"><option value="">{{ 'team.all'|trans }}</option>{% for category in categories %}<option value="{{ category }}" {{ filters.category|default('') == category ? 'selected' : '' }}>{{ ('team.category_' ~ category)|trans }}</option>{% endfor %}</select></div>
-    <button class="btn btn-outline-secondary align-self-end">{{ 'team.filter'|trans }}</button>
-</form>
-<div class="d-grid gap-3">{% for ticket in tickets %}
-<article class="team-panel team-panel-wide"><h2 class="h5"><a href="{{ path('team_ticket_show', {id: ticket.id}) }}">#{{ ticket.id }} · {{ ticket.title }}</a></h2><p class="mb-0">{{ ('team.status_' ~ ticket.status)|trans }} · {{ ('team.category_' ~ ticket.category)|trans }} · {{ ('team.priority_' ~ ticket.priority)|trans }}<br>{{ ticket.author.name }} · {{ ticket.createdAt|date('d/m/Y H:i', 'Europe/Paris') }}</p></article>
-{% else %}<p>{{ 'team.empty'|trans }}</p>{% endfor %}</div>
-<nav class="d-flex justify-content-between py-4" aria-label="{{ 'team.pagination'|trans }}">{% if page > 1 %}<a href="{{ path('team_tickets', filters|merge({page: page - 1})) }}">{{ 'team.previous'|trans }}</a>{% endif %}{% if page * 30 < total %}<a href="{{ path('team_tickets', filters|merge({page: page + 1})) }}">{{ 'team.next'|trans }}</a>{% endif %}</nav>
+<div class="ticket-workspace" data-controller="ticket-manager" data-ticket-manager-error-value="{{ 'team.filter_error'|trans }}">
+    <header class="ticket-heading">
+        <div><p class="ticket-eyebrow">ROAMING · {{ 'team.workspace'|trans }}</p><h1>{{ 'team.tickets'|trans }}</h1><p class="ticket-intro">{{ 'team.manager_intro'|trans }}</p></div>
+        <a class="btn btn-primary ticket-create" href="{{ path('team_ticket_new') }}"><span aria-hidden="true">＋</span> {{ 'team.report'|trans }}</a>
+    </header>
+    <div class="ticket-stats">
+        <div class="ticket-stat"><span>{{ 'team.total_tickets'|trans }}</span><strong>{{ stats|reduce((sum, amount) => sum + amount, 0) }}</strong><small>{{ 'team.shared_team'|trans }}</small></div>
+        {% for status in ['new', 'in_progress', 'resolved'] %}
+        <div class="ticket-stat" data-tone="{{ status }}"><span><i class="ticket-dot" aria-hidden="true"></i>{{ ('team.status_' ~ status)|trans }}</span><strong>{{ stats[status] }}</strong><small>{{ ('team.stat_' ~ status)|trans }}</small></div>
+        {% endfor %}
+    </div>
+    <section class="ticket-filter-panel" aria-label="{{ 'team.filters'|trans }}">
+        <form method="get" action="{{ path('team_tickets') }}" data-ticket-manager-target="form" data-action="submit->ticket-manager#submit change->ticket-manager#change">
+            <input type="hidden" name="_locale" value="{{ app.request.locale }}">
+            <div class="ticket-search-row">
+                <label class="ticket-search"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="visually-hidden">{{ 'team.search'|trans }}</span><input type="search" name="q" maxlength="180" value="{{ filters.q }}" placeholder="{{ 'team.search_placeholder'|trans }}" data-action="input->ticket-manager#search"></label>
+                <label class="ticket-sort"><span class="visually-hidden">{{ 'team.sort'|trans }}</span><select name="sort" class="form-select"><option value="newest" {{ filters.sort == 'newest' ? 'selected' : '' }}>{{ 'team.newest'|trans }}</option><option value="oldest" {{ filters.sort == 'oldest' ? 'selected' : '' }}>{{ 'team.oldest'|trans }}</option></select></label>
+            </div>
+            <div class="ticket-filter-row">
+                {% for key, options in {status: statuses, category: categories, priority: priorities, label: labels} %}
+                <details class="ticket-filter-group">
+                    <summary>{{ (key == 'label' ? 'team.labels' : 'team.' ~ key)|trans }} <span class="ticket-filter-count" data-filter-count="{{ key }}">{{ filters[key]|length }}</span><span aria-hidden="true">⌄</span></summary>
+                    <div class="ticket-filter-options">
+                        {% for value in options %}<label><input type="checkbox" name="{{ key }}[]" value="{{ value }}" {{ value in filters[key] ? 'checked' : '' }}><span class="{{ key == 'label' ? 'ticket-label' : 'ticket-badge' }}" data-tone="{{ key == 'label' ? 'label' : value }}">{{ key == 'label' ? value : ('team.' ~ key ~ '_' ~ value)|trans }}</span></label>{% else %}<p>{{ 'team.no_labels'|trans }}</p>{% endfor %}
+                    </div>
+                </details>
+                {% endfor %}
+                <button type="button" class="ticket-reset" data-action="ticket-manager#reset">{{ 'team.reset_filters'|trans }}</button>
+                <noscript><button class="btn btn-primary">{{ 'team.filter'|trans }}</button></noscript>
+            </div>
+        </form>
+        <div class="ticket-active-filters" data-ticket-manager-target="active" aria-label="{{ 'team.active_filters'|trans }}"></div>
+        <p class="ticket-filter-hint">{{ 'team.filter_hint'|trans }}</p>
+    </section>
+    <p class="ticket-filter-error" data-ticket-manager-target="error" role="alert" hidden></p>
+    <div class="ticket-results" data-ticket-manager-target="results" aria-live="polite" aria-atomic="true" data-action="click->ticket-manager#paginate">{% include 'team/_ticket_results.html.twig' %}</div>
+</div>
 {% endblock %}

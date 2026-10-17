@@ -24,6 +24,18 @@ const assert = require('node:assert/strict');
     ingest([], [], 'unverified'); assert.equal(model.state(date(5)), 'unknown'); assert.equal(model.issue(stay), 'unverified');
     ingest([5, 6], [], 'unverified'); assert.equal(model.state(date(5)), 'open'); assert.equal(model.issue(stay), null);
     ingest([5], [6]); assert.equal(model.state(date(5)), 'open'); assert.equal(model.state(date(6)), 'open'); assert.equal(model.issue(stay), 'refused', 'isolated nights on different properties are never one stay');
+    assert.equal(model.canArrive(date(5), stay), false, 'an isolated night is not an arrival for a two-night minimum');
+    assert.equal(model.select(date(5), {...stay, arrivalDate: '', departureDate: ''}).arrivalDate, '');
+    ingest([5, 6], [5]);
+    assert.equal(model.canArrive(date(5), stay), true);
+    assert.equal(model.canArrive(date(5), {...stay, guests: '5'}), false, 'only an eligible property can supply all nights');
+    ingest([5], [], 'fresh', 1);
+    assert.equal(model.canArrive(date(5), stay), true, 'a genuine one-night minimum is respected');
+    assert.equal(model.canDepart(date(6), {...stay, departureDate: ''}), true, 'an occupied day can be the checkout of a one-night stay');
+    ingest([5, 6], [], 'fresh', 3);
+    assert.equal(model.canArrive(date(5), stay), false, 'three-night minimum needs three consecutive nights');
+    ingest([5, 6, 7], [], 'fresh', 3);
+    assert.equal(model.canArrive(date(5), stay), true);
     ingest([5, 6], [5, 6]); assert.equal(model.issue({...stay, guests: '9'}), 'capacity');
     assert.equal(model.issue({...stay, guests: '5'}, [properties[0]]), 'capacity');
     ingest([5, 6], [5, 6], 'fresh', 3); assert.equal(model.issue(stay), 'tooShort');
@@ -50,6 +62,7 @@ const assert = require('node:assert/strict');
         model.ingest(monthIndex(dateValue), {enabled: true, properties: [{slug: 'a', status: 'fresh', days: [{date: dateValue, available: true, minStay: 2, price: 100}]}]});
     }
     assert.equal(model.issue(cross, [properties[0]]), null, 'cross-month stay');
+    assert.equal(model.canArrive(cross.arrivalDate, cross, [properties[0]]), true, 'arrival continuity crosses months');
     // Expiry, request deduplication and cancellation use the same production loader.
     const now = Date.now; Date.now = () => now() + 66000;
     assert.equal(model.issue(cross, [properties[0]]), 'unverified'); Date.now = now;
@@ -62,6 +75,21 @@ const assert = require('node:assert/strict');
         await model.load(index, '/api/calendar', controller.signal); assert.equal(calls, 1);
         const request = new AbortController(), promise = model.load(index + 1, '/api/calendar', request.signal); request.abort();
         await assert.rejects(promise, {name: 'AbortError'}); assert.equal(model.months.has(index + 1), false);
+        model.clear();
+        const lastNight = new Date(date(5) + 'T00:00:00Z'); lastNight.setUTCMonth(lastNight.getUTCMonth() + 1, 0);
+        const lastDate = lastNight.toISOString().slice(0, 10);
+        model.ingest(index, {enabled: true, properties: [{slug: 'a', status: 'fresh', days: [{date: lastDate, available: true, minStay: 2}]}]});
+        assert.equal(model.canArrive(lastDate, stay, [properties[0]]), false, 'unknown required nights are not assumed free');
+        let lookaheadCalls = 0;
+        global.fetch = async url => {
+            lookaheadCalls++;
+            const endpoint = new URL(url), y = Number(endpoint.searchParams.get('year')), m = Number(endpoint.searchParams.get('month'));
+            return {ok: true, json: async () => ({enabled: true, properties: [{slug: 'a', status: 'fresh', days: [{date: `${y}-${String(m).padStart(2, '0')}-01`, available: true, minStay: 2}]}]})};
+        };
+        await model.loadArrivalNights([index], '/api/calendar', controller.signal);
+        assert.equal(model.canArrive(lastDate, stay, [properties[0]]), true, 'lookahead verifies the first night of the following month');
+        await model.loadArrivalNights([index], '/api/calendar', controller.signal);
+        assert.equal(lookaheadCalls, 1, 'lookahead uses the existing cache');
     } finally { global.fetch = originalFetch; global.location = originalLocation; }
     console.log('PASS shared calendar rules: global states, provider error, no mixed-property stay, capacity/minStay, checkout boundaries, unknown nights, cross-month, expiry/cache/deduplication/abort. No network.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

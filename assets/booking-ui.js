@@ -1,15 +1,17 @@
 import { stayLink, validStay } from './booking-state';
+import { guestLuckyAllowed, requestGuestLuckyConsent } from './privacy';
 export { parisToday } from './booking-state';
 export const language = () => document.documentElement.lang.startsWith('en') ? 'en' : 'fr';
 const labels = {
     fr: {
         chooseDates: 'Choisissez vos dates', chooseDeparture: 'Choisissez votre départ', dateHint: 'Sélectionnez une arrivée puis un départ.',
+        noArrival: 'Arrivée impossible : pas assez de nuits consécutives pour la durée minimale.', checkingDates: 'Vérification des disponibilités…',
         loading: 'Chargement…', available: 'Disponible', unavailable: 'Indisponible', unverified: 'Non vérifié', checkoutOnly: 'Départ uniquement', candidate: 'Date candidate · séjour à vérifier',
         confirm: 'Disponibilités à confirmer', failed: 'Actualisation impossible — disponibilités à confirmer.',
         refreshed: 'Dernière lecture', choose: 'Choisissez un séjour', quote: 'Vérifier le séjour',
         contact: 'Contactez-nous', total: 'Total du séjour', book: 'Réserver chez GuestLucky', details: 'Voir le logement',
         invalid: 'Vérifiez les dates et le nombre de voyageurs.', guests: 'voyageurs max', nights: 'nuits', minimum: 'nuits min', minimumShort: 'n min',
-        empty: 'Aucun logement à afficher.', pending: 'Vérification du séjour…', past: 'Date passée', properties: 'Logements', preview: 'Devis de test uniquement · réservation désactivée',
+        empty: 'Aucun logement à afficher.', pending: 'Vérification du séjour…', checked: 'Vérification terminée', past: 'Date passée', properties: 'Logements', preview: 'Devis de test uniquement · réservation désactivée',
         embed: 'Ouvrir le module de réservation', external: 'Ouvrir dans un nouvel onglet', embedTitle: 'Votre réservation chez GuestLucky', embedNote: 'Le module GuestLucky vous permet de poursuivre la réservation. Si le module ne se charge pas, ouvrez-le dans un nouvel onglet.',
         traveler: 'voyageur', travelers: 'voyageurs', retry: 'Vérifier à nouveau', capacity: 'La capacité du logement est dépassée.',
         closed: 'La réservation en ligne est momentanément fermée. Contactez-nous pour organiser votre séjour.',
@@ -22,12 +24,13 @@ const labels = {
     },
     en: {
         chooseDates: 'Choose your dates', chooseDeparture: 'Choose your departure', dateHint: 'Select your arrival, then your departure.',
+        noArrival: 'Arrival unavailable: not enough consecutive nights for the minimum stay.', checkingDates: 'Checking available dates…',
         loading: 'Loading…', available: 'Available', unavailable: 'Unavailable', unverified: 'Unverified', checkoutOnly: 'Check-out only', candidate: 'Candidate date · stay to be checked',
         confirm: 'Availability to be confirmed', failed: 'Unable to refresh — availability to be confirmed.',
         refreshed: 'Last checked', choose: 'Choose a stay', quote: 'Check your stay',
         contact: 'Contact us', total: 'Stay total', book: 'Book with GuestLucky', details: 'View property',
         invalid: 'Check your dates and number of guests.', guests: 'guests maximum', nights: 'nights', minimum: 'night minimum', minimumShort: 'n min',
-        empty: 'No properties to display.', pending: 'Checking your stay…', past: 'Past date', properties: 'Properties', preview: 'Test quote only · booking disabled',
+        empty: 'No properties to display.', pending: 'Checking your stay…', checked: 'Check complete', past: 'Past date', properties: 'Properties', preview: 'Test quote only · booking disabled',
         embed: 'Open the booking module', external: 'Open in a new tab', embedTitle: 'Your reservation with GuestLucky', embedNote: 'Continue your reservation in the GuestLucky module. If the module does not load, open it in a new tab.',
         traveler: 'guest', travelers: 'guests', retry: 'Check again', capacity: 'The property capacity has been exceeded.',
         closed: 'Online booking is temporarily closed. Contact us to arrange your stay.',
@@ -107,6 +110,7 @@ function showBookingModal(module, frame, item, summary, bookingUrl, open, feedba
     on(module, 'cancel', event => { event.preventDefault(); closeModal(true); });
     on(module, 'close', () => closeModal(true));
     on(document, 'turbo:before-cache', () => closeModal());
+    on(document, 'privacy:change', event => { if (!event.detail?.guestlucky) closeModal(true); });
     on(frame, 'load', () => { status.textContent = ''; feedback.textContent = t('embedNote'); });
     module.append(header, frame, footer); document.body.append(module);
     module.showModal(); document.documentElement.classList.add('booking-modal-open');
@@ -157,8 +161,11 @@ export function renderQuotes(container, data, options = {}) {
                 open.addEventListener('click', async () => {
                     if (!current() || !container.contains(card)) { expire(); return; }
                     if (module.querySelector('iframe') || state.request) return;
-                    const request = new AbortController(); state.request = request; open.disabled = true; feedback.textContent = t('revalidating'); card.setAttribute('aria-busy', 'true');
+                    const request = new AbortController(); state.request = request;
                     try {
+                        const allowed = await requestGuestLuckyConsent({signal: request.signal, trigger: open});
+                        if (!allowed || !current() || request.signal.aborted) return;
+                        open.disabled = true; feedback.textContent = t('revalidating'); card.setAttribute('aria-busy', 'true');
                         const params = new URLSearchParams({...criteria, slug: item.slug});
                         const response = await fetch((options.quoteUrl || '/api/availability') + '?' + params, {signal: request.signal, cache: 'no-store'});
                         if (!response.ok) throw new Error(response.status === 422 || response.status === 409 ? 'refused' : 'failed');
@@ -168,8 +175,10 @@ export function renderQuotes(container, data, options = {}) {
                             renderQuotes(container, fresh, options); return;
                         }
                         if (quoteSignature(result) !== quoteSignature(item)) { renderQuotes(container, fresh, options); container.prepend(node('p', t('priceChanged'), 'booking-feedback')); return; }
-                        const frame = node('iframe', '', 'guestlucky-booking-frame'); frame.title = t('embedTitle') + ' · ' + item.name; frame.referrerPolicy = 'strict-origin-when-cross-origin';
+                        if (!guestLuckyAllowed()) return;
+                        const frame = node('iframe', '', 'guestlucky-booking-frame'); frame.title = t('embedTitle') + ' · ' + item.name;
                         // The local redirect STILL checks a fresh quote server-side.
+                        frame.referrerPolicy = 'no-referrer';
                         frame.src = localBookingUrl(result, criteria);
                         showBookingModal(module, frame, item, summary.textContent, frame.src, open, feedback, state, current, expire);
                     } catch (error) {

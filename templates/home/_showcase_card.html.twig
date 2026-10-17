@@ -1,0 +1,21 @@
+{% set detailsUrl = path('app_property_show', {slug: property.slug}) %}
+{% set shortDesc = app.request.locale == 'en' and property.shortDescriptionEn ? property.shortDescriptionEn : property.shortDescription %}
+<article class="catalogue-card showcase-card" data-showcase-card>
+    <div class="showcase-card-media">
+        {% if property.images|length %}
+            {% set image = property.images|first %}
+            {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: 'showcase-image', alt: image.alt ?: property.title, sizes: '(min-width: 1200px) 640px, (min-width: 768px) 56vw, 86vw'} only %}
+        {% else %}
+            <div class="showcase-photo-pending"><svg aria-hidden="true" width="52" height="52" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 22 18-15 18 15M11 19v22h26V19M20 41V28h8v13"/></svg><strong>{{ property.city }}</strong><span>{{ 'calendar.photo_pending'|trans }}</span></div>
+        {% endif %}
+        <div class="showcase-media-caption"><span class="showcase-city">{{ property.city }}</span><span>{{ property.travelers }} {{ 'home.guests_count'|trans }}</span></div>
+    </div>
+    <div class="showcase-card-info">
+        <h3><a href="{{ detailsUrl }}">{{ property.title }}</a></h3>
+        {% if shortDesc %}<p class="showcase-description">{{ shortDesc }}</p>{% else %}<p class="showcase-description showcase-description-empty">{{ property.city }} · {{ property.travelers }} {{ 'home.guests_count'|trans }}</p>{% endif %}
+        <div class="showcase-card-actions">
+            <a class="showcase-details" href="{{ detailsUrl }}">{{ 'home.view_details'|trans }} <span aria-hidden="true">↗</span></a>
+            <a class="btn btn-primary showcase-book" href="{{ path('app_home', {slug: property.slug, _fragment: 'booking-search-form'}) }}" data-booking-slug="{{ property.slug }}" data-booking-clear-dates data-action="property-showcase#book" data-showcase-slug="{{ property.slug }}">{{ 'calendar.choose'|trans }} <span aria-hidden="true">→</span></a>
+        </div>
+    </div>
+</article>

@@ -7,24 +7,7 @@
 <div data-controller="calendar" data-calendar-compact-value="{{ compact ? 'true' : 'false' }}" data-calendar-published-value="{{ booking_availability_enabled ? 'true' : 'false' }}" data-calendar-picker-value="{{ picker ? 'true' : 'false' }}" data-calendar-url-value="{{ calendarUrl }}" data-calendar-quote-url-value="{{ preview|default(false) ? path('api_availability_test') : path('api_availability') }}" class="roaming-calendar stay-calendar {{ compact ? 'property-booking-compact' : '' }} {{ picker ? 'availability-journey' : '' }} {{ picker and not selectedProperty ? 'is-choosing' : '' }}">
     {% if picker %}
         <section class="stay-property-picker" {% if selectedProperty %}hidden{% endif %} aria-labelledby="availability-choice-title">
-            <h2 id="availability-choice-title" class="h4" tabindex="-1">{{ 'calendar.pick_property'|trans }}</h2>
-            <div class="availability-property-grid">
-                {% for item in calendarProperties %}
-                    <a class="availability-property-card {{ not item.images|length ? 'without-photo' : '' }}" href="{{ path('app_calendar', {_locale: app.request.locale, slug: item.slug}) }}" data-booking-slug="{{ item.slug }}">
-                        {% if item.images|length %}
-                            {% set image = item.images|first %}
-                            {% include 'components/_picture.html.twig' with {filename: image.filename, alt: image.alt ?: item.title, sizes: '(min-width: 1400px) 416px, (min-width: 992px) 32vw, (min-width: 768px) 46vw, calc(100vw - 24px)'} only %}
-                        {% else %}
-                            <span class="availability-photo-pending">{{ 'calendar.photo_pending'|trans }}</span>
-                        {% endif %}
-                        <div class="availability-property-overlay">
-                            <span class="availability-property-city">{{ item.city }}</span>
-                            <h3>{{ item.title }}</h3>
-                            <span class="availability-property-cta">{{ 'calendar.view_availability'|trans }} <span aria-hidden="true">→</span></span>
-                        </div>
-                    </a>
-                {% else %}<p>{{ 'home.no_properties'|trans }}</p>{% endfor %}
-            </div>
+            {% if calendarProperties|length %}{% include 'calendar/_property_explorer.html.twig' %}{% else %}<h2 id="availability-choice-title" tabindex="-1">{{ 'calendar.pick_property'|trans }}</h2><p>{{ 'home.no_properties'|trans }}</p>{% endif %}
         </section>
     {% endif %}
     <div class="stay-property-buttons {{ picker or calendarProperties|length == 1 ? 'd-none' : '' }}" role="group" aria-label="{{ 'calendar.property'|trans }}">
@@ -69,7 +52,6 @@
                     </div>
                 </div>
             </fieldset>
-            <div class="stay-date-clear">{% include 'components/_clear_dates.html.twig' with {planning: true} only %}</div>
             {% if compact %}
             <dialog class="property-date-popover" id="{{ popoverId }}" data-calendar-target="popover" data-action="cancel->calendar#cancelDates click->calendar#outsideDates" aria-labelledby="{{ popoverId }}-title">
                 <div class="search-popover-heading"><h3 id="{{ popoverId }}-title">{{ 'ui.stay_dates'|trans }}</h3><button type="button" class="search-popover-close" data-action="calendar#closeDates" aria-label="{{ 'ui.close'|trans }}">×</button></div>
@@ -80,15 +62,22 @@
                 {% if compact %}<strong class="compact-month-label visually-hidden" data-calendar-target="monthLabel"></strong>{% else %}<button class="calendar-today-button" type="button" data-action="calendar#today">{{ 'calendar.today'|trans }}</button>{% endif %}
                 <button class="calendar-nav-button" type="button" data-calendar-target="next" data-action="calendar#next" aria-label="{{ 'calendar.next'|trans }}">›</button>
             </div>
-            <div class="stay-months" data-calendar-target="board" data-action="click->calendar#selectDate keydown->calendar#keyboard pointerover->calendar#previewRange pointerleave->calendar#clearRangePreview focusin->calendar#previewRange focusout->calendar#clearRangePreview"></div>
+            <div class="calendar-fetch-surface" data-calendar-target="calendarSurface">
+                <div class="stay-months" data-calendar-target="board" data-action="click->calendar#selectDate keydown->calendar#keyboard pointerover->calendar#previewRange pointerleave->calendar#clearRangePreview focusin->calendar#previewRange focusout->calendar#clearRangePreview"></div>
+                {% include 'components/_calendar_loading.html.twig' only %}
+            </div>
             <div class="stay-calendar-bottom">
                 <p class="stay-legend"><span>{{ 'calendar.available'|trans }}</span><s>{{ 'calendar.unavailable'|trans }}</s><span>? {{ 'calendar.unverified'|trans }}</span><span>↗ {{ 'calendar.checkout_only'|trans }}</span></p>
             </div>
             {% if compact %}<div class="compact-date-actions"><button type="button" class="btn btn-primary" data-calendar-target="applyDates" data-action="calendar#closeDates">{{ 'ui.apply'|trans }}</button></div></dialog>{% endif %}
             <div class="stay-booking-controls">
                 <label>{{ 'home.guests'|trans }}{% if compact %}<select class="form-select" name="guests" required data-calendar-target="guests" data-action="change->calendar#changed">{% for count in 1..(calendarProperties|first).travelers|default(20) %}<option value="{{ count }}">{{ count }}</option>{% endfor %}</select>{% else %}<input class="form-control" type="number" name="guests" min="1" max="{{ (calendarProperties|first).travelers|default(20) }}" value="2" required data-calendar-target="guests" data-action="input->calendar#changed">{% endif %}</label>
-                <button class="btn btn-primary" type="submit" data-calendar-target="submit" disabled>{{ 'calendar.quote'|trans }}</button>
+                <div class="stay-actions">
+                    {% include 'components/_clear_dates.html.twig' with {planning: true} only %}
+                    <button class="btn btn-primary" type="submit" data-calendar-target="submit" disabled>{{ 'calendar.quote'|trans }}</button>
+                </div>
             </div>
+            <p class="booking-search-status" data-calendar-target="progress" role="status" aria-live="polite"></p>
             <p class="booking-selection-feedback" data-calendar-target="feedback" role="status" aria-live="polite"></p>
             <p class="small text-muted mt-3">{{ 'calendar.quote_note'|trans }}</p>
             <div data-calendar-target="quote" class="stay-quote" aria-live="polite"></div>

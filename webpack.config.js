@@ -53,6 +53,11 @@ Encore
 
     .enableStimulusBridge('./assets/controllers.json')
 
+    // MapLibre 6 ships an independent module worker. Emit it locally with a
+    // JavaScript extension; its default relative URL cannot survive chunking.
+    .addRule({resourceQuery: /map-worker/, type: 'asset/resource', generator: {filename: 'map/worker.[contenthash:8].js'}})
+    .addRule({test: /maplibre-gl\.mjs$/, parser: {url: false}})
+
     // enables Sass/SCSS support
     //.enableSassLoader()
 

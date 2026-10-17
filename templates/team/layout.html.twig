@@ -8,7 +8,7 @@
     <link rel="icon" href="{{ asset('images/logo-footer-black.png') }}">
     {{ encore_entry_link_tags('app') }}{{ encore_entry_script_tags('app') }}
 </head>
-<body>
+<body data-controller="page-reveal">
     <a class="skip-link" href="#main-content">{{ 'ui.skip_content'|trans }}</a>
     <header class="team-header container d-flex flex-wrap align-items-center justify-content-between gap-3 py-4">
         <a href="{{ path('app_home') }}"><img src="{{ asset('images/logo-footer-black.png') }}" width="150" alt="Roaming Lille"></a>
@@ -21,5 +21,7 @@
         </nav>
     </header>
     <main id="main-content" class="container team-main py-4">{% block body %}{% endblock %}</main>
+    <footer class="container border-top py-4">{% include 'legal/_links.html.twig' %}</footer>
+    {% include 'legal/_cookie_dialog.html.twig' %}
 </body>
 </html>

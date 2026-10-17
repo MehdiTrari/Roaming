@@ -172,6 +172,8 @@ calendar:
     next: "Mois suivant"
     today: "Aujourd’hui"
     loading: "Chargement du planning…"
+    checking_dates: "Vérification des disponibilités"
+    checking_dates_hint: "Un instant, nous préparons vos dates de séjour."
     available: "Disponible"
     unavailable: "Indisponible"
     unverified: "Non vérifié"
@@ -292,3 +294,58 @@ team:
   preview: 'Version en test'
   real_actions: 'Les réservations et messages produisent des effets réels.'
   close: 'Fermer'
+  workspace: 'Espace équipe'
+  manager_intro: 'Un espace partagé pour suivre les problèmes, les idées et les améliorations du site.'
+  total_tickets: 'Tous les tickets'
+  shared_team: 'Partagés avec toute l’équipe'
+  stat_new: 'À examiner'
+  stat_in_progress: 'En cours de traitement'
+  stat_resolved: 'Corrections terminées'
+  filters: 'Filtres des tickets'
+  active_filters: 'Filtres actifs'
+  search: 'Rechercher un ticket'
+  search_placeholder: 'Rechercher un titre, une description, un auteur ou un numéro…'
+  sort: 'Trier les tickets'
+  newest: 'Plus récents d’abord'
+  oldest: 'Plus anciens d’abord'
+  labels: 'Étiquettes'
+  labels_help: 'Séparez les étiquettes par des virgules · 8 maximum, 32 caractères chacune.'
+  labels_placeholder: 'mobile, calendrier, navigation'
+  labels_invalid: 'Utilisez au maximum 8 étiquettes de 32 caractères, séparées par des virgules.'
+  no_labels: 'Ajoutez des étiquettes à un ticket pour les retrouver ici.'
+  reset_filters: 'Tout effacer'
+  filter_hint: 'Les filtres se cumulent. Plusieurs choix possibles par groupe ; les étiquettes sélectionnées doivent toutes être présentes.'
+  filter_error: 'Impossible d’actualiser les tickets. Réessayez en modifiant un filtre.'
+  all_tickets: 'Liste des tickets'
+  results: 'résultat(s)'
+  has_capture: 'Capture jointe'
+  open_ticket: 'Ouvrir le ticket'
+  no_matches: 'Aucun ticket à afficher'
+  no_matches_hint: 'Modifiez vos filtres ou signalez un premier problème à l’équipe.'
+  page_number: 'Page %page% sur %pages%'
+
+showcase:
+  carousel: 'carrousel'
+  slide: 'logement'
+  intro: 'Faites défiler les adresses et trouvez celle qui vous ressemble.'
+  select: 'Mettre en avant %name%'
+  previous: 'Logement précédent'
+  next: 'Logement suivant'
+  pick: 'Choisir le logement mis en avant'
+  guide_title: 'Votre recherche ·'
+  guide_steps: 'Les étapes de votre recherche'
+  exit_guide: 'Quitter le guide'
+  guide_property: '1 / 4 · Choisissez un logement, ou comparez tous les logements. Vous choisirez ensuite vos dates.'
+  guide_dates: '2 / 4 · Choisissez votre arrivée et votre départ, puis validez pour passer aux voyageurs.'
+  guide_guests: '3 / 4 · Ajustez le nombre de voyageurs, puis validez. Il ne restera plus qu’à lancer votre recherche.'
+
+locations:
+  map_title: 'Emplacement des logements'
+  explore: 'Repérez votre prochain séjour'
+  map_permission: 'Le fond de carte est fourni par OpenFreeMap. Son affichage transmet votre adresse IP et l’origine du site à ce service.'
+  show_map: 'Autoriser et afficher la carte'
+  map_preferences: 'Gérer les services externes'
+  overview: 'Voir tous les logements'
+  directions: 'Itinéraire'
+  map_error: 'Le fond de carte est indisponible. L’adresse et le lien d’itinéraire restent accessibles.'
+  explorer_hint: 'Faites glisser les logements : la carte suit votre sélection.'

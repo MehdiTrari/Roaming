@@ -174,6 +174,8 @@ calendar:
     next: "Next month"
     today: "Today"
     loading: "Loading calendar…"
+    checking_dates: "Checking available dates"
+    checking_dates_hint: "One moment, we’re preparing your stay calendar."
     available: "Available"
     unavailable: "Unavailable"
     unverified: "Unverified"
@@ -290,3 +292,58 @@ team:
   preview: 'Test version'
   real_actions: 'Bookings and messages have real effects.'
   close: 'Close'
+  workspace: 'Team workspace'
+  manager_intro: 'A shared space to track issues, ideas and improvements to the website.'
+  total_tickets: 'All tickets'
+  shared_team: 'Shared with the whole team'
+  stat_new: 'Ready for review'
+  stat_in_progress: 'Currently being worked on'
+  stat_resolved: 'Completed fixes'
+  filters: 'Ticket filters'
+  active_filters: 'Active filters'
+  search: 'Search tickets'
+  search_placeholder: 'Search a title, description, author or ticket number…'
+  sort: 'Sort tickets'
+  newest: 'Newest first'
+  oldest: 'Oldest first'
+  labels: 'Labels'
+  labels_help: 'Separate labels with commas · up to 8 labels, 32 characters each.'
+  labels_placeholder: 'mobile, calendar, navigation'
+  labels_invalid: 'Use up to 8 labels of 32 characters, separated by commas.'
+  no_labels: 'Add labels to a ticket to see them here.'
+  reset_filters: 'Clear all'
+  filter_hint: 'Combine filters and select multiple options in each group. Tickets must have all selected labels.'
+  filter_error: 'Unable to refresh tickets. Try changing a filter again.'
+  all_tickets: 'Ticket list'
+  results: 'result(s)'
+  has_capture: 'Screenshot attached'
+  open_ticket: 'Open ticket'
+  no_matches: 'No tickets to display'
+  no_matches_hint: 'Change your filters or report the first issue to the team.'
+  page_number: 'Page %page% of %pages%'
+
+showcase:
+  carousel: 'carousel'
+  slide: 'property'
+  intro: 'Explore our places and find the one that feels right for you.'
+  select: 'Feature %name%'
+  previous: 'Previous property'
+  next: 'Next property'
+  pick: 'Choose the featured property'
+  guide_title: 'Your search ·'
+  guide_steps: 'Your search steps'
+  exit_guide: 'Exit the guide'
+  guide_property: '1 / 4 · Choose a property, or compare all properties. Next, you will choose your dates.'
+  guide_dates: '2 / 4 · Choose your arrival and departure, then confirm to continue to guests.'
+  guide_guests: '3 / 4 · Adjust the number of guests, then confirm. You will be ready to start your search.'
+
+locations:
+  map_title: 'Property locations'
+  explore: 'Explore your next stay'
+  map_permission: 'Map tiles are provided by OpenFreeMap. Displaying them shares your IP address and this website’s origin with that service.'
+  show_map: 'Allow and show the map'
+  map_preferences: 'Manage external services'
+  overview: 'See all properties'
+  directions: 'Directions'
+  map_error: 'The map background is unavailable. The address and directions link remain accessible.'
+  explorer_hint: 'Swipe through the properties: the map follows your selection.'

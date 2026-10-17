@@ -7,7 +7,7 @@ const date = day => new Date(Date.UTC(year, month, day)).toISOString().slice(0, 
 const target = name => `[data-calendar-target="${name}"]`;
 (async () => {
     const browser = await chromium.launch({headless: true, channel: 'chrome'});
-    const context = await browser.newContext(); const page = await context.newPage();
+    const context = await browser.newContext(process.env.ROAMING_BROWSER_STORAGE ? {storageState: process.env.ROAMING_BROWSER_STORAGE} : {}); const page = await context.newPage();
     let mode = 'open', published = true, calendarCalls = 0, quoteCalls = 0;
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     await context.route('**/*', async route => {
@@ -75,7 +75,9 @@ const target = name => `[data-calendar-target="${name}"]`;
             assert.equal(await page.locator('.property-date-popover').isVisible(), false);
             await quote(); assert.match(await page.locator('.booking-total').innerText(), /400/);
             await page.locator(target('guests')).selectOption('3'); assert.equal(await page.locator('.booking-quote-card').count(), 0);
-            await quote(); await page.locator('.booking-module-actions button').click(); await page.waitForSelector('.booking-modal[open]');
+            await quote(); await page.locator('.booking-module-actions button').click();
+            if (await page.locator('#privacy-preferences').isVisible()) await page.locator('[data-privacy-allow]').click();
+            await page.waitForSelector('.booking-modal[open]');
             await page.evaluate(() => document.querySelector('[data-calendar-target="clear"]').click());
             assert.equal(await page.locator('.booking-modal, .guestlucky-booking-frame, .booking-quote-card').count(), 0);
             assert.equal(await page.locator(target('arrival')).inputValue(), ''); assert.equal(await page.locator(target('departure')).inputValue(), '');

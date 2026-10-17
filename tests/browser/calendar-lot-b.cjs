@@ -7,7 +7,7 @@ const date = day => new Date(Date.UTC(year, month, day)).toISOString().slice(0, 
 const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
 (async () => {
     const browser = await chromium.launch({headless: true, channel: 'chrome'});
-    const context = await browser.newContext(); const page = await context.newPage();
+    const context = await browser.newContext(process.env.ROAMING_BROWSER_STORAGE ? {storageState: process.env.ROAMING_BROWSER_STORAGE} : {}); const page = await context.newPage();
     let mode = 'adjacent', publication = true, quoteCalls = 0;
     const calendars = [], errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -50,10 +50,13 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
     const clear = async () => { await page.locator('#date-cancel').click(); await open(); };
     const search = async () => { await page.locator('#booking-search-form [type="submit"]').click(); await page.waitForFunction(() => document.querySelector('#booking-search-form').getAttribute('aria-busy') === 'false'); };
     try {
+        await page.goto(base + '/');
+        const extra = await page.locator('#booking-property option:not([value=""])').evaluateAll(options => options.map(option => ({slug: option.value, capacity: Number(option.dataset.capacity), name: option.textContent})));
+        catalogue.push(...extra.filter(property => !catalogue.some(existing => existing.slug === property.slug)));
         mode = 'blocked'; await home(); await open();
         assert.equal(await day(date(5)).evaluate(e => e.classList.contains('stay-closed') && e.classList.contains('flatpickr-disabled')), true);
         mode = 'partial'; await home(); await open();
-        assert.equal(await day(date(5)).evaluate(e => e.classList.contains('stay-open') && !e.classList.contains('flatpickr-disabled')), true);
+        assert.equal(await day(date(5)).evaluate(e => e.classList.contains('stay-open') && e.classList.contains('flatpickr-disabled')), true, 'an isolated open night cannot satisfy a two-night minimum');
         assert.match(await day(date(6)).getAttribute('aria-label'), /Non vérifié/);
         mode = 'split'; await home(stay); const before = quoteCalls; await search();
         assert.equal(quoteCalls, before, 'split-property stay must never reach quote/booking');
@@ -61,7 +64,7 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
         mode = 'minimum'; await home({slug: catalogue[0].slug, guests: '2', arrivalDate: date(5)}); await open();
         await clear(); await day(date(5)).click(); await day(date(7)).click();
         assert.equal(await page.locator('#departure-date').inputValue(), '');
-        assert.match(await page.locator('#date-availability-status').innerText(), /minimum/);
+        assert.match(await page.locator('#date-availability-status').innerText(), /3 nuits min/);
         await page.keyboard.press('Escape');
         mode = 'adjacent';
         for (const locale of ['fr', 'en']) for (const theme of ['light', 'dark']) for (const width of [1440, 390, 320]) {
@@ -82,7 +85,9 @@ const stay = {arrivalDate: date(5), departureDate: date(7), guests: '2'};
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
             assert.equal(await page.locator('#date-panel').evaluate(e => e.scrollWidth <= e.clientWidth), true);
             await page.locator('#date-apply').click(); await search(); await page.waitForSelector('.booking-quote-card');
-            await page.locator('.booking-module-actions button').click(); await page.waitForSelector('.booking-modal[open]');
+            await page.locator('.booking-module-actions button').click();
+            if (await page.locator('#privacy-preferences').isVisible()) await page.locator('[data-privacy-allow]').click();
+            await page.waitForSelector('.booking-modal[open]');
             await page.evaluate(slug => { const property = document.querySelector('#booking-property'); property.value = slug; property.dispatchEvent(new Event('change')); }, catalogue[1].slug);
             assert.equal(await page.locator('#arrival-date').inputValue(), ''); assert.equal(await page.locator('#departure-date').inputValue(), '');
             assert.equal(await page.locator('.booking-modal, .booking-quote-card, iframe').count(), 0);

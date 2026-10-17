@@ -1,13 +1,15 @@
 import { Controller } from '@hotwired/stimulus';
 import { node, t, language, money, renderQuotes, clearQuotes, showBookingError, parisToday } from '../booking-ui';
 import { readStay, writeStay, validStay, realDate } from '../booking-state';
-import {CalendarAvailability} from '../calendar-availability';
+import {CalendarAvailability, addNights} from '../calendar-availability';
+import {SearchProgress} from '../search-progress';
 
 export default class extends Controller {
-    static targets = ['previous', 'next', 'status', 'board', 'fields', 'arrival', 'departure', 'guests', 'quote', 'notice', 'content', 'propertyButton', 'summary', 'selection', 'propertyName', 'submit', 'feedback', 'clear', 'stage', 'popover', 'dateTrigger', 'dateHint', 'applyDates', 'monthLabel'];
+    static targets = ['previous', 'next', 'status', 'board', 'calendarSurface', 'fields', 'arrival', 'departure', 'guests', 'quote', 'progress', 'notice', 'content', 'propertyButton', 'summary', 'selection', 'propertyName', 'submit', 'feedback', 'clear', 'stage', 'popover', 'dateTrigger', 'dateHint', 'applyDates', 'monthLabel'];
     static values = { url: String, quoteUrl: String, picker: Boolean, compact: Boolean, published: Boolean };
     connect() {
         if (document.documentElement.hasAttribute('data-turbo-preview')) return;
+        this.progress = new SearchProgress(this.progressTarget);
         const [year, month] = parisToday().split('-').map(Number);
         this.base = year * 12 + month - 1; this.current = this.base;
         this.days = new Map(); this.months = [];
@@ -26,6 +28,7 @@ export default class extends Controller {
         this.onBeforeCache = () => {
             if (this.compactValue) this.closeDates(true);
             this.request?.abort(); this.quoteRequest?.abort(); this.days.clear(); this.availability.clear(); this.months = [];
+            this.setChecking(false);
             this.statusTarget.textContent = t('loading'); this.statusTarget.dataset.state = 'loading';
             this.fieldsTarget.disabled = true; this.invalidateQuote(); this.render();
         };
@@ -52,6 +55,7 @@ export default class extends Controller {
         document.removeEventListener('visibilitychange', this.onVisibility);
         document.removeEventListener('turbo:before-cache', this.onBeforeCache);
         this.request?.abort(); this.invalidateQuote();
+        this.setChecking(false);
     }
     selectProperty(event) {
         if (event && event.currentTarget === this.selected) return;
@@ -72,7 +76,10 @@ export default class extends Controller {
         this.invalidateQuote(); this.months = []; this.fieldsTarget.disabled = true;
         this.render(); this.load();
     }
-    invalidateQuote() { this.quoteRequest?.abort(); this.quoteRequest = null; clearQuotes(this.quoteTarget); }
+    invalidateQuote() {
+        this.quoteRequest?.abort(); this.quoteRequest = null; clearQuotes(this.quoteTarget);
+        this.progress?.cancel(); this.progressTarget.textContent = '';
+    }
     criteria() { return {slug: this.slug, arrivalDate: this.arrivalTarget.value, departureDate: this.departureTarget.value, guests: this.guestsTarget.value}; }
     focusArrivalMonth() {
         if (!realDate(this.arrivalTarget.value)) return;
@@ -118,9 +125,6 @@ export default class extends Controller {
     changed(event) {
         this.invalidateQuote();
         if (event?.target === this.arrivalTarget && this.departureTarget.value <= this.arrivalTarget.value) this.departureTarget.value = '';
-        const date = new Date((realDate(this.arrivalTarget.value) ? this.arrivalTarget.value : parisToday()) + 'T00:00:00Z');
-        if (this.arrivalTarget.value) date.setUTCDate(date.getUTCDate() + 1);
-        this.departureTarget.min = date.toISOString().slice(0, 10);
         writeStay(this.criteria());
         if (event?.target === this.arrivalTarget && realDate(this.arrivalTarget.value) && this.arrivalTarget.value >= parisToday() && this.arrivalTarget.value <= this.arrivalTarget.max) {
             const previousMonth = this.current; this.focusArrivalMonth();
@@ -128,19 +132,28 @@ export default class extends Controller {
         }
         this.render();
     }
+    setChecking(checking) {
+        this.calendarSurfaceTarget.classList.toggle('is-checking', checking);
+        this.calendarSurfaceTarget.setAttribute('aria-busy', String(checking));
+        this.boardTarget.inert = checking;
+        this.boardTarget.setAttribute('aria-busy', String(checking));
+    }
     async load() {
         if (!this.selected || (this.compactValue && !this.publishedValue) || document.documentElement.hasAttribute('data-turbo-preview')) return;
         const key = this.slug + ':' + this.current;
         if (this.loadedKey === key && this.months.length && Date.now() - this.loadedAt < 60000) return;
         if (this.request && !this.request.signal.aborted && this.loadingKey === key) return;
         this.request?.abort(); const request = new AbortController(); this.request = request; this.loadingKey = key;
-        this.statusTarget.textContent = t('loading'); this.statusTarget.dataset.state = 'loading';
-        this.boardTarget.setAttribute('aria-busy', 'true');
+        this.statusTarget.textContent = t('checkingDates'); this.statusTarget.dataset.state = 'loading';
+        this.fieldsTarget.disabled = true; this.submitTarget.disabled = true;
+        if (this.compactValue) this.applyDatesTarget.disabled = true;
+        this.setChecking(true);
         try {
             const months = await Promise.all([this.current, this.current + 1].map(async index => {
                 const data = await this.availability.load(index, this.selected.dataset.url || this.urlValue, request.signal);
                 return {index, enabled: data?.enabled, row: data?.rows.find(row => row.slug === this.slug)};
             }));
+            await this.availability.loadArrivalNights([this.current, this.current + 1], this.selected.dataset.url || this.urlValue, request.signal);
             if (request.signal.aborted) return;
             this.months = months; this.enabled = months.every(month => month.enabled);
             this.noticeTarget.hidden = this.enabled; this.contentTarget.hidden = !this.enabled;
@@ -165,7 +178,7 @@ export default class extends Controller {
             if (error.name === 'AbortError') return;
             this.days.clear(); this.availability.clear(); this.months = []; this.fieldsTarget.disabled = true; this.invalidateQuote();
             this.statusTarget.textContent = t('failed'); this.statusTarget.dataset.state = 'unverified'; this.render();
-        } finally { if (this.request === request) { this.request = null; this.boardTarget.removeAttribute('aria-busy'); } }
+        } finally { if (this.request === request) { this.request = null; this.setChecking(false); } }
     }
     selectionIssue() {
         return this.availability.issue(this.criteria(), this.activeProperties(), false);
@@ -214,20 +227,32 @@ export default class extends Controller {
         const issue = this.selectionIssue();
         if (issue || !validStay(this.criteria(), Number(this.guestsTarget.max))) { this.feedbackTarget.textContent = t(issue || 'invalid'); return; }
         this.invalidateQuote(); const request = new AbortController(); this.quoteRequest = request;
-        this.quoteTarget.textContent = t('pending'); this.quoteTarget.setAttribute('aria-busy', 'true'); this.submitTarget.disabled = true;
+        this.progress.start(); this.quoteTarget.setAttribute('aria-busy', 'true'); this.submitTarget.disabled = true;
         const stay = this.criteria(), signature = JSON.stringify(stay), params = new URLSearchParams(stay);
+        let complete = false;
         try {
             await this.availability.loadStay(stay, this.selected.dataset.url || this.urlValue, request.signal);
             if (request.signal.aborted) return;
             const verifiedIssue = this.availability.issue(stay, this.activeProperties());
             if (verifiedIssue) { this.feedbackTarget.textContent = t(verifiedIssue); return; }
+            this.progress.update(58);
             const response = await fetch(this.quoteUrlValue + '?' + params, {signal: request.signal, cache: 'no-store'});
             if (!response.ok) throw new Error(response.status === 400 ? 'invalid' : response.status === 422 ? 'refused' : 'failed');
             const data = await response.json();
-            if (!request.signal.aborted && signature === JSON.stringify(this.criteria())) renderQuotes(this.quoteTarget, data, {criteria: stay, quoteUrl: this.quoteUrlValue, isCurrent: () => signature === JSON.stringify(this.criteria()), onRefresh: () => this.quote()});
+            if (!request.signal.aborted && signature === JSON.stringify(this.criteria())) {
+                renderQuotes(this.quoteTarget, data, {criteria: stay, quoteUrl: this.quoteUrlValue, isCurrent: () => signature === JSON.stringify(this.criteria()), onRefresh: () => this.quote()});
+                complete = true;
+            }
         } catch (error) {
             if (error.name !== 'AbortError' && !request.signal.aborted) showBookingError(this.quoteTarget, ['invalid', 'refused'].includes(error.message) ? error.message : 'failed', () => this.quote());
-        } finally { if (this.quoteRequest === request) { this.quoteRequest = null; this.quoteTarget.removeAttribute('aria-busy'); this.render(); } }
+        } finally {
+            if (this.quoteRequest === request) {
+                this.quoteRequest = null; this.quoteTarget.removeAttribute('aria-busy');
+                if (complete) this.progress.finish();
+                else { this.progress.cancel(); this.progressTarget.textContent = ''; }
+                this.render();
+            }
+        }
     }
     dayButton(index, number) {
         const date = Math.floor(index / 12) + '-' + String(index % 12 + 1).padStart(2, '0') + '-' + String(number).padStart(2, '0');
@@ -240,13 +265,16 @@ export default class extends Controller {
         const checkoutOnly = !past && this.availability.checkoutOnly(date, selecting, this.activeProperties());
         const button = node('button', '', 'stay-day stay-' + (past ? 'past' : state));
         button.type = 'button'; button.dataset.date = date;
-        button.disabled = !this.enabled || past || state === 'unknown' || (choosingDeparture ? !this.canDepart(date) : state === 'closed');
+        const canArrive = this.availability.canArrive(date, selecting, this.activeProperties());
+        button.disabled = !this.enabled || past || state === 'unknown' || (choosingDeparture ? !this.canDepart(date) : !canArrive);
         if (this.compactValue && this.editingPart === 'complete' && date === departure && this.enabled && !past && state !== 'unknown') button.disabled = false;
         button.append(node('span', String(number), 'stay-day-number'));
         if (!past && day?.available) button.append(node('small', new Intl.NumberFormat(language(), {style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2}).format(day.price), 'stay-night-price'));
         if (!past && state === 'unknown') button.append(node('small', '?'));
         if (checkoutOnly) { button.classList.add('stay-checkout-only'); button.append(node('small', '↗', 'stay-checkout-mark')); }
-        const description = t(checkoutOnly ? 'checkoutOnly' : past ? 'past' : state === 'open' ? 'available' : state === 'closed' ? 'unavailable' : 'unverified');
+        const noArrival = !past && state === 'open' && !canArrive;
+        if (noArrival) button.classList.add('stay-no-arrival');
+        const description = t(checkoutOnly ? 'checkoutOnly' : past ? 'past' : noArrival ? 'noArrival' : state === 'open' ? 'available' : state === 'closed' ? 'unavailable' : 'unverified');
         button.setAttribute('aria-label', date + ', ' + description + (day?.available ? ', ' + money(day.price) + ', ' + day.minStay + ' ' + t('minimum') : ''));
         button.title = button.getAttribute('aria-label');
         if (checkoutOnly) button.dataset.hint = t('checkoutOnly');
@@ -259,6 +287,8 @@ export default class extends Controller {
         return button;
     }
     render() {
+        this.departureTarget.min = realDate(this.arrivalTarget.value)
+            ? addNights(this.arrivalTarget.value, this.availability.day(this.slug, this.arrivalTarget.value)?.minStay || 1) : parisToday();
         this.clearTarget.disabled = !this.arrivalTarget.value && !this.departureTarget.value;
         const issue = this.selectionIssue();
         this.feedbackTarget.textContent = issue ? t(issue) + (issue === 'capacity' ? ` (${this.guestsTarget.max} ${t('guests')})` : issue === 'tooShort' ? ` (${this.days.get(this.arrivalTarget.value)?.minStay} ${t('minimum')})` : '') : '';

@@ -151,4 +151,47 @@ final class MaintenanceAndTicketsTest extends WebTestCase
         $this->createTicket(new UploadedFile($file, 'oversized.png', 'image/png', null, true)); self::assertResponseStatusCodeSame(422);
         self::assertSame(1, $this->em->getRepository(TestTicket::class)->count([]));
     }
+    public function testCombinedFiltersSearchLabelsAndPagination(): void
+    {
+        $this->browser->loginUser($this->tester);
+        foreach ([['Mobile calendar', 'new', 'bug', 'high', ['mobile', 'équipe']], ['Desktop design', 'resolved', 'display', 'low', ['desktop']], ['Mobile menu', 'retest', 'display', 'high', ['mobile']]] as [$title, $status, $category, $priority, $labels]) {
+            $ticket = new TestTicket(); $ticket->author = $this->tester; $ticket->title = $title; $ticket->status = $status; $ticket->category = $category; $ticket->priority = $priority; $ticket->labels = $labels; $ticket->description = 'Details'; $ticket->steps = $ticket->expected = ''; $this->em->persist($ticket);
+        }
+        $this->em->flush();
+        $this->browser->request('GET', '/equipe/tickets', ['status' => ['new', 'retest'], 'category' => ['bug', 'display'], 'priority' => ['high'], 'label' => ['mobile'], 'q' => 'Mobile', '_fragment' => 1]);
+        self::assertResponseIsSuccessful(); self::assertSelectorCount(2, '.ticket-card'); self::assertSelectorNotExists('.ticket-workspace');
+        $this->browser->request('GET', '/equipe/tickets', ['label' => ['mobile', 'équipe']]);
+        self::assertSelectorCount(1, '.ticket-card'); self::assertSelectorTextContains('.ticket-card h3', 'Mobile calendar');
+        $this->browser->request('GET', '/equipe/tickets', ['status' => ['resolved'], 'label' => ['mobile']]);
+        self::assertSelectorCount(0, '.ticket-card');
+        $this->browser->request('GET', '/equipe/tickets', ['q' => 'Testeur']); self::assertSelectorCount(3, '.ticket-card');
+        $this->tester = $this->em->find(TeamUser::class, $this->tester->getId());
+        for ($index = 0; $index < 31; $index++) {
+            $ticket = new TestTicket(); $ticket->author = $this->tester; $ticket->title = 'Pagination '.$index; $ticket->category = 'suggestion'; $ticket->description = 'Details'; $ticket->steps = $ticket->expected = ''; $this->em->persist($ticket);
+        }
+        $this->em->flush();
+        $this->browser->request('GET', '/equipe/tickets', ['category' => ['suggestion'], 'page' => 1]); self::assertSelectorCount(30, '.ticket-card'); self::assertSelectorExists('a[data-ticket-page]');
+        $this->browser->request('GET', '/equipe/tickets', ['category' => ['suggestion'], 'page' => 2]); self::assertSelectorCount(1, '.ticket-card');
+    }
+    public function testLabelsPersistAndInvalidLabelsDoNotChangeStatus(): void
+    {
+        $this->browser->loginUser($this->admin);
+        $crawler = $this->browser->request('GET', '/equipe/tickets/nouveau');
+        $this->browser->submit($crawler->filter('main form')->form(['test_ticket[title]' => 'Labeled ticket', 'test_ticket[category]' => 'display', 'test_ticket[description]' => 'Details', 'test_ticket[labels]' => ' Mobile, Équipe, mobile']));
+        self::assertResponseStatusCodeSame(303);
+        $ticket = $this->em->getRepository(TestTicket::class)->findOneBy([]); self::assertSame(['mobile', 'équipe'], $ticket->labels);
+        $url = '/equipe/tickets/'.$ticket->getId();
+        $crawler = $this->browser->request('GET', $url); $token = $crawler->filter('input[name="_token"]')->first()->attr('value');
+        $this->browser->request('POST', $url, ['_token' => $token, 'action' => 'manage', 'status' => 'resolved', 'priority' => 'high', 'labels' => str_repeat('x', 33)]);
+        self::assertResponseStatusCodeSame(422);
+        $this->em->clear(); $ticket = $this->em->find(TestTicket::class, $ticket->getId()); self::assertSame('new', $ticket->status);
+        $this->browser->request('POST', $url, ['_token' => $token, 'action' => 'manage', 'status' => 'retest', 'priority' => 'high', 'labels' => 'calendrier, mobile']);
+        self::assertResponseStatusCodeSame(303);
+        $this->em->clear(); $ticket = $this->em->find(TestTicket::class, $ticket->getId()); self::assertSame(['calendrier', 'mobile'], $ticket->labels);
+        $crawler = $this->browser->request('GET', '/equipe/tickets/nouveau');
+        $this->browser->submit($crawler->filter('main form')->form(['test_ticket[title]' => 'Invalid labels', 'test_ticket[category]' => 'display', 'test_ticket[description]' => 'Details', 'test_ticket[labels]' => str_repeat('x', 33)]));
+        self::assertResponseStatusCodeSame(422);
+        self::assertStringNotContainsString('team.labels_invalid', $this->browser->getResponse()->getContent());
+        self::assertSame(1, $this->em->getRepository(TestTicket::class)->count([]));
+    }
 }

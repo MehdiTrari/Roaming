@@ -1,0 +1,9 @@
+/* Opt-in only after the observer is ready; no hidden content without JS.
+   Web Animations owns opacity/translate during entry and releases them after. */
+:root body [data-page-reveal-state="pending"] { opacity: 0; }
+/* Old inline stagger delays must not postpone a control becoming visible
+   after focus. The controller already applies those delays to its animation. */
+:root body [data-page-reveal-state] { transition-delay: 0s !important; }
+@media print {
+    :root body [data-page-reveal-state] { opacity: 1 !important; translate: none !important; }
+}

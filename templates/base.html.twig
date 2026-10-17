@@ -87,7 +87,7 @@
         {{ encore_entry_script_tags('app') }}
     {% endblock %}
 </head>
-<body data-controller="booking-journey site-shell">
+<body data-controller="booking-journey site-shell page-reveal">
     <a class="skip-link" href="#main-content">{{ 'ui.skip_content'|trans }}</a>
     {% if is_granted('ROLE_TESTER') %}
     <aside class="team-banner" aria-label="{{ 'team.preview'|trans }}">
@@ -103,7 +103,7 @@
         <div data-team-form></div>
     </dialog>
     {% endif %}
-    <header class="sticky-top bg-peps border-bottom">
+    <header class="sticky-top bg-peps border-bottom" data-reveal="fade">
         <nav class="navbar navbar-expand-xl py-3">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center gap-2" href="{{ path('app_home') }}">
@@ -217,9 +217,11 @@
             </div>
             <div class="border-top pt-3 mt-3 d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted">
                 <p class="mb-0">&copy; {{ 'now'|date('Y') }} Roaming Lille. {{ 'footer.rights'|trans }}</p>
+                {% include 'legal/_links.html.twig' %}
             </div>
         </div>
     </footer>
+    {% include 'legal/_cookie_dialog.html.twig' %}
 
 </body>
 </html>

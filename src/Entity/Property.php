@@ -17,6 +17,50 @@ class Property
     #[ORM\Column(options: ['default' => false])]
     private bool $active = false;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $minimumStay = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $address = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $latitude = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $longitude = null;
+
+    public function getAddress(): ?string { return $this->address; }
+    public function getLatitude(): ?float { return $this->latitude; }
+    public function getLongitude(): ?float { return $this->longitude; }
+    public function setAddress(?string $address): self
+    {
+        $address = $address !== null ? trim($address) : null;
+        $normalize = static fn (?string $value): string => trim(preg_replace('/[,\s]+/u', ' ', preg_replace('/[,\s]+france$/iu', '', mb_strtolower(str_replace('’', "'", $value ?? '')))));
+        if ($normalize($address) !== $normalize($this->address)) $this->latitude = $this->longitude = null;
+        $this->address = $address ?: null;
+        return $this;
+    }
+    public function setCoordinates(?float $latitude, ?float $longitude): self
+    {
+        if (($latitude === null) !== ($longitude === null) || ($latitude !== null && (!is_finite($latitude) || !is_finite($longitude) || abs($latitude) > 90 || abs($longitude) > 180))) {
+            throw new \InvalidArgumentException('Invalid property coordinates.');
+        }
+        $this->latitude = $latitude; $this->longitude = $longitude;
+        return $this;
+    }
+    public function getDirectionsUrl(): ?string
+    {
+        return $this->address ? 'https://www.google.com/maps/dir/?'.http_build_query(['api' => 1, 'destination' => $this->address], '', '&', PHP_QUERY_RFC3986) : null;
+    }
+
+    public function getMinimumStay(): ?int { return $this->minimumStay; }
+    public function setMinimumStay(?int $nights): self
+    {
+        if ($nights !== null && $nights < 1) { throw new \InvalidArgumentException('Minimum stay must be positive.'); }
+        $this->minimumStay = $nights;
+        return $this;
+    }
+
     public function getGuestLuckyId(): ?int { return $this->guestLuckyId; }
     public function setGuestLuckyId(?int $id): self { $this->guestLuckyId = $id; return $this; }
     public function isActive(): bool { return $this->active; }

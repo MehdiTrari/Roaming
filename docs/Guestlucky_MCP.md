@@ -2,6 +2,8 @@ Je te conseille de mettre ce fichier à la racine de Roaming, par exemple **`doc
 
 # GuestLucky MCP — Documentation d’intégration pour Roaming
 
+> Mise à jour du 17 octobre 2026 : cet inventaire contient des observations historiques. La connexion MCP de Symfony et la synchronisation automatique du catalogue (quatre logements, dont Douai) sont documentées dans [MCP et synchronisation automatique](GuestLucky_MCP_et_Synchronisation.md). La clé réelle reste uniquement dans la configuration privée.
+
 > Documentation technique destinée au projet **Roaming** et aux agents de développement tels que **Codex**.
 >
 > Cette documentation décrit les capacités exposées par le MCP GuestLucky actuellement connecté au compte Roaming.

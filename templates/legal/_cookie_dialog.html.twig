@@ -1,0 +1,18 @@
+{% trans_default_domain 'legal' %}
+<dialog id="privacy-preferences" class="privacy-dialog" aria-labelledby="privacy-title" aria-describedby="privacy-description">
+    <div class="privacy-dialog-heading">
+        <div><p class="legal-eyebrow">Roaming Lille</p><h2 id="privacy-title">{{ 'legal.cookies.preferences'|trans }}</h2></div>
+        <button type="button" class="search-popover-close" data-privacy-close aria-label="{{ 'ui.close'|trans({}, 'messages') }}">×</button>
+    </div>
+    <p id="privacy-description">{{ 'legal.cookies.dialog_description'|trans }}</p>
+    <div class="privacy-category"><div><h3>{{ 'legal.cookies.essential'|trans }}</h3><p>{{ 'legal.cookies.essential_short'|trans }}</p></div><span class="privacy-badge">{{ 'legal.cookies.always_active'|trans }}</span></div>
+    <div class="privacy-category"><div><h3>{{ 'legal.cookies.guestlucky'|trans }}</h3><p>{{ 'legal.cookies.guestlucky_short'|trans }}</p><p class="privacy-current" data-privacy-status role="status" aria-live="polite" data-allowed="{{ 'legal.cookies.allowed'|trans }}" data-refused="{{ 'legal.cookies.refused'|trans }}"></p><label class="privacy-service-toggle"><input type="checkbox" data-privacy-service="guestlucky"> {{ 'legal.cookies.guestlucky_toggle'|trans }}</label></div></div>
+    <div class="privacy-category"><div><h3>{{ 'legal.cookies.maps'|trans }}</h3><p>{{ 'legal.cookies.maps_short'|trans }}</p><label class="privacy-service-toggle"><input type="checkbox" data-privacy-service="maps"> {{ 'legal.cookies.maps_toggle'|trans }}</label></div></div>
+    <p class="small text-muted">{{ 'legal.cookies.choice_duration'|trans }}</p>
+    <div class="privacy-actions">
+        <button type="button" class="btn btn-outline-secondary" data-privacy-refuse>{{ 'legal.cookies.refuse'|trans }}</button>
+        <button type="button" class="btn btn-outline-secondary" data-privacy-allow>{{ 'legal.cookies.allow'|trans }}</button>
+    </div>
+    <button type="button" class="btn btn-primary text-white privacy-save" data-privacy-save>{{ 'legal.cookies.save'|trans }}</button>
+    <a class="privacy-details" href="{{ path('app_cookies', {_locale: app.request.locale}) }}">{{ 'legal.cookies.details'|trans }}</a>
+</dialog>

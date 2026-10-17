@@ -1,0 +1,26 @@
+# Public information only. Complete the empty fields from contracts before launch.
+parameters:
+    app.legal:
+        updated: '2026-10-18'
+        company: 'ROAMING'
+        form: 'SAS'
+        capital: '1 000 €'
+        address: 'Appartement 1, 34 Rue Basse, 59800 Lille, France'
+        siren: '951 207 166'
+        siret: '951 207 166 00020'
+        registry: 'Lille Métropole'
+        vat: 'FR44951207166'
+        publication_director: 'Nizar Trabelsi'
+        email: 'contact@roamingfr.com'
+        phone: '+33 6 60 34 40 71'
+        host_brand: 'Hostinger'
+        host_entity: ''
+        host_address: ''
+        host_phone: ''
+        host_url: 'https://www.hostinger.com/fr/contact'
+        # Validate real retention procedures, providers and transfers before publishing.
+        privacy_reviewed: false
+        contact_retention: {fr: '', en: ''}
+        logs_retention: {fr: '', en: ''}
+        team_retention: {fr: '', en: ''}
+        providers_location: {fr: '', en: ''}

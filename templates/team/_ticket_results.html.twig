@@ -1,0 +1,21 @@
+<div class="ticket-results-heading"><h2>{{ 'team.all_tickets'|trans }}</h2><span class="ticket-result-count">{{ total }} {{ 'team.results'|trans }}</span></div>
+<div class="ticket-list">
+{% for ticket in tickets %}
+<article class="ticket-card" data-tone="{{ ticket.status }}">
+    <div class="ticket-card-main">
+        <div class="ticket-card-badges"><span class="ticket-number">#{{ ticket.id }}</span>{% include 'team/_badge.html.twig' with {kind: 'status', value: ticket.status} %}{% include 'team/_badge.html.twig' with {kind: 'category', value: ticket.category} %}{% include 'team/_badge.html.twig' with {kind: 'priority', value: ticket.priority} %}</div>
+        <h3><a href="{{ path('team_ticket_show', {id: ticket.id}) }}">{{ ticket.title }}</a></h3>
+        <p class="ticket-excerpt">{{ ticket.description|length > 200 ? ticket.description|slice(0, 200) ~ '…' : ticket.description }}</p>
+        {% if ticket.labels %}<div class="ticket-labels">{% for label in ticket.labels %}<span class="ticket-label"># {{ label }}</span>{% endfor %}</div>{% endif %}
+        <div class="ticket-card-meta"><span class="ticket-author-avatar" aria-hidden="true">{{ ticket.author.name|slice(0, 1)|upper }}</span><span>{{ ticket.author.name }}</span><span aria-hidden="true">·</span><time datetime="{{ ticket.createdAt|date('c') }}">{{ ticket.createdAt|date('d/m/Y · H:i', 'Europe/Paris') }}</time>{% if ticket.attachment %}<span class="ticket-attachment">↗ {{ 'team.has_capture'|trans }}</span>{% endif %}</div>
+    </div>
+    <a class="ticket-open" href="{{ path('team_ticket_show', {id: ticket.id}) }}" aria-label="{{ 'team.open_ticket'|trans }} #{{ ticket.id }}"><span aria-hidden="true">↗</span></a>
+</article>
+{% else %}
+<div class="ticket-empty"><span aria-hidden="true">⌕</span><h3>{{ 'team.no_matches'|trans }}</h3><p>{{ 'team.no_matches_hint'|trans }}</p></div>
+{% endfor %}
+</div>
+<nav class="ticket-pagination" aria-label="{{ 'team.pagination'|trans }}">
+    <span>{{ 'team.page_number'|trans({'%page%': page, '%pages%': max(1, (total / 30)|round(0, 'ceil'))}) }}</span>
+    <div>{% if page > 1 %}<a data-ticket-page class="btn btn-outline-secondary" href="{{ path('team_tickets', filters|merge({page: page - 1, _locale: app.request.locale})) }}">← {{ 'team.previous'|trans }}</a>{% endif %}{% if page * 30 < total %}<a data-ticket-page class="btn btn-outline-secondary" href="{{ path('team_tickets', filters|merge({page: page + 1, _locale: app.request.locale})) }}">{{ 'team.next'|trans }} →</a>{% endif %}</div>
+</nav>

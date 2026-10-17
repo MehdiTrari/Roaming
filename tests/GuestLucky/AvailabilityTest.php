@@ -81,6 +81,31 @@ final class AvailabilityTest extends TestCase
         self::assertFalse($public['availability'][0]['available']);
         self::assertSame(1, $http->getRequestsCount());
     }
+    public function testListingMinimumFloorsDailyRulesEvenOnCachedReads(): void
+    {
+        $data = self::calendarData();
+        $data['days'][0]['min_stay'] = 1;
+        $data['days'][1]['min_stay'] = 4;
+        $http = new MockHttpClient([new MockResponse(json_encode($data))]);
+        $service = $this->service($http);
+        $property = $this->property()->setMinimumStay(2);
+        $days = $this->calendar($service, [$property])['properties'][0]['days'];
+        self::assertSame(2, $days[0]['minStay']);
+        self::assertSame(4, $days[1]['minStay'], 'Stricter date-specific restrictions remain effective.');
+        $property->setMinimumStay(3);
+        self::assertSame(3, $this->calendar($service, [$property])['properties'][0]['days'][0]['minStay']);
+        $property->setMinimumStay(null);
+        self::assertSame(1, $this->calendar($service, [$property])['properties'][0]['days'][0]['minStay']);
+        self::assertSame(1, $http->getRequestsCount());
+    }
+    public function testListingMinimumRejectsTooShortQuotesWithoutProviderCalls(): void
+    {
+        $arrival = BookingDates::today();
+        $http = new MockHttpClient([]);
+        $result = $this->service($http)->quotes([$this->property()->setMinimumStay(2)], $arrival->format('Y-m-d'), $arrival->modify('+1 day')->format('Y-m-d'), 2);
+        self::assertSame('unavailable', $result['availability'][0]['status']);
+        self::assertSame(0, $http->getRequestsCount());
+    }
     public function testPartialFailureDoesNotContaminateAnotherProperty(): void
     {
         $bad = self::calendarData(2); $bad['days'][0]['date'] = '2027-01-01';

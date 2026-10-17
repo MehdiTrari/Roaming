@@ -14,5 +14,6 @@
             {% if invalid %}<div id="{{ errorId }}" class="invalid-feedback d-block" role="alert">{{ form_errors(field) }}</div>{% endif %}
         </div>
     {% endfor %}
+    <p class="contact-privacy-note small text-muted">{{ 'legal.contact_notice'|trans({}, 'legal') }} <a href="{{ path('app_privacy', {_locale: app.request.locale}) }}">{{ 'legal.privacy.title'|trans({}, 'legal') }}</a>.</p>
     <div class="d-grid">{{ form_widget(contactForm.submit, {label: 'ui.send', attr: {class: 'btn btn-primary text-white fw-semibold no-hover-lift'}}) }}</div>
 {{ form_end(contactForm) }}

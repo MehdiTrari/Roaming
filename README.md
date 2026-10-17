@@ -11,7 +11,8 @@
 ### ✨ Fonctionnalités principales
 
 - 🔍 **Recherche avancée** — Filtrage par destination, dates et nombre de voyageurs
-- 🏡 **Catalogue de propriétés** — 3 logements actifs : Lambersart, Roubaix et Croix
+- 🏡 **Catalogue de propriétés** — 4 logements actifs : Lambersart, Roubaix, Douai et Croix
+- 🗺️ **Emplacements** — Carrousel des disponibilités relié aux adresses exactes, carte interactive et itinéraires ; [documentation](docs/Property_locations_et_cartes.md)
 - 📅 **Intégration Airbnb** — Notes et avis synchronisés depuis Airbnb
 - 🌍 **Multilingue** — Disponible en français et anglais
 - 📧 **Formulaire de contact** — Communication directe avec l'équipe
@@ -274,6 +275,8 @@ Propriétaire — © 2025 Roaming Lille. Tous droits réservés.
 
 
 ## GuestLucky
+
+La synchronisation automatique du catalogue par MCP est disponible depuis le 17 octobre 2026. Voir [le guide MCP et synchronisation](docs/GuestLucky_MCP_et_Synchronisation.md) : connexion privée, nouveaux logements, commande `app:guestlucky:sync`, tâche Windows toutes les cinq minutes et configuration du cron en production.
 
 Le catalogue, les calendriers et la recherche utilisent GuestLucky. La mise en ligne des disponibilités est désactivée par défaut jusqu’à validation du calendrier fournisseur.
 

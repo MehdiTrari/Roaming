@@ -1,0 +1,22 @@
+{% trans_default_domain 'legal' %}
+<p class="legal-introduction">{{ 'legal.privacy.intro'|trans }}</p>
+<h2>{{ 'legal.privacy.controller_title'|trans }}</h2>
+<p>{{ legal_information.company }}, {{ legal_information.form }}, {{ legal_information.address }}. {{ 'legal.privacy.contact'|trans }} <a href="mailto:{{ legal_information.email }}">{{ legal_information.email }}</a>.</p>
+<h2>{{ 'legal.privacy.purposes_title'|trans }}</h2>
+{% for purpose in ['contact', 'search', 'booking', 'map', 'security', 'team'] %}
+<section class="legal-purpose"><h3>{{ ('legal.privacy.' ~ purpose ~ '_title')|trans }}</h3><p>{{ ('legal.privacy.' ~ purpose ~ '_data')|trans }}</p><p class="text-muted"><strong>{{ 'legal.privacy.basis'|trans }}</strong> {{ ('legal.privacy.' ~ purpose ~ '_basis')|trans }}</p></section>
+{% endfor %}
+<h2>{{ 'legal.privacy.recipients_title'|trans }}</h2><p>{{ 'legal.privacy.recipients'|trans }}</p>
+<h2>{{ 'legal.privacy.retention_title'|trans }}</h2>
+<p>{{ 'legal.privacy.retention_intro'|trans }}</p>
+<dl class="legal-facts">
+    {% for key in ['contact_retention', 'logs_retention', 'team_retention'] %}
+    <div><dt>{{ ('legal.fields.' ~ key)|trans }}</dt><dd>{{ attribute(legal_information, key)[app.request.locale] ?: 'legal.pending'|trans }}</dd></div>
+    {% endfor %}
+    <div><dt>{{ 'legal.cookies.choice'|trans }}</dt><dd>{{ 'legal.privacy.choice_retention'|trans }}</dd></div>
+</dl>
+<h2>{{ 'legal.privacy.transfers_title'|trans }}</h2><p>{{ legal_information.providers_location[app.request.locale] ?: 'legal.privacy.transfers_pending'|trans }}</p>
+<h2>{{ 'legal.privacy.rights_title'|trans }}</h2><p>{{ 'legal.privacy.rights'|trans }}</p>
+<p>{{ 'legal.privacy.exercise'|trans }} <a href="mailto:{{ legal_information.email }}">{{ legal_information.email }}</a>. {{ 'legal.privacy.response'|trans }}</p>
+<p>{{ 'legal.privacy.complaint'|trans }} <a href="https://www.cnil.fr/fr/adresser-une-plainte" target="_blank" rel="noopener noreferrer">CNIL</a>.</p>
+<h2>{{ 'legal.cookies.title'|trans }}</h2><p>{{ 'legal.privacy.cookies'|trans }} <a href="{{ path('app_cookies', {_locale: app.request.locale}) }}">{{ 'legal.cookies.details'|trans }}</a>.</p>

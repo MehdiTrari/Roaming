@@ -1,0 +1,16 @@
+{% trans_default_domain 'legal' %}
+<p class="legal-introduction">{{ 'legal.cookies.intro'|trans }}</p>
+<button type="button" class="btn btn-primary text-white mb-4" data-privacy-open>{{ 'legal.cookies.preferences'|trans }}</button>
+<h2>{{ 'legal.cookies.essential'|trans }}</h2><p>{{ 'legal.cookies.essential_text'|trans }}</p>
+<dl class="legal-facts">
+    {% for item in ['session', 'csrf', 'theme', 'choice'] %}
+    <div><dt>{{ ('legal.cookies.' ~ item)|trans }}</dt><dd>{{ ('legal.cookies.' ~ item ~ '_text')|trans }}</dd></div>
+    {% endfor %}
+</dl>
+<h2>{{ 'legal.cookies.guestlucky'|trans }}</h2><p>{{ 'legal.cookies.guestlucky_text'|trans }}</p>
+<h2>{{ 'legal.cookies.maps'|trans }}</h2><p>{{ 'legal.cookies.maps_short'|trans }} <a href="https://openfreemap.org/privacy/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a>.</p>
+<p>{{ 'legal.cookies.external_link'|trans }}</p>
+<h2>{{ 'legal.cookies.control_title'|trans }}</h2><p>{{ 'legal.cookies.control'|trans }}</p>
+<p>{{ 'legal.cookies.choice_duration'|trans }}</p>
+<h2>{{ 'legal.cookies.future_title'|trans }}</h2><p>{{ 'legal.cookies.future'|trans }}</p>
+<p><a href="https://www.cnil.fr/fr/cookies-et-autres-traceurs/que-dit-la-loi" target="_blank" rel="noopener noreferrer">{{ 'legal.cookies.cnil_link'|trans }}</a></p>

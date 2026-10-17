@@ -1,0 +1,12 @@
+<div class="calendar-fetch-loader" aria-hidden="true">
+    <div class="calendar-fetch-skeleton">{% for cell in 1..35 %}<span style="--cell: {{ cell % 7 }}"></span>{% endfor %}</div>
+    <div class="calendar-fetch-card">
+        <span class="calendar-fetch-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5 2 2 5-4"/></svg>
+            <span class="calendar-fetch-dot"></span>
+        </span>
+        <strong>{{ 'calendar.checking_dates'|trans }}</strong>
+        <p>{{ 'calendar.checking_dates_hint'|trans }}</p>
+        <span class="calendar-fetch-track"><span></span></span>
+    </div>
+</div>

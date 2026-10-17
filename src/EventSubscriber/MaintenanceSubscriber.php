@@ -24,7 +24,7 @@ final class MaintenanceSubscriber implements EventSubscriberInterface
     { return [KernelEvents::REQUEST => ['request', -16], KernelEvents::EXCEPTION => ['exception', 128], KernelEvents::RESPONSE => ['response', -128]]; }
     private function isPublic(Request $request): bool
     {
-        return in_array($request->getPathInfo(), ['/equipe/connexion', '/equipe/deconnexion', '/robots.txt'], true)
+        return in_array($request->getPathInfo(), ['/equipe/connexion', '/equipe/deconnexion', '/robots.txt', '/mentions-legales', '/politique-de-confidentialite', '/cookies'], true)
             || ($this->environment === 'dev' && preg_match('#^/(_profiler|_wdt)/#', $request->getPathInfo()));
     }
     private function blocked(Request $request): Response
