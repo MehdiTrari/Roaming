@@ -108,12 +108,24 @@
 
         {% if property.images|length > 0 %}
             <section id="propertyGallery" class="carousel slide property-gallery" {% if property.images|length > 1 %}data-controller="property-gallery"{% endif %} aria-label="{{ 'listing.photos_of'|trans({'%name%': property.title}) }}" aria-roledescription="{{ 'property.image_carousel'|trans }}" tabindex="0">
+                <div class="property-gallery-layout">
                 <div class="carousel-inner property-gallery-main">
                     {% for image in property.images %}
                         <div class="carousel-item {{ loop.first ? 'active' : '' }} h-100" role="group" aria-label="{{ 'listing.photo_position'|trans({'%index%': loop.index, '%total%': property.images|length}) }}">
-                            {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: 'd-block w-100 h-100 object-fit-cover', alt: image.alt ?: property.title, sizes: '(min-width: 1400px) 1296px, (min-width: 1200px) 1116px, (min-width: 992px) 936px, (min-width: 768px) 696px, calc(100vw - 24px)', priority: loop.first} only %}
+                            {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: 'd-block w-100 h-100 object-fit-cover', alt: image.alt ?: property.title, sizes: '(min-width: 1600px) 960px, (min-width: 992px) 62vw, 100vw', priority: loop.first} only %}
                         </div>
                     {% endfor %}
+                </div>
+                {% if property.images|length > 1 %}
+                <div class="property-gallery-peeks">
+                    {% for image in property.images|slice(1, 2) %}
+                    <button type="button" data-bs-target="#propertyGallery" data-bs-slide-to="{{ loop.index }}" aria-label="{{ 'listing.photo_position'|trans({'%index%': loop.index + 1, '%total%': property.images|length}) }}">
+                        {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: '', alt: '', sizes: '(min-width: 992px) 30vw, 1px'} only %}
+                        <span aria-hidden="true">&#8599;</span>
+                    </button>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 </div>
                 {% if property.images|length > 1 %}
                     <button class="carousel-control-prev" type="button" data-bs-target="#propertyGallery" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">{{ 'property.carousel_prev'|trans }}</span></button>
@@ -145,7 +157,7 @@
                 <section class="property-panel" id="property-amenities" aria-labelledby="property-amenities-heading">
                     <h2 id="property-amenities-heading">{{ 'property.popular_amenities'|trans }}</h2>
                     <ul class="property-amenities">
-                        {% for amenity in property.amenities %}<li>{% if amenity.icon %}<span class="property-amenity-icon" aria-hidden="true">{{ amenity.icon|raw }}</span>{% endif %}<span>{{ amenity.name|trans }}</span></li>{% else %}<li class="property-empty-state"><p>{{ 'listing.no_amenities'|trans }}</p><a href="{{ path('app_contact') }}">{{ 'listing.ask_amenities'|trans }}</a></li>{% endfor %}
+                        {% for amenity in property.amenities|display_amenities %}<li>{% if amenity.icon %}<span class="property-amenity-icon" aria-hidden="true">{{ amenity.icon|raw }}</span>{% endif %}<span>{{ amenity.name|trans }}</span></li>{% else %}<li class="property-empty-state"><p>{{ 'listing.no_amenities'|trans }}</p><a href="{{ path('app_contact') }}">{{ 'listing.ask_amenities'|trans }}</a></li>{% endfor %}
                     </ul>
                 </section>
                 <section class="property-panel" id="property-location" aria-labelledby="property-location-heading">

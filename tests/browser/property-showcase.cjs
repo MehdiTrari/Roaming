@@ -25,7 +25,7 @@ const apertureMatches=()=>{
   page.on('pageerror',error=>errors.push(error.message));
   await context.route('**/*',route=>{
    const url=new URL(route.request().url());
-   if(url.origin!==base||url.pathname.startsWith('/reservation/'))return route.abort();
+   if(url.origin!==new URL(base).origin||url.pathname.startsWith('/reservation/')||route.request().method()!=='GET')return route.abort();
    if(!url.pathname.startsWith('/api/'))return route.continue();
    calls.push(url);
    if(offline)return route.fulfill({status:503,contentType:'application/json',body:'{}'});
@@ -37,16 +37,54 @@ const apertureMatches=()=>{
   });
   const fresh=()=>page.waitForFunction(()=>document.querySelector('.property-showcase.is-ready')&&document.querySelector('#date-range')?._flatpickr);
   const active=()=>page.locator('.showcase-slide.is-active');
+  const collectionCard=slug=>page.locator(`.showcase-slide[data-slug="${slug}"]`);
+  const settled=()=>page.waitForFunction(()=>!document.querySelector('.property-showcase').classList.contains('is-moving'));
   const choose=async slug=>{
    await page.locator(`.showcase-slide[data-slug="${slug}"]`).evaluate(slide=>{
     const index=[...slide.parentElement.children].indexOf(slide);
     slide.closest('.property-showcase').querySelector(`.showcase-picker button[data-index="${index}"]`).click();
    });
+   await settled();
   };
   await page.goto(base+'/?_locale=fr'); await fresh();
   properties=await page.locator('#booking-property option[value]:not([value=""])').evaluateAll(options=>options.map(o=>({slug:o.value,name:o.textContent,city:o.textContent,maxGuests:Number(o.dataset.capacity)})));
+  const collection=page.locator('.property-showcase .showcase-slide');
+  assert.equal(await collection.count(),properties.length,'the home carousel contains all active properties');
+  assert.deepEqual((await collection.evaluateAll(cards=>cards.map(card=>card.dataset.slug))).sort(),properties.map(property=>property.slug).sort());
+  const photoSlug=await page.locator('.showcase-slide:has(img)').first().getAttribute('data-slug');
+  assert.equal(await active().getAttribute('data-has-photo'),'true','carousel opens on an actual photographed stay');
+  for(const property of properties){
+   await choose(property.slug);
+   const card=collectionCard(property.slug);
+   assert.equal(await card.isVisible(),true);
+   assert.equal(await card.locator('.showcase-card').evaluate(element=>element.inert),false,'selected carousel card remains accessible');
+   assert.equal(new URL(await card.locator('.showcase-card-media').getAttribute('href'),base).pathname,'/property/'+property.slug);
+   assert.equal(new URL(await card.locator('.showcase-book').getAttribute('href'),base).searchParams.get('slug'),property.slug);
+   assert.ok(await card.locator('h3').innerText(),'each card names its actual property');
+  }
+  // Both pages share carousel arrows, keyboard selection and real drag input.
+  for(const routePath of ['/?_locale=fr','/disponibilites?_locale=fr']){
+   await page.goto(base+routePath);await page.waitForSelector('.property-showcase.is-ready');
+   const initial=await active().getAttribute('data-slug');
+   await page.locator('.showcase-arrow').last().click();await settled();
+   assert.notEqual(await active().getAttribute('data-slug'),initial);
+   await page.locator('.showcase-arrow').first().click();await settled();
+   assert.equal(await active().getAttribute('data-slug'),initial);
+   await page.locator('.showcase-picker button[aria-pressed="true"]').focus();await page.keyboard.press('End');await settled();
+   assert.equal(await page.locator('.showcase-picker button').last().getAttribute('aria-pressed'),'true');
+   await page.keyboard.press('Home');await settled();
+   assert.equal(await page.locator('.showcase-picker button').first().getAttribute('aria-pressed'),'true');
+   await choose(photoSlug);await active().scrollIntoViewIfNeeded();
+   const media=await active().locator('[data-showcase-card]').boundingBox();
+   await page.mouse.move(media.x+media.width*.8,media.y+100);await page.mouse.down();
+   await page.mouse.move(media.x+media.width*.2,media.y+100,{steps:8});await page.mouse.up();await settled();
+   assert.notEqual(await active().getAttribute('data-slug'),photoSlug,'drag selects a different stay');
+   assert.equal(new URL(page.url()).pathname,new URL(routePath,base).pathname,'drag does not follow a property link');
+  }
+  await page.goto(base+'/disponibilites?_locale=fr');
+  await page.waitForSelector('.availability-showcase.is-ready');
   assert.equal(await page.locator('.showcase-slide').count(),properties.length);
-  const photoSlug=await active().getAttribute('data-slug');
+  await choose(photoSlug);await page.waitForTimeout(650);
   assert.equal(await active().getAttribute('data-has-photo'),'true');
   const initial=await active().getAttribute('data-slug');
   await page.locator('.showcase-arrow').last().click();
@@ -59,19 +97,21 @@ const apertureMatches=()=>{
   assert.equal(await page.locator('.showcase-picker button').first().getAttribute('aria-pressed'),'true');
   await choose(photoSlug); await page.waitForTimeout(650);
   await active().scrollIntoViewIfNeeded();
-  const box=await active().boundingBox(),media=await active().locator('.showcase-card-media').boundingBox();
+  const box=await active().boundingBox(),media=await active().locator('.availability-property-card').boundingBox();
   await page.mouse.move(box.x+box.width*.65,media.y+media.height*.5);
   await page.mouse.down(); await page.mouse.move(box.x+box.width*.25,media.y+media.height*.5,{steps:8}); await page.mouse.up();
   assert.notEqual(await active().getAttribute('data-slug'),photoSlug,'drag must select another property');
-  assert.equal(new URL(page.url()).pathname,'/');
-  for(const entry of ['carousel','property'])for(const width of [1440,390,320]) {
+  assert.equal(new URL(page.url()).pathname,'/disponibilites');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  assert.equal(await active().evaluate(e=>getComputedStyle(e).transitionDuration),'0s');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  for(const entry of ['collection','property'])for(const width of [1440,390,320]) {
    const locale=width===390?'en':'fr';
    await page.setViewportSize({width,height:width===320?700:1000});
    await page.goto(base+'/?_locale='+locale+'&guests=2'); await fresh();
-   await choose(photoSlug);
    const before=calls.length;
    assert.deepEqual(await page.locator('#booking-search-form > .booking-field-horizontal').evaluateAll(fields=>fields.map(field=>field.id)),['property-toggle','date-toggle','guests-toggle'],'field order matches visual and keyboard progression');
-   if(entry==='carousel')await active().locator('.showcase-book').click();
+   if(entry==='collection'){await choose(photoSlug);await collectionCard(photoSlug).locator('.showcase-book').click();}
    else {
     await page.locator('#property-display').click();
     assert.equal(await page.locator('#booking-guide [aria-current="step"]').getAttribute('data-guide-step'),'1');
@@ -84,14 +124,14 @@ const apertureMatches=()=>{
     await page.locator(`[data-property-option="${photoSlug}"]`).click();
    }
    await page.waitForSelector('#date-panel[open]');
-   assert.equal(await page.locator('.tutorial-highlight-overlay').count(),1,'blur remains active on dates, including carousel entry');
+   assert.equal(await page.locator('.tutorial-highlight-overlay').count(),1,'blur remains active on dates, including collection entry');
    assert.equal(await page.locator('#booking-property').inputValue(),photoSlug);
    assert.equal(await page.locator('#property-display').innerText(),await page.locator('#property-display-text').innerText(),'no stray v after the selected property');
    assert.equal(new URL(page.url()).searchParams.get('slug'),photoSlug);
    assert.equal(await page.locator('#arrival-date').inputValue(),'');
    assert.equal(await page.locator('#booking-guide [aria-current="step"]').getAttribute('data-guide-step'),'2');
    assert.equal(await page.locator('#booking-guide [data-guide-step="1"]').evaluate(item=>item.classList.contains('is-done')),true);
-   await page.waitForFunction(()=>document.getElementById('date-availability-status').dataset.state==='fresh');
+   await page.waitForFunction(()=>document.getElementById('date-availability-status').dataset.state==='fresh'&&!document.getElementById('date-calendar-surface').classList.contains('is-checking'));
    assert.ok(calls.slice(before).every(url=>url.pathname==='/api/properties/'+photoSlug+'/availability'));
    const dates=await page.evaluate(()=>{
     const format=d=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
@@ -109,6 +149,7 @@ const apertureMatches=()=>{
    if(width===390)await page.mouse.click(4,500);
    else if(width===320)await page.locator('#guests-panel .search-popover-close').click();
    else await page.locator('#guests-apply').click();
+   await page.locator('#guests-panel').waitFor({state:'hidden'});
    assert.equal(await page.locator('#guests-panel').isVisible(),false);
    assert.equal(await page.locator('#booking-guide [aria-current="step"]').getAttribute('data-guide-step'),'4');
    assert.equal(await page.locator('.booking-submit').evaluate(e=>e===document.activeElement),true);
@@ -191,10 +232,19 @@ const apertureMatches=()=>{
    await page.goto(base+'/?_locale='+locale);await fresh();
    await page.evaluate(value=>document.documentElement.setAttribute('data-bs-theme',value),theme);
    await page.locator('#featured').scrollIntoViewIfNeeded();
-   assert.equal(await page.locator('.showcase-slide.is-active').count(),1);
-   assert.equal(await page.locator('.showcase-slide:not(.is-active) [data-showcase-card]').evaluateAll(cards=>cards.every(card=>card.inert)),true);
+   assert.equal(await collection.count(),properties.length);
+   await choose(photoSlug);
+   assert.equal(await collection.locator('[data-showcase-card]').evaluateAll(cards=>cards.filter(card=>!card.inert).length),1,'only the active card exposes links');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-   const card=await active().boundingBox();assert.ok(card.x>=0&&card.x+card.width<=width,JSON.stringify({locale,theme,width,card}));
+   for(const card of await active().evaluateAll(cards=>cards.map(element=>{const box=element.getBoundingClientRect();return{x:box.x,width:box.width};}))){
+    assert.ok(card.x>=0&&card.x+card.width<=width,JSON.stringify({locale,theme,width,card}));
+   }
+   const photoLayout=await collectionCard(photoSlug).evaluate(card=>{
+    const media=card.querySelector('.showcase-card-media').getBoundingClientRect(),info=card.querySelector('.showcase-card-info').getBoundingClientRect();
+    return{height:media.height,width:media.width,mediaBottom:media.bottom,infoTop:info.top};
+   });
+   assert.ok(photoLayout.height>=260&&photoLayout.height>=photoLayout.width*.4,'wide central cards keep a generous photo area');
+   assert.ok(photoLayout.mediaBottom<=photoLayout.infoTop+1,'property information follows its photograph');
    if(locale==='fr'&&theme==='light'&&[1440,390].includes(width))await page.screenshot({path:`var/showcase-${width}.png`,fullPage:false});
   }
   // The shade must never survive dismissal or navigation away from the guide.
@@ -203,7 +253,7 @@ const apertureMatches=()=>{
    await page.evaluate(value=>document.documentElement.dataset.bsTheme=value,dismissal==='outside'?'dark':'light');
    await page.evaluate(slug=>document.dispatchEvent(new CustomEvent('booking:guide',{detail:{slug},cancelable:true})),photoSlug);
    await page.waitForSelector('#date-panel[open]');
-   await page.waitForFunction(()=>document.getElementById('date-availability-status').dataset.state==='fresh');
+   await page.waitForFunction(()=>document.getElementById('date-availability-status').dataset.state==='fresh'&&!document.getElementById('date-calendar-surface').classList.contains('is-checking'));
    const dates=await page.evaluate(()=>{
     const start=new Date();start.setDate(start.getDate()+3);const end=new Date(start);end.setDate(end.getDate()+2);
     return [start,end].map(d=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).format(d));
@@ -219,13 +269,14 @@ const apertureMatches=()=>{
    if(dismissal==='focus')await page.locator('#date-display').focus();
    if(dismissal==='turbo'){await page.evaluate(()=>window.Turbo.visit('/contact-us'));await page.waitForURL('**/contact-us*');}
    assert.equal(await page.locator('.tutorial-highlight-overlay').count(),0,`${dismissal} removes the shade`);
+   if(dismissal==='escape')assert.equal(await page.locator('.booking-submit').evaluate(button=>button===document.activeElement),true,'Escape at the search step retains the search button focus');
    if(dismissal!=='turbo')assert.equal(await page.locator('.booking-submit').evaluate(button=>button.getAnimations().some(animation=>animation.effect.getTiming().iterations===Infinity)),false,'the invitation animation is cancelled');
   }
   await page.goto(base+'/?_locale=fr');await fresh();
   await page.emulateMedia({reducedMotion:'reduce'});
-  assert.equal(await active().evaluate(e=>getComputedStyle(e).transitionDuration),'0s');
-  await choose(photoSlug);await active().locator('.showcase-book').click();await page.waitForSelector('#date-panel[open]');
-  await page.keyboard.press('Escape');assert.equal(await page.locator('#booking-guide').isVisible(),false);
+  await choose(photoSlug);
+  await collectionCard(photoSlug).locator('.showcase-book').click();await page.waitForSelector('#date-panel[open]');
+  await page.keyboard.press('Escape');await page.locator('#date-panel').waitFor({state:'hidden'});assert.equal(await page.locator('#booking-guide').isVisible(),false);
   assert.equal(await page.locator('#date-display').evaluate(e=>e===document.activeElement),true);
   offline=true;
   await page.evaluate(slug=>document.dispatchEvent(new CustomEvent('booking:guide',{detail:{slug},cancelable:true})),photoSlug);
@@ -233,12 +284,45 @@ const apertureMatches=()=>{
   await page.waitForFunction(()=>document.getElementById('date-availability-status').dataset.state==='unverified');
   assert.equal(await page.locator('#date-apply').isDisabled(),true);
   await page.keyboard.press('Escape');
+  // Grow only the rendered carousel to twenty stays. Records and API fixtures
+  // remain untouched; this checks bounded controls as the catalogue expands.
+  for(const routePath of ['/?_locale=en','/disponibilites?_locale=en'])for(const width of [1440,320]){
+   await page.setViewportSize({width,height:900});await page.goto(base+routePath);
+   await page.waitForSelector('.property-showcase.is-ready');
+   await page.evaluate(()=>document.documentElement.dataset.bsTheme='dark');
+   const carousel=page.locator('.property-showcase');
+   await carousel.evaluate(element=>element.setAttribute('data-controller',''));
+   await page.evaluate(()=>new Promise(requestAnimationFrame));
+   await carousel.evaluate(element=>{
+    const stage=element.querySelector('.showcase-stage'),rail=element.querySelector('.showcase-picker');
+    const original=[...stage.children],choice=rail.querySelector('button').cloneNode(true);
+    const slides=[],choices=[];
+    for(let index=0;index<20;index++){
+     const slide=original[index%original.length].cloneNode(true);slide.dataset.slug='qa-stay-'+index;slide.querySelector('.showcase-side-select').dataset.index=String(index);slides.push(slide);
+     const option=choice.cloneNode(true);option.dataset.index=String(index);option.textContent='Logement de test '+(index+1);option.setAttribute('aria-label',option.textContent);choices.push(option);
+    }
+    stage.replaceChildren(...slides);rail.replaceChildren(...choices);element.dataset.activeSlug='qa-stay-0';element.dataset.propertyShowcaseAnimatedValue='false';element.classList.remove('is-ready');element.setAttribute('data-controller','property-showcase');
+   });
+   await page.waitForSelector('.property-showcase.is-ready');
+   assert.equal(await page.locator('.showcase-slide').count(),20);
+   const controls=await page.locator('.showcase-controls').boundingBox();
+   assert.ok(controls.x>=0&&controls.x+controls.width<=width+1&&controls.height<=72,`bounded twenty-stay controls: ${JSON.stringify({width,controls})}`);
+   assert.equal(await page.locator('.showcase-picker').evaluate(rail=>rail.scrollWidth>rail.clientWidth),true,'choices scroll horizontally without adding rows');
+   await page.locator('.showcase-picker button[aria-pressed="true"]').focus();await page.keyboard.press('End');
+   assert.equal(await active().getAttribute('data-slug'),'qa-stay-19');
+   await page.waitForFunction(()=>{const item=document.querySelector('.showcase-picker [aria-pressed="true"]'),chip=item.getBoundingClientRect(),rail=item.parentElement.getBoundingClientRect();return chip.left>=rail.left-1&&chip.right<=rail.right+1;});
+   const selection=await page.locator('.showcase-picker button[aria-pressed="true"]').evaluate(button=>{const item=button.getBoundingClientRect(),rail=button.parentElement.getBoundingClientRect();return{left:item.left,right:item.right,railLeft:rail.left,railRight:rail.right};});
+   assert.ok(selection.left>=selection.railLeft-1&&selection.right<=selection.railRight+1,'active choice remains visible after keyboard selection');
+   assert.equal(await page.locator('.showcase-picker button').evaluateAll(buttons=>buttons.filter(button=>button.tabIndex===0).length),1,'one tab stop in the choice rail');
+   await page.keyboard.press('ArrowRight');assert.equal(await active().getAttribute('data-slug'),'qa-stay-0','twenty-stay carousel wraps');
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  }
   const noJs=await browser.newContext({javaScriptEnabled:false,...(process.env.ROAMING_BROWSER_STORAGE?{storageState:process.env.ROAMING_BROWSER_STORAGE}:{})});
   const noJsPage=await noJs.newPage();await noJsPage.goto(base+'/?_locale=fr');
   assert.equal(await noJsPage.locator('.showcase-card').count(),properties.length);
   assert.equal(await noJsPage.locator('.showcase-card a.showcase-book[href*="slug="]').count(),properties.length);
   await noJs.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: carousel navigation and motion, automatic property/dates/guests/search guide and carousel entry at 1440/390/320, same/all property confirmation, capacities, 16 FR/EN light/dark layouts, reduced motion, cancellation, calendar failure and no-JS fallback. Provider calls simulated; no bookings.');
+  console.log('PASS: home/availability carousel arrows, keyboard and drag; bounded twenty-stay controls; property/dates/guests/search guide at 1440/390/320, capacities, 16 FR/EN light/dark layouts, reduced motion, cancellation, calendar failure and no-JS fallback. Provider calls simulated; no bookings.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

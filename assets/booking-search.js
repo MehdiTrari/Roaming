@@ -5,6 +5,7 @@ import { readStay, writeStay, validStay, realDate, parisToday, bookingHorizon } 
 import {CalendarAvailability} from './calendar-availability';
 import {SearchProgress} from './search-progress';
 import {CalendarProgress} from './calendar-progress';
+import {animateSearchSurface, scrollToElement, scrollToPosition} from './ui-motion';
 
 let cleanup = () => {};
 function initialize() {
@@ -27,7 +28,10 @@ function initialize() {
     const propertyToggle = document.getElementById('property-toggle');
     const panels = [[panel, dateButton], [guestsPanel, guestsButton], [propertyPanel, propertyButton]];
     const guide = document.getElementById('booking-guide');
-    let guideStep = 0, guideRequest;
+    const panelAnimations = new Map(), closingPanels = new Set();
+    let guideAnimation, positionFrame, roomRequest;
+    let guideStep = 0, guideRequest, guideOrigin;
+    let initialPlacementChecked = false;
     const setSpotlight = step => form.dispatchEvent(new CustomEvent('tutorial-highlight:toggle', {detail: {active: step > 0, pulse: step === 4}}));
     const saved = readStay();
     property.value = Array.from(property.options).some(option => option.value === saved.slug) ? saved.slug : '';
@@ -43,8 +47,8 @@ function initialize() {
     const clearButton = document.getElementById('date-cancel'), applyButton = document.getElementById('date-apply');
     const criteria = () => ({arrivalDate: arrival.value, departureDate: departure.value, guests: guests.value, slug: property.value});
     const capacity = () => Number(property.selectedOptions[0].dataset.capacity || guests.options[guests.options.length - 1].value);
-    const positionPanel = (element, button) => {
-        if (!element.open) return;
+    const positionPanel = (element, button, preparing = false) => {
+        if (!element.open && !preparing || closingPanels.has(element)) return;
         const viewport = window.visualViewport;
         const width = viewport?.width || innerWidth, height = viewport?.height || innerHeight;
         const offsetX = viewport?.offsetLeft || 0, offsetY = viewport?.offsetTop || 0;
@@ -52,33 +56,97 @@ function initialize() {
         const header = document.querySelector('header.sticky-top')?.getBoundingClientRect();
         const topLimit = offsetY + (small ? gap : Math.max(gap, (header?.bottom || 0) + gap));
         element.style.maxHeight = `${Math.max(44, offsetY + height - gap - topLimit)}px`;
-        let rect = button.getBoundingClientRect();
-        // Keep desktop surfaces below their field; make room by scrolling the page.
-        if (!small) {
-            const needed = rect.bottom + gap + element.getBoundingClientRect().height - (offsetY + height - gap);
-            const scroll = Math.max(0, Math.min(needed, rect.top - topLimit));
-            if (scroll > 1) { window.scrollBy({top: scroll, behavior: 'instant'}); rect = button.getBoundingClientRect(); }
-            element.style.maxHeight = `${Math.max(44, offsetY + height - gap - rect.bottom - gap)}px`;
-        }
-        const box = element.getBoundingClientRect();
-        let top = rect.bottom + gap;
-        if (small) top = offsetY + height - gap - box.height;
-        element.style.top = `${top}px`;
+        const rect = button.getBoundingClientRect();
+        const bottomLimit = offsetY + height - gap;
+        const bar = form.closest('.booking-bar').getBoundingClientRect();
+        // Desktop panels always unfold below the complete, centered module.
+        const belowAnchor = Math.max(rect.bottom, bar.bottom);
+        const below = Math.max(0, bottomLimit - belowAnchor - gap);
+        if (!small) element.style.maxHeight = `${Math.max(44, Math.min(bottomLimit - topLimit, below))}px`;
+        const box = {width: element.offsetWidth, height: element.offsetHeight};
+        const top = small ? bottomLimit - box.height : belowAnchor + gap;
+        element.dataset.placement = small ? 'sheet' : 'below';
+        element.style.transformOrigin = 'center top';
+        element.style.top = `${Math.max(topLimit, Math.min(top, bottomLimit - box.height))}px`;
         element.style.left = `${small ? offsetX + (width - box.width) / 2 : Math.max(offsetX + gap, Math.min(rect.left, offsetX + width - box.width - gap))}px`;
     };
-    const setPanel = (element, button, open) => {
-        if (open === element.open) return;
+    const keepSearchVisible = async button => {
+        // Only the first opening may move the page, never subsequent steps.
+        if (initialPlacementChecked) return;
+        initialPlacementChecked = true;
+        roomRequest?.abort();
+        const request = new AbortController(); roomRequest = request;
+        // Let the guide unfold before measuring. Its extra height must never
+        // cause native focus scrolling or a second jump to the page header.
+        await guideAnimation?.finished.catch(() => {});
+        if (request.signal.aborted || listeners.signal.aborted) return;
+        const header = document.querySelector('header.sticky-top');
+        const top = (header?.getBoundingClientRect().bottom || 0) + 16;
+        const bottom = (window.visualViewport?.height || innerHeight) + (window.visualViewport?.offsetTop || 0) - 16;
+        const bar = form.closest('.booking-bar').getBoundingClientRect();
+        const box = bar.height <= bottom - top ? bar : button.getBoundingClientRect();
+        const delta = box.top + box.height / 2 - (top + bottom) / 2;
+        // Leave an already comfortable position alone, including slightly
+        // below the midpoint. Only a low form needs more room underneath.
+        if (delta > (bottom - top) * .1) await scrollToPosition(scrollY + delta, {signal: request.signal, gentle: true});
+        if (roomRequest === request) roomRequest = null;
+    };
+    const finishPanelClose = (element, button, restoreFocus = true) => {
+        panelAnimations.get(element)?.cancel(); panelAnimations.delete(element); closingPanels.delete(element);
+        if (element === panel) calendarProgress.cancel();
+        element.close(); element.classList.add('d-none'); element.style.pointerEvents = '';
+        button.setAttribute('aria-expanded', 'false');
+        if (restoreFocus && button.isConnected) button.focus({preventScroll: true});
+    };
+    const setPanel = (element, button, open, immediate = false) => {
+        if (open && element.open && !closingPanels.has(element)) return;
+        if (!open && (!element.open || closingPanels.has(element)) && !immediate) return;
+        const style = element.open ? getComputedStyle(element) : null;
+        const current = style ? {opacity: style.opacity, transform: style.transform, clipPath: style.clipPath} : null;
+        panelAnimations.get(element)?.cancel(); panelAnimations.delete(element);
         if (open) {
-            element.classList.remove('d-none'); element.showModal(); positionPanel(element, button);
+            roomRequest?.abort();
+            // A step change has exactly one live modal and one focus destination.
+            panels.filter(([other]) => other !== element && other.open).forEach(([other, trigger]) => finishPanelClose(other, trigger, false));
+            closingPanels.delete(element); element.style.pointerEvents = '';
+            element.classList.remove('d-none');
+            if (!element.open) {
+                // Position the hidden surface BEFORE native showModal autofocus.
+                // Otherwise the browser scrolls to its unpositioned contents.
+                const previousScroll = {top: scrollY, left: scrollX};
+                element.style.visibility = 'hidden'; element.style.display = 'block';
+                positionPanel(element, button, true);
+                element.showModal();
+                if (scrollY !== previousScroll.top || scrollX !== previousScroll.left) window.scrollTo({...previousScroll, behavior: 'instant'});
+                element.style.display = ''; element.style.visibility = '';
+                element.querySelector('button, input, select, [tabindex="0"]')?.focus({preventScroll: true});
+            }
+            positionPanel(element, button, true);
+            keepSearchVisible(button);
+            const animation = animateSearchSurface(element, true, current);
+            if (animation) {
+                panelAnimations.set(element, animation);
+                animation.onfinish = () => { if (panelAnimations.get(element) === animation) panelAnimations.delete(element); };
+            }
         } else {
-            if (element === panel) calendarProgress.cancel();
-            element.close(); element.classList.add('d-none'); button.focus({preventScroll: true});
+            roomRequest?.abort();
+            button.setAttribute('aria-expanded', 'false');
+            if (immediate) { finishPanelClose(element, button, false); return; }
+            closingPanels.add(element); element.style.pointerEvents = 'none';
+            const animation = animateSearchSurface(element, false, current);
+            if (animation) {
+                panelAnimations.set(element, animation);
+                animation.onfinish = () => { if (panelAnimations.get(element) === animation && closingPanels.has(element)) finishPanelClose(element, button); };
+            }
+            else finishPanelClose(element, button);
         }
         button.setAttribute('aria-expanded', String(open));
     };
     const setGuideStep = step => {
+        const entering = step > 0 && guide.hidden;
         guideStep = step;
         guide.hidden = !step;
+        guideAnimation?.cancel();
         document.getElementById('booking-guide-property').textContent = property.selectedOptions[0].textContent;
         guide.querySelectorAll('[data-guide-step]').forEach(item => {
             const number = Number(item.dataset.guideStep);
@@ -94,30 +162,25 @@ function initialize() {
         panel.classList.toggle('is-guided', step === 2);
         guestsPanel.classList.toggle('is-guided', step === 3);
         document.querySelectorAll('[data-guide-hint]').forEach(hint => { hint.hidden = !step; });
+        if (entering) {
+            const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+            guideAnimation = guide.animate(reduced ? [{opacity: 0}, {opacity: 1}] : [
+                {height: '0px', opacity: 0, overflow: 'hidden', paddingBlock: '0px', marginBlock: '0px'},
+                {height: `${guide.getBoundingClientRect().height}px`, opacity: 1, overflow: 'hidden'}
+            ], {duration: reduced ? 100 : 300, easing: 'cubic-bezier(.22, 1, .36, 1)'});
+        }
     };
     const stopGuide = () => { guideRequest?.abort(); guideRequest = null; setGuideStep(0); };
-    const scrollToSearch = signal => new Promise(resolve => {
-        const bar = form.closest('.booking-bar'), header = document.querySelector('header.sticky-top');
-        const top = Math.max(0, scrollY + bar.getBoundingClientRect().top - (header?.offsetHeight || 80) - 18);
-        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        window.scrollTo({top, behavior:reduced ? 'instant' : 'smooth'});
-        if (reduced) { resolve(); return; }
-        let previous = scrollY, stable = 0;
-        const started = performance.now();
-        const frame = () => {
-            if (signal.aborted) { resolve(); return; }
-            stable = Math.abs(scrollY - previous) < 1 ? stable + 1 : 0; previous = scrollY;
-            if (performance.now() - started > 1200 || stable > 4 && performance.now() - started > 160) { resolve(); return; }
-            requestAnimationFrame(frame);
-        };
-        requestAnimationFrame(frame);
-    });
+    const scrollToSearch = async signal => {
+        initialPlacementChecked = true;
+        await guideAnimation?.finished.catch(() => {});
+        if (signal.aborted) return false;
+        return scrollToElement(form.closest('.booking-bar'), {gap: 18, signal, block: 'center', gentle: true});
+    };
     const showSearchStep = () => {
+        panels.filter(([element]) => closingPanels.has(element)).forEach(([element, button]) => finishPanelClose(element, button, false));
         setGuideStep(4);
         submit.focus({preventScroll: true});
-        const box = submit.getBoundingClientRect();
-        const headerBottom = document.querySelector('header.sticky-top')?.getBoundingClientRect().bottom || 0;
-        if (box.top < headerBottom + 16 || box.bottom > innerHeight - 16) submit.scrollIntoView({block: 'center', inline: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
     };
     for (const [element, button] of panels) {
         on(element, 'cancel', event => { event.preventDefault(); stopGuide(); setPanel(element, button, false); });
@@ -136,9 +199,19 @@ function initialize() {
             } else if (guideStep) stopGuide();
         }));
     }
-    const reposition = () => { panels.forEach(([element, button]) => positionPanel(element, button)); };
+    const reposition = () => {
+        if (positionFrame) return;
+        positionFrame = requestAnimationFrame(() => { positionFrame = null; panels.forEach(([element, button]) => positionPanel(element, button)); });
+    };
+    const panelResize = new ResizeObserver(reposition);
+    panelResize.observe(form.closest('.booking-bar'));
+    panels.forEach(([element]) => panelResize.observe(element));
     on(window, 'resize', reposition); on(window, 'scroll', reposition);
     on(window.visualViewport, 'resize', reposition); on(window.visualViewport, 'scroll', reposition);
+    const interruptRoom = () => { roomRequest?.abort(); if (guideRequest) stopGuide(); };
+    for (const type of ['wheel', 'touchstart', 'pointerdown', 'resize']) on(window, type, interruptRoom, {passive: true});
+    on(window.visualViewport, 'resize', interruptRoom);
+    on(document, 'keydown', event => { if (['Tab', 'Escape', 'PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) interruptRoom(); });
     const busy = (value, complete = false) => {
         submit.disabled = value;
         form.setAttribute('aria-busy', String(value));
@@ -353,10 +426,12 @@ function initialize() {
         const index = event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1 : (current + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
         options[index].focus();
     });
-    on(form, 'keydown', event => {
-        if (event.key !== 'Escape') return;
+    on(document, 'keydown', event => {
+        if (event.key !== 'Escape' || !guideStep && !panels.some(([element]) => element.open)) return;
+        const pendingGuide = guideRequest && !panels.some(([element]) => element.open);
         stopGuide();
         panels.forEach(([element, button]) => setPanel(element, button, false));
+        if (pendingGuide && guideOrigin?.isConnected) guideOrigin.focus({preventScroll: true});
     });
     const adjustGuests = amount => { guests.value = String(Math.max(1, Math.min(capacity(), Number(guests.value) + amount))); changed(); };
     on(document.getElementById('guests-decrease'), 'click', () => adjustGuests(-1));
@@ -368,12 +443,14 @@ function initialize() {
         if (!slug || !Array.from(property.options).some(option => option.value === slug)) return;
         event.preventDefault();
         stopGuide(); panels.forEach(([element, button]) => setPanel(element, button, false));
+        guideOrigin = document.activeElement;
         property.value = slug;
         guests.value = String(Math.min(Number(guests.value) || 1, capacity()));
         property.dispatchEvent(new Event('change', {bubbles:true}));
         const request = new AbortController(); guideRequest = request; setGuideStep(2);
-        await scrollToSearch(request.signal);
-        if (request.signal.aborted) return;
+        const arrived = await scrollToSearch(request.signal);
+        if (request.signal.aborted || !arrived) { if (guideRequest === request) stopGuide(); return; }
+        if (guideRequest === request) guideRequest = null;
         setPanel(panel, dateButton, true); loadCalendar();
     });
     const search = async event => {
@@ -414,7 +491,7 @@ function initialize() {
         }
     };
     on(form, 'submit', search);
-    cleanup = () => { stopGuide(); panels.forEach(([element, button]) => setPanel(element, button, false)); clearInterval(calendarTimer); listeners.abort(); pending?.abort(); pending = null; calendarRequest?.abort(); calendarRequest = null; clearQuotes(results); busy(false); status.textContent = ''; picker.destroy(); cleanup = () => {}; };
+    cleanup = () => { stopGuide(); roomRequest?.abort(); guideAnimation?.cancel(); panelResize.disconnect(); cancelAnimationFrame(positionFrame); panels.forEach(([element, button]) => setPanel(element, button, false, true)); clearInterval(calendarTimer); listeners.abort(); pending?.abort(); pending = null; calendarRequest?.abort(); calendarRequest = null; clearQuotes(results); busy(false); status.textContent = ''; picker.destroy(); cleanup = () => {}; };
 }
 document.addEventListener('DOMContentLoaded', initialize);
 document.addEventListener('turbo:load', initialize);

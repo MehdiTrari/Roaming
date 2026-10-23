@@ -4,7 +4,7 @@
     <a class="showcase-card-media" href="{{ detailsUrl }}" aria-label="{{ 'home.view_details'|trans }} : {{ property.title }}" draggable="false">
         {% if property.images|length %}
             {% set image = property.images|first %}
-            {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: 'showcase-image', alt: image.alt ?: property.title, sizes: '(min-width: 1200px) 640px, (min-width: 768px) 56vw, 86vw'} only %}
+            {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: 'showcase-image', alt: image.alt ?: property.title, sizes: '(min-width: 1440px) 780px, (min-width: 768px) 65vw, 88vw'} only %}
         {% else %}
             <div class="showcase-photo-pending"><svg aria-hidden="true" width="52" height="52" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 22 18-15 18 15M11 19v22h26V19M20 41V28h8v13"/></svg><strong>{{ property.city }}</strong><span>{{ 'calendar.photo_pending'|trans }}</span></div>
         {% endif %}

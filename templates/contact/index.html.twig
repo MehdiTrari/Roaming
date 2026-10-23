@@ -44,26 +44,39 @@
 {% endblock %}
 
 {% block body %}
-<section class="py-5 bg-teal-fade" id="contact">
-    <div class="container py-5">
-        <div class="row gy-5">
-            <div class="col-lg-6 reveal">
-                <p class="text-teal fw-bold mb-2">{{ 'contact.section_title'|trans }}</p>
-                <h1 class="display-5 fw-bold mb-3">{{ 'contact.hero_title'|trans }}</h1>
-                <p class="lead text-muted mb-4">{{ 'contact.hero_description'|trans }}</p>
-                <div class="card border-0 shadow-sm p-4 hover-lift">
-                    <div class="card-body">
-                        <p class="mb-2 text-muted">{{ 'ui.contact_email'|trans }}: <a class="text-teal text-decoration-none fw-bold" href="mailto:contact@roamingfr.com">contact@roamingfr.com</a></p>
-                        <p class="mb-0 text-muted">{{ 'ui.contact_phone'|trans }}: <a class="text-teal text-decoration-none fw-bold" href="tel:+33660344071">+33 6 60 34 40 71</a></p>
+{% set illustratedProperties = navProperties|default([])|filter(p => p.images|length > 0)|slice(0, 2) %}
+<section class="hospitality-contact" id="contact">
+    <div class="container">
+        <div class="hospitality-contact-layout">
+            <div class="hospitality-contact-intro reveal">
+                <p class="hospitality-eyebrow">{{ 'contact.section_title'|trans }}</p>
+                <h1 class="hospitality-page-title">{{ 'contact.hero_title'|trans }}</h1>
+                <p class="hospitality-intro-copy">{{ 'contact.hero_description'|trans }}</p>
+                <dl class="hospitality-contact-details">
+                    <div>
+                        <dt>{{ 'ui.contact_email'|trans }}</dt>
+                        <dd><a href="mailto:contact@roamingfr.com">contact@roamingfr.com <span aria-hidden="true">↗</span></a></dd>
                     </div>
+                    <div>
+                        <dt>{{ 'ui.contact_phone'|trans }}</dt>
+                        <dd><a href="tel:+33660344071">+33 6 60 34 40 71 <span aria-hidden="true">↗</span></a></dd>
+                    </div>
+                </dl>
+                {% if illustratedProperties %}
+                <div class="hospitality-contact-stays" aria-label="{{ 'home.featured_properties'|trans }}">
+                    {% for property in illustratedProperties %}
+                    <a class="hospitality-stay-preview" href="{{ path('app_property_show', {slug: property.slug}) }}">
+                        {% include 'components/_picture.html.twig' with {filename: (property.images|first).filename, alt: '', sizes: '(min-width: 992px) 300px, 45vw'} only %}
+                        <span><strong>{{ property.city }}</strong><span aria-hidden="true">↗</span></span>
+                        <span class="visually-hidden">{{ property.title }}</span>
+                    </a>
+                    {% endfor %}
                 </div>
+                {% endif %}
             </div>
-            <div class="col-lg-6 reveal" style="transition-delay: 0.2s;">
-                <div class="card border-0 shadow-sm p-4 hover-lift">
-                    <div class="card-body">
-                        {% include 'components/_contact_form.html.twig' %}
-                    </div>
-                </div>
+            <div class="hospitality-contact-form-panel reveal">
+                <h2>{{ 'home.contact_title'|trans }}</h2>
+                {% include 'components/_contact_form.html.twig' %}
             </div>
         </div>
     </div>

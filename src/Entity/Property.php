@@ -116,6 +116,10 @@ class Property
     #[ORM\Column(type: 'integer')]
     private int $travelers = 1;
 
+    // The provider can accept fewer guests than the property's public listing.
+    #[ORM\Column(nullable: true)]
+    private ?int $providerCapacity = null;
+
     #[ORM\Column(type: 'integer')]
     private int $bedrooms = 0;
 
@@ -349,6 +353,20 @@ class Property
         $this->travelers = $travelers;
 
         return $this;
+    }
+
+    public function getProviderCapacity(): ?int { return $this->providerCapacity; }
+
+    public function setProviderCapacity(?int $capacity): self
+    {
+        if ($capacity !== null && $capacity < 1) { throw new \InvalidArgumentException('Provider capacity must be positive.'); }
+        $this->providerCapacity = $capacity;
+        return $this;
+    }
+
+    public function getBookingCapacity(): int
+    {
+        return min($this->travelers, $this->providerCapacity ?? $this->travelers);
     }
 
     public function getBedrooms(): int

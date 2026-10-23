@@ -2,11 +2,15 @@
 {% block title %}{{ 'calendar.title'|trans }} | Roaming Lille{% endblock %}
 {% block meta_description %}{{ 'audit.availability_description'|trans }}{% endblock %}
 {% block body %}
-<section class="calendar-page">
-  <div class="container py-5">
-    <header class="calendar-intro"><p class="calendar-eyebrow">{{ 'calendar.eyebrow'|trans }}</p>
-    <h1>{{ 'calendar.title'|trans }}</h1>
-    <p>{{ 'calendar.intro'|trans }}</p></header>
+<section class="calendar-page" aria-labelledby="availability-page-heading">
+  <div class="container calendar-page-shell">
+    <header class="calendar-intro">
+      <div class="calendar-intro-heading">
+        <p class="calendar-eyebrow">{{ 'calendar.eyebrow'|trans }}</p>
+        <h1 id="availability-page-heading">{{ 'calendar.title'|trans }}</h1>
+      </div>
+      <p>{{ 'calendar.intro'|trans }}</p>
+    </header>
     {% set chosenProperty = navProperties|filter(item => item.slug == app.request.query.get('slug'))|first %}
     <div class="{{ chosenProperty ? 'availability-plan-layout' : '' }}">
       {% include 'calendar/_planning.html.twig' with {calendarUrl: path('api_calendar'), propertyPicker: true} %}

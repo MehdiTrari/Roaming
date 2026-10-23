@@ -11,22 +11,37 @@
 
 /* Light theme (default) */
 :root, [data-bs-theme="light"] {
-    --roaming-primary: #0F766E;
-    --roaming-dark-accent: #5EEAD4;
-    --roaming-secondary: #115E59;
-    --roaming-bg: #FCFBF8;
-    --roaming-text: #212529;
-    --roaming-card-bg: #FCFBF8;
+    --roaming-primary: #9C4934;
+    --roaming-accent-rgb: 156, 73, 52;
+    --roaming-dark-accent: #F0B59D;
+    --roaming-secondary: #783925;
+    --roaming-bg: #F8F4EC;
+    --roaming-text: #322A27;
+    --roaming-card-bg: #FFFCF7;
     --roaming-header-bg: var(--roaming-bg);
+    --roaming-display-font: Georgia, 'Times New Roman', serif;
+    --roaming-page-width: 1480px;
+    --roaming-gutter: clamp(20px, 4vw, 64px);
+    --roaming-radius: 20px;
+    --roaming-section-space: clamp(48px, 6vw, 88px);
+    --roaming-shadow: 0 16px 48px rgb(50 42 39 / .07);
+    --roaming-ink: #322A27;
+    --roaming-photo-caption-bg: #FFFCF7;
+    --roaming-on-ink: #FFF9F0;
+    --roaming-sand: #E4D3BB;
+    --bs-secondary-color: var(--roaming-muted);
+    --bs-border-color: var(--roaming-border);
     --roaming-on-primary: #FFFFFF;
     --roaming-accent: var(--roaming-primary);
-    --roaming-border: #DEE2E6;
-    --roaming-muted: #5C636A;
+    --roaming-border: #DCCFC0;
+    --roaming-muted: #71645B;
     --bs-body-bg: var(--roaming-bg);
     --bs-body-color: var(--roaming-text);
     --bs-primary: var(--roaming-primary);
-    --bs-primary-rgb: 15, 118, 110;
+    --bs-primary-rgb: 156, 73, 52;
     --bs-link-color: var(--roaming-accent);
+    --bs-link-color-rgb: var(--roaming-accent-rgb);
+    --bs-link-hover-color-rgb: var(--roaming-accent-rgb);
     --bs-link-hover-color: var(--roaming-secondary);
     --bs-body-font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --teal-primary: var(--roaming-accent);
@@ -34,26 +49,27 @@
     --hero-gradient: var(--roaming-bg);
     --page-backdrop: var(--roaming-bg);
     --card-bg: var(--roaming-card-bg);
-    --section-alt-bg: var(--roaming-bg);
+    --section-alt-bg: #EEE4D5;
     --teal-fade: linear-gradient(180deg, color-mix(in srgb, var(--roaming-primary) 8%, transparent) 0%, transparent 100%);
     --teal-glow: 0 10px 25px -5px rgb(33 37 41 / .08), 0 8px 10px -6px rgb(33 37 41 / .05);
 }
 
 /* Dark theme */
 [data-bs-theme="dark"] {
-    --roaming-bg: #121212;
-    --roaming-text: #E9ECEF;
-    --roaming-card-bg: #1E1E1E;
+    --roaming-bg: #211D1A;
+    --roaming-accent-rgb: 240, 181, 157;
+    --roaming-text: #F5EDE2;
+    --roaming-card-bg: #2D2622;
     --roaming-header-bg: var(--roaming-card-bg);
     --roaming-accent: var(--roaming-dark-accent);
-    --roaming-border: #40464B;
-    --roaming-muted: #ADB5BD;
+    --roaming-border: #574A40;
+    --roaming-muted: #C7B7A7;
     --bs-link-hover-color: var(--roaming-accent);
-    --hero-gradient: linear-gradient(135deg, #1a2e2a 0%, #121212 50%, #1a242e 100%);
-    --page-backdrop: var(--teal-fade);
-    --section-alt-bg: #1a1a1a;
-    --teal-fade: linear-gradient(180deg, rgba(20, 184, 166, 0.15) 0%, rgba(20, 184, 166, 0) 100%);
-    --teal-glow: 0 10px 25px -5px rgba(20, 184, 166, 0.2), 0 8px 10px -6px rgba(20, 184, 166, 0.1);
+    --hero-gradient: var(--roaming-bg);
+    --page-backdrop: var(--roaming-bg);
+    --section-alt-bg: #372D26;
+    --teal-fade: linear-gradient(180deg, rgb(240 181 157 / .12), transparent);
+    --teal-glow: 0 10px 25px -5px rgb(0 0 0 / .2);
 }
 
 body {
@@ -206,7 +222,7 @@ html {
 }
 
 footer {
-    border-top: 1px solid rgba(13, 148, 136, 0.2);
+    border-top: 1px solid color-mix(in srgb, var(--roaming-accent) 20%, transparent);
 }
 
 /* Theme toggle button */
@@ -274,7 +290,7 @@ footer {
 /* Airbnb Badge */
 .airbnb-badge {
     background-color: var(--card-bg) !important;
-    border: 1px solid rgba(13, 148, 136, 0.3) !important;
+    border: 1px solid color-mix(in srgb, var(--roaming-accent) 30%, transparent) !important;
     color: var(--bs-body-color) !important;
     transition: all 0.3s ease;
 }
@@ -299,7 +315,7 @@ footer {
 
 [data-bs-theme="dark"] .airbnb-badge {
     background-color: #1e1e1e !important;
-    border-color: rgba(20, 184, 166, 0.4) !important;
+    border-color: color-mix(in srgb, var(--roaming-accent) 40%, transparent) !important;
 }
 
 [data-bs-theme="dark"] .airbnb-badge .rating-value {
@@ -313,7 +329,7 @@ footer {
 /* Property Info Badges */
 .property-info-badge {
     background-color: var(--card-bg) !important;
-    border: 1px solid rgba(13, 148, 136, 0.3) !important;
+    border: 1px solid color-mix(in srgb, var(--roaming-accent) 30%, transparent) !important;
     color: var(--bs-body-color) !important;
     transition: all 0.3s ease;
 }
@@ -325,7 +341,7 @@ footer {
 
 [data-bs-theme="dark"] .property-info-badge {
     background-color: #1e1e1e !important;
-    border-color: rgba(20, 184, 166, 0.4) !important;
+    border-color: color-mix(in srgb, var(--roaming-accent) 40%, transparent) !important;
     color: #f8f9fa !important;
 }
 
@@ -367,7 +383,7 @@ footer {
     left: 0;
     width: 100%;
     height: 0%;
-    background: linear-gradient(to top, rgba(13, 148, 136, 0.1) 0%, rgba(13, 148, 136, 0) 100%);
+    background: linear-gradient(to top, color-mix(in srgb, var(--roaming-accent) 10%, transparent) 0%, color-mix(in srgb, var(--roaming-accent) 0%, transparent) 100%);
     transition: height 0.4s ease;
     z-index: -1;
 }
@@ -375,7 +391,7 @@ footer {
 .hover-lift:hover {
     transform: translateY(-8px);
     box-shadow: var(--teal-glow) !important;
-    border-color: rgba(13, 148, 136, 0.3) !important;
+    border-color: color-mix(in srgb, var(--roaming-accent) 30%, transparent) !important;
 }
 
 .hover-lift:hover::before {
@@ -404,7 +420,7 @@ footer {
     transform: scale(1.1) rotate(5deg);
     background-color: var(--teal-primary) !important;
     color: white !important;
-    box-shadow: 0 5px 15px -5px rgba(13, 148, 136, 0.5);
+    box-shadow: 0 5px 15px -5px color-mix(in srgb, var(--roaming-accent) 50%, transparent);
 }
 
 /* Property Card Image Zoom */
@@ -429,7 +445,7 @@ footer {
 }
 
 .booking-result-item:hover {
-    background-color: rgba(13, 148, 136, 0.1) !important;
+    background-color: color-mix(in srgb, var(--roaming-accent) 10%, transparent) !important;
     border-color: var(--teal-primary);
     transform: translateX(5px);
 }
@@ -439,7 +455,7 @@ footer {
 }
 
 [data-bs-theme="dark"] .booking-result-item:hover {
-    background-color: rgba(20, 184, 166, 0.15) !important;
+    background-color: color-mix(in srgb, var(--roaming-accent) 15%, transparent) !important;
 }
 
 /* Booking selector styles */
@@ -707,9 +723,9 @@ footer {
 }
 
 [data-bs-theme="dark"] .flatpickr-day.inRange {
-    background: rgba(20, 184, 166, 0.15);
+    background: color-mix(in srgb, var(--roaming-accent) 15%, transparent);
     border-color: transparent;
-    box-shadow: -5px 0 0 rgba(20, 184, 166, 0.15), 5px 0 0 rgba(20, 184, 166, 0.15);
+    box-shadow: -5px 0 0 color-mix(in srgb, var(--roaming-accent) 15%, transparent), 5px 0 0 color-mix(in srgb, var(--roaming-accent) 15%, transparent);
 }
 
 [data-bs-theme="dark"] .flatpickr-day.selected,
@@ -843,7 +859,7 @@ footer {
 
 .navbar .dropdown-item:hover,
 .navbar .dropdown-item:focus {
-    background-color: rgba(13, 148, 136, 0.08);
+    background-color: color-mix(in srgb, var(--roaming-accent) 8%, transparent);
     color: var(--teal-primary);
     transform: translateX(4px);
 }
@@ -867,7 +883,7 @@ footer {
 
 [data-bs-theme="dark"] .navbar .dropdown-item:hover,
 [data-bs-theme="dark"] .navbar .dropdown-item:focus {
-    background-color: rgba(20, 184, 166, 0.15);
+    background-color: color-mix(in srgb, var(--roaming-accent) 15%, transparent);
     color: var(--teal-primary);
 }
 
@@ -938,13 +954,13 @@ footer {
     width: 40px;
     height: 40px;
     border-radius: 8px;
-    background: rgba(13, 148, 136, 0.1);
+    background: color-mix(in srgb, var(--roaming-accent) 10%, transparent);
     transition: all 0.2s ease;
     cursor: pointer;
 }
 
 .amenity-icon:hover {
-    background: rgba(13, 148, 136, 0.2);
+    background: color-mix(in srgb, var(--roaming-accent) 20%, transparent);
     transform: translateY(-2px);
 }
 
@@ -954,11 +970,11 @@ footer {
 }
 
 [data-bs-theme="dark"] .amenity-icon {
-    background: rgba(20, 184, 166, 0.15);
+    background: color-mix(in srgb, var(--roaming-accent) 15%, transparent);
 }
 
 [data-bs-theme="dark"] .amenity-icon:hover {
-    background: rgba(20, 184, 166, 0.25);
+    background: color-mix(in srgb, var(--roaming-accent) 25%, transparent);
 }
 
 /* Property Card Carousel */
@@ -1133,7 +1149,7 @@ footer {
 .roaming-home .flatpickr-day.stay-no-arrival.flatpickr-disabled { text-decoration: line-through; }
 .stay-day:not(:disabled):hover { border-color: var(--teal-primary); }
 .stay-day:is(.stay-selected, .stay-preview-range) { background: var(--stay-range-bg); border-radius: 0; color: var(--roaming-text); opacity: 1; }
-.stay-day:is(.stay-boundary, .stay-preview-end) { background: #0f766e; border-color: var(--roaming-primary); color: #fff; border-radius: 50%; }
+.stay-day:is(.stay-boundary, .stay-preview-end) { background: var(--roaming-primary); border-color: var(--roaming-primary); color: #fff; border-radius: 50%; }
 :is(.stay-boundary, .stay-preview-end) .stay-night-price { color: #fff; }
 .stay-today .stay-day-number { text-decoration: underline; text-underline-offset: 4px; font-weight: 750; }
 .stay-calendar-bottom, .stay-footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.5rem; }
@@ -1278,7 +1294,7 @@ footer {
 .calendar-day:not(:disabled):hover { box-shadow: inset 0 0 0 2px var(--teal-primary); }
 .roaming-calendar :focus-visible { outline: 3px solid var(--teal-primary); outline-offset: 3px; }
 .calendar-day.calendar-selected { box-shadow: inset 0 0 0 2px var(--teal-primary); }
-.calendar-day.calendar-boundary { background: #0f766e; color: #fff; border-color: #0f766e; }
+.calendar-day.calendar-boundary { background: var(--roaming-primary); color: #fff; border-color: var(--roaming-primary); }
 .calendar-mobile { display: none; }
 .calendar-stay { margin-top: 1.5rem; padding: 1.4rem; border: 1px solid var(--cal-border); border-radius: .9rem; background: var(--cal-subtle); }
 .calendar-stay legend { font-weight: 650; margin-bottom: 1.2rem; }
@@ -1289,8 +1305,8 @@ footer {
 .calendar-stay dl { display: grid; grid-template-columns: 1fr auto; gap: .5rem 1rem; max-width: 32rem; }
 .calendar-stay dt { font-weight: 400; color: var(--cal-muted); }
 .calendar-stay dd { margin: 0; text-align: right; }
-.roaming-calendar .btn-primary { --bs-btn-disabled-bg: var(--teal-dark); --bs-btn-disabled-border-color: var(--teal-dark); background: #0f766e; border-color: #0f766e; color: #fff; border-radius: .6rem; padding: .65rem 1.15rem; }
-.roaming-calendar .btn-primary:hover { background: #115e59; border-color: #115e59; }
+.roaming-calendar .btn-primary { --bs-btn-disabled-bg: var(--teal-dark); --bs-btn-disabled-border-color: var(--teal-dark); background: var(--roaming-primary); border-color: var(--roaming-primary); color: #fff; border-radius: .6rem; padding: .65rem 1.15rem; }
+.roaming-calendar .btn-primary:hover { background: var(--roaming-secondary); border-color: var(--roaming-secondary); }
 .calendar-contact { display: inline-block; color: var(--teal-primary); margin-top: 1.25rem; font-size: .85rem; text-underline-offset: 4px; }
 .calendar-unavailable { padding: clamp(.5rem, 3vw, 2rem); max-width: 48rem; }
 .calendar-unavailable > p { color: var(--cal-muted); line-height: 1.75; margin: 1rem 0 1.5rem; }

@@ -12,7 +12,7 @@
     {% endif %}
     <div class="stay-property-buttons {{ picker or calendarProperties|length == 1 ? 'd-none' : '' }}" role="group" aria-label="{{ 'calendar.property'|trans }}">
         {% for item in calendarProperties %}
-            <button type="button" class="stay-property-button" data-calendar-target="propertyButton" data-action="calendar#selectProperty" data-slug="{{ item.slug }}" data-name="{{ item.title }}" data-capacity="{{ item.travelers }}" data-url="{{ preview|default(false) ? path('api_calendar_test', {slug: item.slug}) : path('api_property_availability', {slug: item.slug}) }}" aria-pressed="{{ loop.first ? 'true' : 'false' }}">
+            <button type="button" class="stay-property-button" data-calendar-target="propertyButton" data-action="calendar#selectProperty" data-slug="{{ item.slug }}" data-name="{{ item.title }}" data-capacity="{{ item.bookingCapacity }}" data-url="{{ preview|default(false) ? path('api_calendar_test', {slug: item.slug}) : path('api_property_availability', {slug: item.slug}) }}" aria-pressed="{{ loop.first ? 'true' : 'false' }}">
                 <strong>{{ item.city }}</strong><span>{{ item.title }}</span>
             </button>
         {% endfor %}
@@ -23,6 +23,10 @@
             <h2 class="stay-property-name" data-calendar-target="propertyName" tabindex="-1">{{ selectedProperty.title|default('') }}</h2>
             <a class="btn availability-change-property" href="{{ path('app_calendar', {_locale: app.request.locale}) }}" data-booking-reset-property data-booking-clear-dates><span aria-hidden="true">←</span> {{ 'calendar.change_property'|trans }}</a>
         </header>
+    {% endif %}
+    {% set bookingProperty = selectedProperty ?: (not picker ? calendarProperties|first : null) %}
+    {% if bookingProperty and bookingProperty.bookingCapacity < bookingProperty.travelers %}
+        <p class="small property-muted"><a href="{{ path('app_contact', {_locale: app.request.locale}) }}">{{ 'listing.group_capacity_notice'|trans({'%guests%': bookingProperty.bookingCapacity}) }}</a></p>
     {% endif %}
     <div class="calendar-unavailable" data-calendar-target="notice" hidden>
         <h2 class="h4">{{ 'calendar.confirm'|trans }}</h2>
@@ -71,7 +75,7 @@
             </div>
             {% if compact %}<div class="compact-date-actions"><button type="button" class="btn btn-primary" data-calendar-target="applyDates" data-action="calendar#closeDates">{{ 'ui.apply'|trans }}</button></div></dialog>{% endif %}
             <div class="stay-booking-controls">
-                <label>{{ 'home.guests'|trans }}{% if compact %}<select class="form-select" name="guests" required data-calendar-target="guests" data-action="change->calendar#changed">{% for count in 1..(calendarProperties|first).travelers|default(20) %}<option value="{{ count }}">{{ count }}</option>{% endfor %}</select>{% else %}<input class="form-control" type="number" name="guests" min="1" max="{{ (calendarProperties|first).travelers|default(20) }}" value="2" required data-calendar-target="guests" data-action="input->calendar#changed">{% endif %}</label>
+                <label>{{ 'home.guests'|trans }}{% if compact %}<select class="form-select" name="guests" required data-calendar-target="guests" data-action="change->calendar#changed">{% for count in 1..(calendarProperties|first).bookingCapacity|default(20) %}<option value="{{ count }}">{{ count }}</option>{% endfor %}</select>{% else %}<input class="form-control" type="number" name="guests" min="1" max="{{ (calendarProperties|first).bookingCapacity|default(20) }}" value="2" required data-calendar-target="guests" data-action="input->calendar#changed">{% endif %}</label>
                 <div class="stay-actions">
                     {% include 'components/_clear_dates.html.twig' with {planning: true} only %}
                     <button class="btn btn-primary" type="submit" data-calendar-target="submit" disabled>{{ 'calendar.quote'|trans }}</button>

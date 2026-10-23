@@ -47,21 +47,26 @@
 {% endfor %}
 <div class="roaming-home">
 <section class="hero-section home-hero" aria-labelledby="home-heading">
-    {% if heroProperty %}
-        {% include 'components/_picture.html.twig' with {filename: heroProperty.images[0].filename, imageClass: 'home-hero-image', alt: '', sizes: '100vw', priority: true} only %}
-    {% endif %}
-    <div class="home-hero-shade"></div>
     <div class="container position-relative">
-        <div class="home-hero-copy">
-            <p class="home-eyebrow">{{ 'home.hero_badge'|trans }}</p>
-            <h1 id="home-heading">{{ 'home.hero_title'|trans }}</h1>
-            <p class="lead">{{ 'home.hero_description'|trans }}</p>
-            <a class="btn btn-primary" href="#featured">{{ 'home.browse_properties'|trans }}</a>
-            {% if heroProperty %}<a class="home-hero-caption" href="{{ path('app_property_show', {slug: heroProperty.slug}) }}">{{ heroProperty.title }} · {{ heroProperty.city }} <span aria-hidden="true">↗</span></a>{% endif %}
+        <div class="home-hero-layout">
+            <div class="home-hero-copy">
+                <p class="home-eyebrow">{{ 'home.hero_badge'|trans }}</p>
+                <h1 id="home-heading">{{ 'design.hero_first'|trans }} <em>{{ 'design.hero_second'|trans }}</em></h1>
+                <p class="lead">{{ 'home.hero_description'|trans }}</p>
+                <a class="home-discover-link" href="#featured">{{ 'home.browse_properties'|trans }} <span aria-hidden="true">&#8600;</span></a>
+                <div class="home-hero-note"><span class="home-note-line" aria-hidden="true"></span><span>{{ 'about.transparent_framework_item1'|trans }}</span></div>
+            </div>
+            {% if heroProperty %}
+            <figure class="home-hero-visual">
+                {% include 'components/_picture.html.twig' with {filename: heroProperty.images[0].filename, imageClass: 'home-hero-image', alt: heroProperty.images[0].alt ?: heroProperty.title, sizes: '(min-width: 992px) 60vw, 100vw', priority: true} only %}
+                <figcaption><a class="home-hero-caption" href="{{ path('app_property_show', {slug: heroProperty.slug}) }}"><span><small>{{ 'design.inside'|trans }}</small><strong>{{ heroProperty.city }}</strong></span><span class="home-photo-arrow" aria-hidden="true">&#8599;</span></a></figcaption>
+                <span class="home-photo-stamp" aria-hidden="true">ROAMING<br>— LILLE —</span>
+            </figure>
+            {% endif %}
         </div>
-        
-        <div class="row justify-content-center reveal" style="transition-delay: 0.2s;">
-            <div class="col-xl-10">
+        <div class="home-search-heading"><span>{{ 'home.plan_stay'|trans }}</span><span>{{ 'design.search_hint'|trans }}</span></div>
+        <div class="row justify-content-center home-search-row reveal" style="transition-delay: 0.2s;">
+            <div class="col-12">
                 <div class="booking-bar shadow-sm p-2 position-relative z-2">
                     <div id="booking-guide" class="booking-guide" hidden>
                         <div class="booking-guide-heading"><p>{{ 'showcase.guide_title'|trans }} <strong id="booking-guide-property"></strong></p><button type="button" id="booking-guide-close" aria-label="{{ 'showcase.exit_guide'|trans }}">×</button></div>
@@ -80,14 +85,14 @@
                             </button>
                             <select id="booking-property" class="d-none" name="slug" tabindex="-1" aria-hidden="true">
                                 <option value="">{{ 'journey.all_properties'|trans }}</option>
-                                {% for item in featuredProperties %}<option value="{{ item.slug }}" data-capacity="{{ item.travelers }}" data-calendar-url="{{ path('api_property_availability', {slug: item.slug}) }}">{{ item.city }}</option>{% endfor %}
+                                {% for item in featuredProperties %}<option value="{{ item.slug }}" data-capacity="{{ item.bookingCapacity }}" data-calendar-url="{{ path('api_property_availability', {slug: item.slug}) }}">{{ item.city }} · {{ item.title }}</option>{% endfor %}
                             </select>
                             <dialog id="property-panel" class="selector-panel home-search-popover property-search-popover d-none" aria-labelledby="property-panel-title">
                                 <div class="search-popover-heading"><h5 id="property-panel-title">{{ 'calendar.property'|trans }}</h5><button type="button" class="search-popover-close" data-search-dismiss aria-label="{{ 'ui.close'|trans }}">×</button></div>
                                 <p class="booking-guide-panel-hint" data-guide-hint="property" hidden>{{ 'showcase.guide_property'|trans }}</p>
                                 <div class="property-search-options">
                                     <button type="button" data-property-option="" aria-pressed="false">{{ 'journey.all_properties'|trans }}</button>
-                                    {% for item in featuredProperties %}<button type="button" data-property-option="{{ item.slug }}" aria-pressed="false">{{ item.city }}</button>{% endfor %}
+                                    {% for item in featuredProperties %}<button type="button" data-property-option="{{ item.slug }}" aria-pressed="false">{{ item.city }} · {{ item.title }}</button>{% endfor %}
                                 </div>
                             </dialog>
                         </div>
@@ -165,7 +170,7 @@
                             </dialog>
                             <select class="form-select d-none" id="guests-count" aria-label="{{ 'home.guests'|trans }}">
                                 {% set maxGuests = 1 %}
-                                {% for property in featuredProperties %}{% set maxGuests = max(maxGuests, property.travelers) %}{% endfor %}
+                                {% for property in featuredProperties %}{% set maxGuests = max(maxGuests, property.bookingCapacity) %}{% endfor %}
                                 {% for count in 1..maxGuests %}<option value="{{ count }}">{{ count }}</option>{% endfor %}
                             </select>
                         </div>
@@ -196,11 +201,11 @@
     </div>
 </section>
 
-<section class="bg-light py-5" id="featured">
-    <div class="container py-4">
+<section class="home-collection-section" id="featured">
+    <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-5 flex-wrap gap-3 reveal">
             <div>
-                <p class="text-teal fw-bold mb-2">{{ 'home.featured_properties'|trans }}</p>
+                <p class="calendar-eyebrow">{{ 'home.featured_properties'|trans }} <span class="collection-count">{{ featuredProperties|length < 10 ? '0' : '' }}{{ featuredProperties|length }}</span></p>
                 <h2 class="h2 fw-bold mb-0">{{ 'home.featured_subtitle'|trans }}</h2>
             </div>
             <a href="{{ path('app_calendar') }}" class="text-teal text-decoration-none fw-bold hover-lift">{{ 'calendar.title'|trans }}</a>
@@ -209,13 +214,13 @@
     </div>
 </section>
 
-<section class="py-5" id="amenities">
+<section class="home-amenities-section" id="amenities">
     <div class="container py-4">
         <div class="mb-5 reveal">
             <p class="text-teal fw-bold mb-2">{{ 'home.popular_amenities'|trans }}</p>
             <h2 class="h2 fw-bold">{{ 'home.amenities_subtitle'|trans }}</h2>
         </div>
-        <div class="row g-4 reveal-group">
+        <div class="row g-0 home-amenities-grid reveal-group">
             {% for amenity in popularAmenities %}
                 <div class="col-md-6 col-lg-4 reveal">
                     <div class="card h-100 border-0 shadow-sm hover-lift transition-all">
@@ -235,7 +240,7 @@
     </div>
 </section>
 
-<section class="py-5" id="contact">
+<section class="home-contact-section" id="contact">
     <div class="container py-4">
         <div class="row gy-5">
             <div class="col-lg-6 reveal">

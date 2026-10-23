@@ -21,8 +21,8 @@ export default class extends Controller {
         this.connected = true;
         this.lifecycle = new AbortController();
         const options = {signal: this.lifecycle.signal};
-        document.addEventListener('turbo:before-cache', () => this.deactivate(), options);
-        document.addEventListener('turbo:before-render', () => this.deactivate(), options);
+        document.addEventListener('turbo:before-cache', () => { this.deactivate(); this.clearExit(); }, options);
+        document.addEventListener('turbo:before-render', () => { this.deactivate(); this.clearExit(); }, options);
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape') this.deactivate();
         }, options);
@@ -33,6 +33,7 @@ export default class extends Controller {
         this.connected = false;
         this.lifecycle?.abort();
         this.deactivate();
+        this.clearExit();
     }
 
     activeValueChanged(active) {
@@ -54,6 +55,7 @@ export default class extends Controller {
 
     start() {
         if (!this.connected || this.overlay || document.documentElement.hasAttribute('data-turbo-preview')) return;
+        this.clearExit();
         try {
             this.button = this.hasButtonTarget ? this.buttonTarget : document.querySelector(this.selectorValue);
             // Validate the optional exclusion selector before creating effects.
@@ -74,6 +76,10 @@ export default class extends Controller {
         // First measure and clip, then insert: never flash a full-screen veil.
         this.updateGeometry();
         document.body.append(this.overlay);
+        this.overlayEntrance = this.overlay.animate([{opacity: 0}, {opacity: 1}], {
+            duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 100 : 240,
+            easing: 'cubic-bezier(.22, 1, .36, 1)'
+        });
 
         const style = getComputedStyle(this.button);
         const baseScale = style.scale === 'none' ? '1' : style.scale;
@@ -170,6 +176,11 @@ export default class extends Controller {
         }
     }
 
+    clearExit() {
+        this.exitAnimation?.cancel(); this.exitOverlay?.remove();
+        this.exitAnimation = this.exitOverlay = null;
+    }
+
     stop() {
         const wasActive = Boolean(this.overlay);
         cancelAnimationFrame(this.frame);
@@ -177,7 +188,18 @@ export default class extends Controller {
         this.interactions?.abort();
         this.pulse?.cancel();
         this.pulse = null;
-        this.overlay?.remove();
+        const opacity = this.overlay ? getComputedStyle(this.overlay).opacity : '1';
+        this.overlayEntrance?.cancel();
+        if (this.overlay) {
+            this.clearExit();
+            const overlay = this.overlay;
+            overlay.classList.replace('tutorial-highlight-overlay', 'tutorial-highlight-exit');
+            this.exitOverlay = overlay;
+            this.exitAnimation = overlay.animate([{opacity}, {opacity: 0}], {
+                duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 100 : 140, easing: 'ease-out'
+            });
+            this.exitAnimation.onfinish = () => this.clearExit();
+        }
         this.overlay = null;
         this.button = null;
         if (currentHighlight === this) currentHighlight = null;

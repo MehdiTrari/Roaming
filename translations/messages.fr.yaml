@@ -123,6 +123,35 @@ property:
 
 # Amenities
 amenities:
+  wifi: Wi-Fi
+  television: Télévision
+  kitchen: Cuisine
+  equipped_kitchen: Cuisine équipée
+  terrace: Terrasse
+  small_terrace: Petite terrasse
+  whirlpool_bath: Baignoire balnéo
+  private_gym: Salle de sport privée
+  private_parking: Stationnement privatif
+  pets_allowed: Animaux acceptés
+  air_conditioning: Climatisation
+  washing_machine: Lave-linge
+  sheltered_patio: Patio intérieur abrité
+  foosball: Baby-foot
+  board_games: Jeux de société
+  workspace: Espace de travail
+  bed_linen: Linge de lit fourni
+  towels: Serviettes fournies
+  kettle: Bouilloire
+  cable_tv: Télévision par câble
+  heating: Chauffage
+  hangers: Cintres
+  freezer: Congélateur
+  cooking_basics: Équipements de base pour cuisiner
+  dishwasher: Lave-vaisselle
+  soap_toilet_paper: Savon et papier toilette
+  hair_dryer: Sèche-cheveux
+  dryer: Sèche-linge
+  dining_table: Table à manger
   fast_wifi: Wi-Fi rapide
   self_checkin: Arrivée autonome
   equipped_accommodation: Logement équipé
@@ -219,6 +248,7 @@ ui:
     placeholder_message: "Vos dates, le nombre de voyageurs et vos besoins"
 
 listing:
+    group_capacity_notice: "Pour un séjour de plus de %guests% voyageurs, contactez notre équipe."
     facts: "Le logement en chiffres"
     photos_of: "Photos de %name%"
     discover: "Découvrir %name%"
@@ -351,3 +381,12 @@ locations:
   directions: 'Itinéraire'
   map_error: 'Le fond de carte est indisponible. L’adresse et le lien d’itinéraire restent accessibles.'
   explorer_hint: 'Faites glisser les logements : la carte suit votre sélection.'
+
+# Hospitality direction, shared public pages
+design:
+  hero_first: "Une adresse à vous."
+  hero_second: "Lille à découvrir."
+  inside: "Entrez, vous êtes chez vous"
+  search_hint: "Un lieu, des dates, votre séjour."
+  footer_title: "Votre prochain séjour commence ici."
+  footer_cta: "Découvrir nos adresses"

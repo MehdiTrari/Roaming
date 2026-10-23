@@ -36,7 +36,7 @@ final class GuestLuckyCheckCommand extends Command
             if ($guests === false) { throw new \InvalidArgumentException(); }
             BookingDates::stay($arrival, $departure, $guests);
             $property = $this->properties->findActiveSlug($input->getArgument('slug'));
-            if (!$property || !$property->getGuestLuckyId() || $guests > $property->getTravelers()) { throw new \InvalidArgumentException(); }
+            if (!$property || !$property->getGuestLuckyId() || $guests > $property->getBookingCapacity()) { throw new \InvalidArgumentException(); }
             $id = $property->getGuestLuckyId();
             $io->note('Read-only GET requests. No booking, payment, price or block is created. The publication gate is unchanged.');
             $lastNight = (new \DateTimeImmutable($departure))->modify('-1 day');

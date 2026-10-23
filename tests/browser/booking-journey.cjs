@@ -275,7 +275,14 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
                 await calendar(); await quoteCalendar();
                 assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `calendar ${locale}/${theme}/${width}`);
                 assert.equal(await page.locator('.stay-month').count(), 2);
-                assert.equal(await page.locator('.booking-module-actions button').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(15, 118, 110)');
+                assert.equal(await page.locator('.booking-module-actions button').evaluate(element => {
+                    const reference = document.createElement('span');
+                    reference.style.color = 'var(--roaming-primary)';
+                    element.append(reference);
+                    const primary = getComputedStyle(reference).color;
+                    reference.remove();
+                    return getComputedStyle(element).backgroundColor === primary;
+                }), true, 'booking action uses the shared primary colour');
                 await page.locator('.booking-module-actions button').click(); await page.waitForSelector('.guestlucky-booking-frame');
                 assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `iframe ${locale}/${theme}/${width}`);
                 const bounds = await page.locator('.booking-modal').boundingBox();

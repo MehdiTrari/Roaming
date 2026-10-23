@@ -124,6 +124,35 @@ property:
 
 # Amenities
 amenities:
+    wifi: Wi-Fi
+    television: TV
+    kitchen: Kitchen
+    equipped_kitchen: Equipped kitchen
+    terrace: Terrace
+    small_terrace: Small terrace
+    whirlpool_bath: Whirlpool bath
+    private_gym: Private gym
+    private_parking: Private parking
+    pets_allowed: Pets welcome
+    air_conditioning: Air conditioning
+    washing_machine: Washing machine
+    sheltered_patio: Sheltered courtyard patio
+    foosball: Table football
+    board_games: Board games
+    workspace: Workspace
+    bed_linen: Bed linen provided
+    towels: Towels provided
+    kettle: Kettle
+    cable_tv: Cable TV
+    heating: Heating
+    hangers: Hangers
+    freezer: Freezer
+    cooking_basics: Cooking basics
+    dishwasher: Dishwasher
+    soap_toilet_paper: Soap and toilet paper
+    hair_dryer: Hair dryer
+    dryer: Dryer
+    dining_table: Dining table
     fast_wifi: Fast Wifi
     self_checkin: Self Check-in
     equipped_accommodation: Equipped Accommodation
@@ -221,6 +250,7 @@ ui:
     placeholder_message: "Your dates, number of guests and what you need"
 
 listing:
+    group_capacity_notice: "For stays with more than %guests% guests, please contact our team."
     facts: "Property at a glance"
     photos_of: "Photos of %name%"
     discover: "Discover %name%"
@@ -349,3 +379,12 @@ locations:
   directions: 'Directions'
   map_error: 'The map background is unavailable. The address and directions link remain accessible.'
   explorer_hint: 'Swipe through the properties: the map follows your selection.'
+
+# Hospitality direction, shared public pages
+design:
+  hero_first: "A place of your own."
+  hero_second: "Lille to explore."
+  inside: "Step inside, feel at home"
+  search_hint: "A place, your dates, your stay."
+  footer_title: "Your next stay starts here."
+  footer_cta: "Explore our places"

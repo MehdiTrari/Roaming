@@ -68,10 +68,11 @@ const pages = ['/', '/about-us', '/contact-us', '/disponibilites', ...catalogue.
                             canonical: document.querySelector('link[rel="canonical"]')?.href, broken: [...new Set([...window.audit.imageErrors, ...[...document.images].filter(image => visible(image) && image.complete && image.currentSrc && !image.naturalWidth).map(image => image.currentSrc)])],
                             unlabeled: [...document.querySelectorAll('button, input:not([type="hidden"]), select, textarea')].filter(visible).filter(element => !element.textContent.trim() && !element.getAttribute('aria-label') && !element.getAttribute('aria-labelledby') && !element.labels?.length).map(element => element.id || element.outerHTML.slice(0, 80)),
                             schemaErrors: [...document.querySelectorAll('script[type="application/ld+json"]')].map(element => { try { JSON.parse(element.textContent); return null; } catch (error) { return error.message; } }).filter(Boolean),
+                            primary: 'rgb(' + getComputedStyle(document.documentElement).getPropertyValue('--bs-primary-rgb').split(',').map(Number).join(', ') + ')',
                             buttons: [...document.querySelectorAll('.btn-primary')].filter(visible).map(element => getComputedStyle(element).backgroundColor)};
                     });
                     samples.push({url, locale, theme, width, status: response.status(), ...sample});
-                    for (const [key, failed] of Object.entries({status: response.status() !== 200, locale: sample.locale !== locale, theme: sample.theme !== theme, overflow: sample.overflow, h1: sample.h1 !== 1, description: !sample.description, broken: sample.broken.length, unlabeled: sample.unlabeled.length, schema: sample.schemaErrors.length, buttons: sample.buttons.some(color => color !== 'rgb(15, 118, 110)')})) {
+                    for (const [key, failed] of Object.entries({status: response.status() !== 200, locale: sample.locale !== locale, theme: sample.theme !== theme, overflow: sample.overflow, h1: sample.h1 !== 1, description: !sample.description, broken: sample.broken.length, unlabeled: sample.unlabeled.length, schema: sample.schemaErrors.length, buttons: sample.buttons.some(color => color !== sample.primary)})) {
                         if (failed) issues.push({url, locale, theme, width, key, detail: sample[key === 'schema' ? 'schemaErrors' : key]});
                     }
                 }

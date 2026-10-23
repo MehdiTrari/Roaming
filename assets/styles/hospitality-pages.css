@@ -1,0 +1,514 @@
+/* Contact and About share the site's warm hospitality tokens. */
+.hospitality-contact,
+.hospitality-about-hero,
+.hospitality-about-principles {
+    padding-block: clamp(2.5rem, 5vw, 5rem);
+}
+
+.hospitality-eyebrow {
+    color: var(--roaming-accent);
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .16em;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+}
+
+.hospitality-page-title,
+.hospitality-contact-form-panel h2,
+.hospitality-section-heading h2,
+.hospitality-principle h2 {
+    color: var(--roaming-text);
+    font-family: var(--roaming-display-font);
+    font-weight: 400;
+    letter-spacing: -.035em;
+    text-wrap: balance;
+}
+
+.hospitality-page-title {
+    font-size: clamp(2.6rem, 4.8vw, 4.9rem);
+    line-height: 1.07;
+    margin-bottom: 1.5rem;
+}
+
+.hospitality-contact-layout {
+    align-items: start;
+    display: grid;
+    gap: clamp(2rem, 5.5vw, 6rem);
+    grid-template-columns: 1fr 1fr;
+}
+
+.hospitality-contact-intro,
+.hospitality-contact-form-panel {
+    min-width: 0;
+}
+
+.hospitality-intro-copy {
+    color: var(--roaming-muted);
+    font-size: 1.08rem;
+    line-height: 1.8;
+    max-width: 39rem;
+}
+
+.hospitality-contact-details {
+    border-top: 1px solid var(--roaming-border);
+    margin: 1.75rem 0;
+}
+
+.hospitality-contact-details > div {
+    align-items: center;
+    border-bottom: 1px solid var(--roaming-border);
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding-block: 1rem;
+}
+
+.hospitality-contact-details dt {
+    color: var(--roaming-muted);
+    font-size: .8rem;
+    font-weight: 500;
+}
+
+.hospitality-contact-details dd {
+    margin: 0;
+    min-width: 0;
+}
+
+.hospitality-contact-details a {
+    align-items: center;
+    color: var(--roaming-text);
+    display: inline-flex;
+    font-size: clamp(.85rem, 1.35vw, 1.05rem);
+    font-weight: 600;
+    gap: .75rem;
+    min-height: 44px;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+}
+
+.hospitality-contact-details a span,
+.hospitality-editorial-link span {
+    color: var(--roaming-accent);
+    font-size: 1.3em;
+}
+
+.hospitality-contact-details a:hover,
+.hospitality-editorial-link:hover {
+    color: var(--roaming-accent);
+}
+
+.hospitality-contact-stays {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 2rem;
+}
+
+.hospitality-stay-preview {
+    background: var(--section-alt-bg);
+    border-radius: var(--roaming-radius);
+    color: var(--roaming-text);
+    display: block;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+}
+
+.hospitality-stay-preview .responsive-picture {
+    aspect-ratio: 1.5;
+    display: block;
+    overflow: hidden;
+}
+
+.hospitality-stay-preview img {
+    height: 100%;
+    object-fit: cover;
+    transition: transform .35s ease;
+    width: 100%;
+}
+
+.hospitality-stay-preview > span:not(.visually-hidden) {
+    align-items: center;
+    display: flex;
+    font-size: .9rem;
+    gap: .5rem;
+    justify-content: space-between;
+    padding: .75rem 1rem;
+}
+
+.hospitality-stay-preview:hover {
+    color: var(--roaming-accent);
+}
+
+.hospitality-stay-preview:hover img {
+    transform: scale(1.025);
+}
+
+.hospitality-contact-form-panel {
+    background: var(--roaming-card-bg);
+    border: 1px solid var(--roaming-border);
+    border-radius: var(--roaming-radius);
+    padding: clamp(1.5rem, 3vw, 3rem);
+}
+
+.hospitality-contact-form-panel h2 {
+    font-size: clamp(1.9rem, 2.5vw, 2.5rem);
+    margin-bottom: 1.75rem;
+}
+
+.hospitality-contact-form-panel .contact-form {
+    display: grid;
+    gap: 0 1.25rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.hospitality-contact-form-panel .contact-form > * {
+    grid-column: 1 / -1;
+}
+
+/* Name and email stay in document order and share a row on larger screens. */
+.hospitality-contact-form-panel .contact-form > .mb-3:has(input[autocomplete="name"]),
+.hospitality-contact-form-panel .contact-form > .mb-3:has(input[type="email"]) {
+    grid-column: auto;
+}
+
+.hospitality-contact-form-panel .contact-form .form-control {
+    background: var(--roaming-bg);
+    min-height: 48px;
+}
+
+.hospitality-contact-form-panel .contact-form textarea.form-control {
+    min-height: 130px;
+}
+
+.hospitality-contact-form-panel .contact-privacy-note {
+    font-size: .75rem;
+    line-height: 1.7;
+    margin-block: .35rem 1.25rem;
+}
+
+.hospitality-contact-form-panel .contact-form .btn {
+    min-height: 52px;
+}
+
+.hospitality-about-heading {
+    align-items: center;
+    display: grid;
+    gap: clamp(2rem, 5vw, 5rem);
+    grid-template-columns: 1fr 1fr;
+}
+
+.hospitality-about-heading-text {
+    grid-template-columns: minmax(0, 65rem);
+}
+
+.hospitality-about-title .hospitality-page-title {
+    font-size: clamp(2.3rem, 3.45vw, 3.75rem);
+    line-height: 1.14;
+}
+
+.hospitality-editorial-link {
+    align-items: center;
+    color: var(--roaming-text);
+    display: inline-flex;
+    font-size: .88rem;
+    font-weight: 600;
+    gap: .8rem;
+    min-height: 44px;
+    text-decoration: underline;
+    text-underline-offset: .35em;
+}
+
+.hospitality-about-photo {
+    margin: 0;
+    min-width: 0;
+}
+
+.hospitality-about-photo .responsive-picture {
+    aspect-ratio: 1.2;
+    border-radius: 45% 45% var(--roaming-radius) var(--roaming-radius);
+    display: block;
+    overflow: hidden;
+}
+
+.hospitality-about-photo img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+.hospitality-about-photo figcaption a {
+    align-items: center;
+    border-bottom: 1px solid var(--roaming-border);
+    color: var(--roaming-text);
+    display: flex;
+    font-size: .9rem;
+    gap: 1rem;
+    justify-content: space-between;
+    min-height: 64px;
+    padding-block: .9rem;
+    text-decoration: none;
+}
+
+.hospitality-about-photo figcaption small {
+    color: var(--roaming-muted);
+    display: block;
+    margin-top: .2rem;
+}
+
+.hospitality-about-photo figcaption a:hover,
+.hospitality-founder-link {
+    color: var(--roaming-accent);
+}
+
+.hospitality-founder-link {
+    font-weight: 600;
+    text-underline-offset: .2em;
+}
+
+.hospitality-founder-link svg {
+    vertical-align: baseline;
+}
+
+.hospitality-about-story {
+    border-top: 1px solid var(--roaming-border);
+    color: var(--roaming-muted);
+    column-count: 3;
+    column-gap: clamp(2rem, 4vw, 4rem);
+    font-size: 1rem;
+    line-height: 1.85;
+    margin-top: clamp(2.5rem, 4vw, 4rem);
+    padding-top: clamp(2rem, 3vw, 3rem);
+}
+
+.hospitality-about-story p {
+    break-inside: avoid;
+    margin: 0 0 1rem;
+}
+
+.hospitality-about-essentials {
+    background: var(--section-alt-bg);
+    padding-block: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.hospitality-section-heading {
+    align-items: start;
+    display: grid;
+    gap: 1.5rem 4rem;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 2rem;
+}
+
+.hospitality-section-heading h2 {
+    font-size: clamp(2rem, 3vw, 3rem);
+    line-height: 1.12;
+    margin: 0;
+}
+
+.hospitality-section-heading p {
+    color: var(--roaming-muted);
+    line-height: 1.8;
+    margin: 0;
+    max-width: 40rem;
+}
+
+.hospitality-essentials-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.hospitality-essential {
+    border-top: 1px solid var(--roaming-border);
+    padding-top: 1.5rem;
+}
+
+.hospitality-essential-icon {
+    color: var(--roaming-accent);
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.hospitality-essential-icon svg {
+    height: 28px;
+    width: 28px;
+}
+
+.hospitality-essential p {
+    color: var(--roaming-text);
+    font-size: .9rem;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.hospitality-principles-grid {
+    display: grid;
+    gap: clamp(2rem, 4vw, 4rem);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.hospitality-principle-number {
+    color: var(--roaming-accent);
+    display: block;
+    font-family: var(--roaming-display-font);
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+}
+
+.hospitality-principle h2 {
+    font-size: clamp(1.75rem, 2.3vw, 2.25rem);
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+.hospitality-principle p,
+.hospitality-principle li {
+    color: var(--roaming-muted);
+    font-size: .9rem;
+    line-height: 1.8;
+}
+
+.hospitality-principle ul {
+    padding-left: 1.1rem;
+}
+
+.hospitality-principle li + li {
+    margin-top: .5rem;
+}
+
+.hospitality-principle li::marker {
+    color: var(--roaming-accent);
+}
+
+.hospitality-about-actions {
+    align-items: center;
+    border-top: 1px solid var(--roaming-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    margin-top: clamp(2rem, 4vw, 4rem);
+    padding-top: 2rem;
+}
+
+.hospitality-about-actions .btn {
+    align-items: center;
+    display: inline-flex;
+    gap: 1.5rem;
+    min-height: 48px;
+}
+
+@media (max-width: 991.98px) {
+    .hospitality-contact-layout {
+        gap: 2.5rem;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hospitality-contact-intro .hospitality-page-title {
+        max-width: 14ch;
+    }
+
+    .hospitality-contact-details a {
+        font-size: 1rem;
+    }
+
+    .hospitality-contact-stays {
+        max-width: 42rem;
+    }
+
+    .hospitality-about-heading {
+        gap: 2rem;
+        grid-template-columns: 1.15fr 1fr;
+    }
+
+    .hospitality-about-heading-text {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hospitality-about-title .hospitality-page-title {
+        font-size: 2.3rem;
+    }
+
+    .hospitality-about-photo .responsive-picture {
+        aspect-ratio: .85;
+    }
+
+    .hospitality-about-story {
+        column-count: 2;
+    }
+
+    .hospitality-essentials-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .hospitality-about-heading,
+    .hospitality-section-heading,
+    .hospitality-principles-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hospitality-about-photo .responsive-picture {
+        aspect-ratio: 1.25;
+        border-radius: var(--roaming-radius);
+    }
+
+    .hospitality-about-story {
+        column-count: 1;
+    }
+
+    .hospitality-about-story p + p {
+        margin-top: 1.25rem;
+    }
+
+    .hospitality-principle {
+        border-top: 1px solid var(--roaming-border);
+        padding-top: 1.5rem;
+    }
+
+    .hospitality-principle-number {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .hospitality-contact-form-panel .contact-form {
+        display: block;
+    }
+}
+
+@media (max-width: 374.98px) {
+    .hospitality-contact-form-panel {
+        padding: 1.25rem;
+    }
+
+    .hospitality-contact-details > div {
+        align-items: start;
+        flex-direction: column;
+        gap: .1rem;
+    }
+
+    .hospitality-contact-stays {
+        gap: .65rem;
+    }
+
+    .hospitality-stay-preview > span:not(.visually-hidden) {
+        font-size: .8rem;
+        padding: .7rem;
+    }
+
+    .hospitality-essentials-grid {
+        gap: 1.25rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hospitality-stay-preview img {
+        transition: none;
+    }
+
+    .hospitality-stay-preview:hover img {
+        transform: none;
+    }
+}

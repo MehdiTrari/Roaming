@@ -83,7 +83,7 @@ final class AvailabilityService
             $rows[$slug] = $this->describe($property) + ['status' => 'unverified', 'available' => false, 'price' => null, 'currency' => 'EUR', 'nights' => null, 'fees' => [], 'error' => null];
             if (!$useProvider || !$property->isActive() || !$property->getGuestLuckyId()) { continue; }
             $nights = (new \DateTimeImmutable($arrival))->diff(new \DateTimeImmutable($departure))->days;
-            if ($guests > $property->getTravelers() || $nights < ($property->getMinimumStay() ?? 1)) { $rows[$slug]['status'] = 'unavailable'; continue; }
+            if ($guests > $property->getBookingCapacity() || $nights < ($property->getMinimumStay() ?? 1)) { $rows[$slug]['status'] = 'unavailable'; continue; }
             try { $pending[$slug] = [$this->client->startQuote($property->getGuestLuckyId(), $arrival, $departure, $guests), $property]; }
             catch (\Throwable $error) { $this->logFailure($slug, 'quote', $error); }
         }
@@ -101,7 +101,7 @@ final class AvailabilityService
     {
         $image = $property->getImages()->first();
         foreach ($property->getImages() as $candidate) { if ($candidate->isCover()) { $image = $candidate; break; } }
-        return ['name' => $property->getTitle(), 'slug' => $property->getSlug(), 'city' => $property->getCity(), 'maxGuests' => $property->getTravelers(), 'image' => $image ? '/uploads/'.$image->getFilename() : null];
+        return ['name' => $property->getTitle(), 'slug' => $property->getSlug(), 'city' => $property->getCity(), 'maxGuests' => $property->getBookingCapacity(), 'image' => $image ? '/uploads/'.$image->getFilename() : null];
     }
 
     private function logFailure(string $slug, string $operation, \Throwable $error, ?ResponseInterface $response = null): void

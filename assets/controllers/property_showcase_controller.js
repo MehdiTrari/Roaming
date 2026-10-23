@@ -6,6 +6,10 @@ export default class extends Controller {
     connect() {
         if (document.documentElement.hasAttribute('data-turbo-preview')) return;
         this.count = this.slideTargets.length;
+        if (!this.count) return;
+        this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+        this.motionChanged = () => this.paint();
+        this.motionPreference.addEventListener('change', this.motionChanged);
         const slug = new URL(location.href).searchParams.get('slug') || this.element.dataset.activeSlug;
         let index = this.slideTargets.findIndex(slide => slide.dataset.slug === slug);
         if (index < 0) index = Math.max(0, this.slideTargets.findIndex(slide => slide.dataset.hasPhoto === 'true'));
@@ -15,11 +19,17 @@ export default class extends Controller {
         this.render(false);
         this.element.classList.add('is-ready');
         this.controlsTarget.hidden = this.count < 2;
+        this.revealChoice(false);
+        this.railObserver = new ResizeObserver(() => this.revealChoice(false));
+        const rail = this.choiceTargets[this.index]?.parentElement;
+        if (rail) this.railObserver.observe(rail);
         this.beforeCache = () => this.finishImmediately();
         document.addEventListener('turbo:before-cache', this.beforeCache);
     }
     disconnect() {
         this.stopAnimation(); this.releasePointer();
+        this.motionPreference?.removeEventListener('change', this.motionChanged);
+        this.railObserver?.disconnect();
         document.removeEventListener('turbo:before-cache', this.beforeCache);
     }
     modulo(value) { return ((value % this.count) + this.count) % this.count; }
@@ -28,18 +38,20 @@ export default class extends Controller {
         return distance - Math.round(distance / this.count) * this.count;
     }
     paint() {
+        if (!this.count) return;
         const fadeEdge = Math.min(2, this.count / 2);
+        const reducedMotion = this.motionPreference?.matches;
         this.slideTargets.forEach((slide, index) => {
             const offset = this.offset(index), distance = Math.abs(offset);
             const emphasis = Math.max(0, 1 - distance);
             const opacity = Math.max(0, Math.min(1, (fadeEdge - distance) / Math.min(.65, fadeEdge * .5)));
             const active = index === this.index;
             slide.style.setProperty('--slide-offset', offset);
-            slide.style.setProperty('--slide-scale', .84 + .16 * emphasis);
-            slide.style.setProperty('--slide-rotate', `${-7 * Math.max(-1, Math.min(1, offset))}deg`);
-            slide.style.setProperty('--slide-shade', .48 * (1 - emphasis));
-            slide.style.setProperty('--slide-saturation', .65 + .35 * emphasis);
-            slide.style.setProperty('--slide-shadow', .1 + .25 * emphasis);
+            slide.style.setProperty('--slide-scale', reducedMotion ? 1 : .88 + .12 * emphasis);
+            slide.style.setProperty('--slide-rotate', `${reducedMotion ? 0 : -3 * Math.max(-1, Math.min(1, offset))}deg`);
+            slide.style.setProperty('--slide-shade', (reducedMotion ? .12 : .25) * (1 - emphasis));
+            slide.style.setProperty('--slide-saturation', reducedMotion ? 1 : .85 + .15 * emphasis);
+            slide.style.setProperty('--slide-shadow', .08 + .12 * emphasis);
             slide.style.setProperty('--slide-opacity', opacity);
             slide.style.zIndex = String(100 - Math.round(distance * 20));
             slide.classList.toggle('is-active', active);
@@ -51,13 +63,28 @@ export default class extends Controller {
     }
     render(announce = true) {
         this.paint();
-        this.choiceTargets.forEach((button, index) => button.setAttribute('aria-pressed', String(index === this.index)));
+        this.choiceTargets.forEach((button, index) => {
+            const selected = index === this.index;
+            button.setAttribute('aria-pressed', String(selected));
+            button.tabIndex = selected ? 0 : -1;
+        });
         const slide = this.slideTargets[this.index];
         this.element.dataset.activeSlug = slide.dataset.slug;
         this.positionTarget.textContent = `${String(this.index + 1).padStart(2, '0')} / ${String(this.count).padStart(2, '0')} · ${slide.querySelector('h3').textContent.trim()}`;
+        this.revealChoice(announce);
         if (announce) this.element.dispatchEvent(new CustomEvent('showcase:change', {bubbles:true, detail:{slug:slide.dataset.slug}}));
     }
+    revealChoice(animate = true) {
+        const choice = this.choiceTargets[this.index], picker = choice?.parentElement;
+        if (!picker || picker.scrollWidth <= picker.clientWidth) return;
+        // Scroll only the chip rail: scrollIntoView would move the whole page.
+        const chip = choice.getBoundingClientRect(), rail = picker.getBoundingClientRect();
+        if (chip.left >= rail.left + 8 && chip.right <= rail.right - 8) return;
+        picker.scrollTo({left: picker.scrollLeft + chip.left - rail.left - (rail.width - chip.width) / 2,
+            behavior: animate && !this.motionPreference?.matches ? 'smooth' : 'instant'});
+    }
     go(index, absolute = false, velocity = this.velocity) {
+        if (this.count < 2) return;
         const target = absolute ? index : this.position + this.offset(this.modulo(index));
         this.releasePointer(); this.stopAnimation();
         this.target = target; this.index = this.modulo(Math.round(target));
@@ -121,14 +148,14 @@ export default class extends Controller {
     }
     stopAnimation() { cancelAnimationFrame(this.frame); this.frame = null; this.element.classList.remove('is-moving'); }
     finishImmediately() {
+        if (!this.count) return;
         this.stopAnimation(); this.releasePointer();
         this.position = this.target; this.velocity = 0; this.paint();
     }
     animate() {
         this.stopAnimation();
-        // This deliberate spatial navigation is explicitly animated by the page.
-        // Windows' reduced-motion preference still disables decorative CSS effects,
-        // but must not turn the requested carousel movement into a teleport.
+        // Explicit spatial navigation stays legible with reduced motion: a shorter
+        // gentle glide, with perspective and decorative scaling disabled in paint().
         if (!this.animatedValue || Math.abs(this.target - this.position) < .0001) { this.finishImmediately(); return; }
         this.element.classList.add('is-moving');
         let previous = performance.now();
@@ -136,7 +163,7 @@ export default class extends Controller {
             const elapsed = Math.min(.032, Math.max(.001, (now - previous) / 1000)); previous = now;
             // Exact critically damped spring: a soft start and a long deceleration,
             // independent of frame rate, without an overshoot at the center.
-            const frequency = 8.5;
+            const frequency = this.motionPreference?.matches ? 12 : 8.5;
             const displacement = this.position - this.target;
             const impulse = this.velocity + frequency * displacement;
             const decay = Math.exp(-frequency * elapsed);

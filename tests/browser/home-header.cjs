@@ -21,11 +21,22 @@ let catalogue = [];
         }
         return route.continue();
     });
+    const closed = () => page.waitForFunction(() => !document.querySelector('.home-search-popover[open]'));
     const bounded = async selector => {
+        await page.waitForFunction(() => [...document.querySelectorAll('.home-search-popover[open]')].every(panel => !panel.getAnimations().some(animation => animation.playState === 'running')));
+        await page.evaluate(() => new Promise(resolve => {
+            let previous = scrollY, still = 0;
+            const tick = () => { still = Math.abs(scrollY - previous) < .5 ? still + 1 : 0; previous = scrollY; if (still > 4) resolve(); else requestAnimationFrame(tick); };
+            requestAnimationFrame(tick);
+        }));
         const box = await page.locator(selector).boundingBox(), size = page.viewportSize();
         assert.ok(box && box.x >= 10 && box.y >= 10 && box.x + box.width <= size.width - 10 && box.y + box.height <= size.height - 10, `${selector}: ${JSON.stringify(box)} in ${JSON.stringify(size)}`);
         assert.equal(await page.locator(selector).evaluate(e => e.scrollWidth > e.clientWidth + 1), false, 'no internal horizontal clipping');
     };
+    const cardBackground = () => page.evaluate(() => {
+        const probe = document.createElement('span'); probe.style.backgroundColor = 'var(--roaming-card-bg)';
+        document.body.append(probe); const color = getComputedStyle(probe).backgroundColor; probe.remove(); return color;
+    });
     try {
         let layouts = 0;
         for (const locale of ['fr', 'en']) for (const theme of ['light', 'dark']) for (const width of [1440, 768, 390, 320]) {
@@ -33,7 +44,7 @@ let catalogue = [];
             await page.goto(base + '/?_locale=' + locale);
             await page.evaluate(value => localStorage.setItem('theme', value), theme);
             await page.reload();
-            await page.waitForFunction(() => !!document.querySelector('#date-range')._flatpickr);
+            await page.waitForFunction(() => !!document.querySelector('#date-range')?._flatpickr);
             catalogue = await page.locator('#booking-property option:not([value=""])').evaluateAll(options => options.map(option => ({slug: option.value})));
             assert.equal(await page.locator('html').getAttribute('lang'), locale);
             assert.equal(await page.locator('html').getAttribute('data-bs-theme'), theme);
@@ -50,59 +61,63 @@ let catalogue = [];
             await page.locator('#date-display').click(); await bounded('#date-panel');
             if (width >= 768) {
                 const trigger = await page.locator('#date-display').boundingBox(), calendar = await page.locator('#date-panel').boundingBox();
-                assert.ok(calendar.y >= trigger.y + trigger.height + 10, 'desktop calendar opens below the field');
+                assert.ok(calendar.y >= trigger.y + trigger.height + 8 || calendar.y + calendar.height <= trigger.y - 8,
+                    'desktop calendar stays anchored beside the field, using the space above or below');
             }
             const after = await page.locator('.booking-bar').boundingBox();
             assert.equal(after.height, before.height, 'opening must not change layout');
             assert.equal(await page.locator('#date-panel').evaluate(e => e.contains(document.activeElement)), true);
-            await page.keyboard.press('Escape');
+            await page.keyboard.press('Escape'); await closed();
             assert.equal(await page.locator('#date-display').getAttribute('aria-expanded'), 'false');
             assert.equal(await page.locator('#date-display').evaluate(e => e === document.activeElement), true);
             await page.locator('#date-display').click();
-            await page.mouse.click(2, 2);
+            await page.mouse.click(2, 2); await closed();
             assert.equal(await page.locator('#date-panel').isVisible(), false);
             assert.equal(await page.locator('#date-display').evaluate(e => e === document.activeElement), true);
             await page.locator('#date-display').click();
-            await page.waitForFunction(() => document.querySelector('#date-availability-status').dataset.state === 'fresh');
-            await page.evaluate(() => {
-                const picker = document.querySelector('#date-range')._flatpickr;
-                const start = new Date(); start.setDate(start.getDate() + 3);
-                const end = new Date(start); end.setDate(end.getDate() + 2);
-                picker.setDate([start, end], true);
-            });
+            // A fresh response still finishes the loading animation before the
+            // day controls are enabled. Select actual visible days as a guest would.
+            await page.waitForFunction(() => document.querySelector('#date-availability-status').dataset.state === 'fresh'
+                && !document.querySelector('#date-calendar-surface').classList.contains('is-checking'));
+            const openDay = page.locator('.flatpickr-day:not(.flatpickr-disabled):not(.prevMonthDay):not(.nextMonthDay)').first();
+            const arrivalDate = await openDay.getAttribute('data-date');
+            const departure = new Date(arrivalDate + 'T12:00:00Z'); departure.setUTCDate(departure.getUTCDate() + 2);
+            const departureDate = departure.toISOString().slice(0, 10);
+            await openDay.click();
+            await page.locator(`.flatpickr-day[data-date="${departureDate}"]`).first().click();
             assert.equal(await page.locator('.flatpickr-day.startRange').count(), 1);
             assert.equal(await page.locator('.flatpickr-day.endRange').count(), 1);
-            await page.locator('#date-apply').click();
+            await page.locator('#date-apply').click(); await closed();
             assert.equal(await page.locator('#date-panel').isVisible(), false);
             assert.equal(await page.locator('#date-display').evaluate(e => e === document.activeElement), true);
             await page.locator('#guests-display').click(); await bounded('#guests-panel');
             await page.locator('#guests-increase').click();
             assert.equal(await page.locator('#guests-count').inputValue(), '2');
-            await page.locator('#guests-panel .panel-actions button').click();
+            await page.locator('#guests-panel .panel-actions button').click(); await closed();
             assert.equal(await page.locator('#guests-display').evaluate(e => e === document.activeElement), true);
             await page.locator('#property-display').click(); await bounded('#property-panel');
             assert.equal(await page.locator('[data-property-option]').count(), catalogue.length + 1);
-            assert.equal(await page.locator('#property-panel').evaluate(e => getComputedStyle(e).backgroundColor), theme === 'dark' ? 'rgb(30, 30, 30)' : 'rgb(252, 251, 248)');
+            assert.equal(await page.locator('#property-panel').evaluate(e => getComputedStyle(e).backgroundColor), await cardBackground());
             const lastSlug = await page.locator('[data-property-option]').last().getAttribute('data-property-option');
             await page.keyboard.press('End'); await page.keyboard.press('Enter');
             assert.equal(await page.locator('#booking-property').inputValue(), lastSlug);
             assert.equal(await page.locator('#arrival-date').inputValue(), '', 'changing property clears old dates');
             assert.equal(await page.locator('#date-panel').isVisible(), true, 'choosing a property opens dates automatically');
             await bounded('#date-panel');
-            await page.keyboard.press('Escape');
+            await page.keyboard.press('Escape'); await closed();
             assert.equal(await page.locator('#date-display').evaluate(e => e === document.activeElement), true);
             await page.locator('#property-display').click(); await page.keyboard.press('Home'); await page.keyboard.press('Enter');
             assert.equal(await page.locator('#booking-property').inputValue(), '');
             assert.equal(await page.locator('#date-panel').isVisible(), true, 'all properties starts the same guide');
-            await page.keyboard.press('Escape');
-            await page.locator('#property-display').click(); await page.keyboard.press('Escape');
+            await page.keyboard.press('Escape'); await closed();
+            await page.locator('#property-display').click(); await page.keyboard.press('Escape'); await closed();
             assert.equal(await page.locator('#property-display').evaluate(e => e === document.activeElement), true);
             // Resize and scroll while open, including the short 320px viewport.
             await page.locator('#date-display').click();
             await page.evaluate(() => window.scrollBy(0, -100));
             await page.waitForTimeout(100); await bounded('#date-panel');
             await page.setViewportSize({width, height: 500}); await page.waitForTimeout(100); await bounded('#date-panel');
-            await page.keyboard.press('Escape');
+            await page.keyboard.press('Escape'); await closed();
             await page.setViewportSize({width, height: width === 320 ? 568 : 900});
             await page.evaluate(() => scrollTo(0, 0));
             if (width < 1200) await page.locator('.navbar-toggler').click();
@@ -116,12 +131,12 @@ let catalogue = [];
             assert.equal(await page.locator('html').getAttribute('data-bs-theme'), theme === 'light' ? 'dark' : 'light');
             const toggle = page.locator('.navbar .dropdown-toggle');
             await toggle.click(); assert.equal(await page.locator('.property-nav-menu .dropdown-item').count(), catalogue.length);
-            assert.equal(await page.locator('.property-nav-menu').evaluate(e => getComputedStyle(e).backgroundColor), theme === 'light' ? 'rgb(30, 30, 30)' : 'rgb(252, 251, 248)', 'menu card follows the toggled theme');
-            await page.mouse.click(2, 2); assert.equal(await toggle.getAttribute('aria-expanded'), 'false', 'outside click closes the existing dropdown');
+            assert.equal(await page.locator('.property-nav-menu').evaluate(e => getComputedStyle(e).backgroundColor), await cardBackground(), 'menu card follows the toggled theme');
+            await page.mouse.click(2, 2); await closed(); assert.equal(await toggle.getAttribute('aria-expanded'), 'false', 'outside click closes the existing dropdown');
             await toggle.click();
             await toggle.focus(); await page.keyboard.press('ArrowDown');
             assert.equal(await page.locator('.property-nav-menu .dropdown-item').first().evaluate(e => e === document.activeElement), true);
-            await page.keyboard.press('Escape'); assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+            await page.keyboard.press('Escape'); await closed(); assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
             assert.equal(await toggle.evaluate(e => e === document.activeElement), true);
             // Simulate a growing catalogue only in the DOM; never alter local records.
             await page.locator('.property-nav-menu').evaluate(menu => {
@@ -129,16 +144,16 @@ let catalogue = [];
             });
             await toggle.click();
             assert.equal(await page.locator('.property-nav-menu').evaluate(e => e.scrollHeight > e.clientHeight && e.scrollWidth <= e.clientWidth + 1), true);
-            await page.keyboard.press('Escape');
-            if (width < 1200) await page.keyboard.press('Escape');
+            await page.keyboard.press('Escape'); await closed();
+            if (width < 1200) await page.keyboard.press('Escape'); await closed();
             await page.locator('#date-display').click();
             // Cached Turbo page must never retain an open top-layer dialog.
             await page.evaluate(() => window.Turbo.visit('/contact-us?_locale=' + document.documentElement.lang));
             await page.waitForURL('**/contact-us*'); await page.waitForSelector('h1');
             await page.goBack(); await page.waitForSelector('#date-display');
-            await page.waitForFunction(() => !!document.querySelector('#date-range')._flatpickr && !document.documentElement.hasAttribute('data-turbo-preview'));
+            await page.waitForFunction(() => !!document.querySelector('#date-range')?._flatpickr && !document.documentElement.hasAttribute('data-turbo-preview'));
             assert.equal(await page.locator('dialog[open]').count(), 0);
-            await page.locator('#guests-display').click(); await bounded('#guests-panel'); await page.keyboard.press('Escape');
+            await page.locator('#guests-display').click(); await bounded('#guests-panel'); await page.keyboard.press('Escape'); await closed();
             layouts++;
         }
         assert.deepEqual(requests, [], 'lot A must cause no availability/provider requests');

@@ -1,8 +1,9 @@
 {% if featuredProperties %}
-<div class="property-showcase" data-controller="property-showcase" data-property-showcase-animated-value="true" role="region" aria-roledescription="{{ 'showcase.carousel'|trans }}" aria-label="{{ 'home.featured_properties'|trans }}" data-action="keydown->property-showcase#keyboard">
+{% set showcaseProperties = featuredProperties|filter(item => item.images|length > 0)|merge(featuredProperties|filter(item => item.images|length == 0)) %}
+<div class="property-showcase home-property-showcase" data-controller="property-showcase" data-property-showcase-animated-value="true" role="region" aria-roledescription="{{ 'showcase.carousel'|trans }}" aria-label="{{ 'home.featured_properties'|trans }}" data-action="keydown->property-showcase#keyboard">
     <p class="showcase-intro">{{ 'showcase.intro'|trans }}</p>
     <div class="showcase-stage" data-property-showcase-target="stage" data-action="pointerdown->property-showcase#pointerDown pointermove->property-showcase#pointerMove pointerup->property-showcase#pointerUp pointercancel->property-showcase#pointerCancel dragstart->property-showcase#preventNativeDrag click->property-showcase#preventDraggedClick:capture">
-        {% for property in featuredProperties %}
+        {% for property in showcaseProperties %}
         <div class="showcase-slide" data-property-showcase-target="slide" data-slug="{{ property.slug }}" data-has-photo="{{ property.images|length ? 'true' : 'false' }}" role="group" aria-roledescription="{{ 'showcase.slide'|trans }}" aria-label="{{ loop.index }} / {{ loop.length }} · {{ property.city }}">
             {% include 'home/_showcase_card.html.twig' with {property: property} only %}
             <button type="button" class="showcase-side-select" data-action="property-showcase#selectSide" data-index="{{ loop.index0 }}" aria-label="{{ 'showcase.select'|trans({'%name%': property.title}) }}" tabindex="-1" hidden></button>
@@ -11,7 +12,7 @@
     </div>
     <div class="showcase-controls" data-property-showcase-target="controls" hidden>
         <button type="button" class="showcase-arrow" data-action="property-showcase#previous" aria-label="{{ 'showcase.previous'|trans }}"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m14 5-7 7 7 7"/></svg></button>
-        <div class="showcase-picker" aria-label="{{ 'showcase.pick'|trans }}">{% for property in featuredProperties %}<button type="button" data-property-showcase-target="choice" data-index="{{ loop.index0 }}" data-action="property-showcase#selectChoice" aria-label="{{ 'showcase.select'|trans({'%name%': property.title}) }}"><span class="showcase-choice-dot" aria-hidden="true"></span>{{ property.city }}</button>{% endfor %}</div>
+        <div class="showcase-picker" aria-label="{{ 'showcase.pick'|trans }}">{% for property in showcaseProperties %}<button type="button" data-property-showcase-target="choice" data-index="{{ loop.index0 }}" data-action="property-showcase#selectChoice" aria-label="{{ 'showcase.select'|trans({'%name%': property.title}) }}"><span class="showcase-choice-dot" aria-hidden="true"></span>{{ property.city }}</button>{% endfor %}</div>
         <button type="button" class="showcase-arrow" data-action="property-showcase#next" aria-label="{{ 'showcase.next'|trans }}"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m10 5 7 7-7 7"/></svg></button>
     </div>
     <p class="showcase-position" data-property-showcase-target="position" role="status" aria-live="polite" aria-atomic="true"></p>

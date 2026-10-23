@@ -1,0 +1,88 @@
+{
+  "source": "Informations confirmées par le propriétaire et annonces Airbnb officielles ; rédaction originale ROAMING FR/EN",
+  "confirmedAt": "2026-10-23",
+  "properties": [
+    {
+      "guestLuckyId": 2467,
+      "slug": "ecrin-noir-croix",
+      "city": "Croix",
+      "verification": "Annonce Airbnb consultée le 23 octobre 2026. Quatre lits confirmés ; types et répartition contradictoires, non repris. Le jacuzzi annoncé est une baignoire balnéo dans la salle de bain.",
+      "fields": {
+        "title": "L’Écrin Noir – Maison Moderne & Accueillante",
+        "type": "house",
+        "travelers": 9,
+        "bedrooms": 4,
+        "beds": 4,
+        "bathrooms": 1,
+        "area": 140,
+        "airbnbUrl": "https://www.airbnb.fr/rooms/1765420065815429494",
+        "shortDescription": "À Croix, une maison de 140 m² pour se retrouver : quatre chambres, une terrasse, une baignoire balnéo et une salle de sport privée.",
+        "description": "Installez-vous à L’Écrin Noir, une maison de 140 m² à Croix pensée pour les séjours à plusieurs. Ses quatre chambres accueillent vos moments de repos, tandis que la terrasse invite à prolonger les instants partagés. Après la journée, profitez de la baignoire balnéo ou gardez votre rythme dans la salle de sport privée. Cuisine équipée, Wi-Fi et télévision complètent le séjour, avec un stationnement privatif et une arrivée autonome pour vous installer simplement.",
+        "about": "Installez-vous à L’Écrin Noir, une maison de 140 m² à Croix pensée pour les séjours à plusieurs. Ses quatre chambres accueillent vos moments de repos, tandis que la terrasse invite à prolonger les instants partagés. Après la journée, profitez de la baignoire balnéo ou gardez votre rythme dans la salle de sport privée. Cuisine équipée, Wi-Fi et télévision complètent le séjour, avec un stationnement privatif et une arrivée autonome pour vous installer simplement.",
+        "accommodation": "La maison comprend quatre chambres, quatre lits et une salle de bain avec baignoire balnéo et douche séparée. Une cuisine équipée, une terrasse et une salle de sport privée permettent d'alterner repas ensemble, détente et activité. Le Wi-Fi et la télévision sont disponibles.",
+        "guestAccess": "L'arrivée est autonome grâce à une boîte à clés. Une place de stationnement privative est réservée au logement.",
+        "otherRemarks": "Les animaux sont acceptés.",
+        "shortDescriptionEn": "A 140 m² home in Croix made for time together, with four bedrooms, a terrace, a whirlpool bath and a private gym.",
+        "aboutEn": "Make yourself at home at L’Écrin Noir, a 140 m² house in Croix with room to spend time together. Four bedrooms offer space to unwind, and the terrace is a welcoming spot to linger between outings. Enjoy the whirlpool bath after a day out or keep up your routine in the private gym. An equipped kitchen, Wi-Fi and TV make everyday living easy, while private parking and self check-in help you settle in at your own pace.",
+        "accommodationEn": "The house has four bedrooms, four beds and one bathroom with a whirlpool bath and a separate shower. An equipped kitchen, terrace and private gym offer room for shared meals, relaxation and exercise. Wi-Fi and TV are available.",
+        "guestAccessEn": "Self check-in is available through a key box. One private parking space is reserved for the property.",
+        "otherRemarksEn": "Pets are welcome."
+      },
+      "amenities": ["amenities.wifi", "amenities.television", "amenities.equipped_kitchen", "amenities.terrace", "amenities.whirlpool_bath", "amenities.private_gym", "amenities.private_parking", "amenities.self_checkin", "amenities.pets_allowed"]
+    },
+    {
+      "guestLuckyId": 2630,
+      "slug": "l-elegante-douaisienne-4-chambres-2630",
+      "city": "Douai",
+      "verification": "Données confirmées par le propriétaire. URL officielle fournie mais non lisible lors de la vérification ; pas de surface, de note ni de nouvelle adresse déduite.",
+      "fields": {
+        "title": "L’Élégante Douaisienne • 4 Chambres",
+        "type": "house",
+        "travelers": 8,
+        "bedrooms": 4,
+        "beds": 4,
+        "bathrooms": 2,
+        "airbnbUrl": "https://www.airbnb.fr/rooms/1796954021774541556",
+        "shortDescription": "Tout près de la place du Barlet, une maison sur trois niveaux avec quatre chambres, deux salles de bain, la climatisation et une petite terrasse.",
+        "description": "Vivez Douai à votre rythme à L’Élégante Douaisienne, tout près de la place du Barlet. Répartie sur trois niveaux, cette maison accueille jusqu'à huit voyageurs dans quatre chambres avec lits doubles. Les deux salles de bain facilitent les départs du matin ; la petite terrasse offre une pause entre deux sorties. Retrouvez le confort d'une cuisine, du Wi-Fi, de la télévision, d'un lave-linge et de la climatisation pour un séjour à plusieurs en toute simplicité.",
+        "about": "Vivez Douai à votre rythme à L’Élégante Douaisienne, tout près de la place du Barlet. Répartie sur trois niveaux, cette maison accueille jusqu'à huit voyageurs dans quatre chambres avec lits doubles. Les deux salles de bain facilitent les départs du matin ; la petite terrasse offre une pause entre deux sorties. Retrouvez le confort d'une cuisine, du Wi-Fi, de la télévision, d'un lave-linge et de la climatisation pour un séjour à plusieurs en toute simplicité.",
+        "accommodation": "La maison se déploie sur trois niveaux et propose quatre chambres avec quatre lits doubles, ainsi que deux salles de bain. Une cuisine et un lave-linge accompagnent le quotidien. La petite terrasse, la climatisation, le Wi-Fi et la télévision complètent les espaces.",
+        "guestAccess": "La place du Barlet se trouve à proximité immédiate du logement. Contactez l'équipe pour préparer votre arrivée et les modalités d'accès.",
+        "otherRemarks": "Le logement est réparti sur trois niveaux. Les animaux sont acceptés.",
+        "shortDescriptionEn": "Close to Place du Barlet, a three-level house with four bedrooms, two bathrooms, air conditioning and a small terrace.",
+        "aboutEn": "Enjoy Douai at your own pace at L’Élégante Douaisienne, just by Place du Barlet. Set over three levels, the house welcomes up to eight guests in four bedrooms with double beds. Two bathrooms make shared mornings easier, and the small terrace offers a place to pause between outings. A kitchen, Wi-Fi, TV, washing machine and air conditioning bring everyday comfort to your stay together.",
+        "accommodationEn": "The house spans three levels, with four bedrooms, four double beds and two bathrooms. A kitchen and washing machine make everyday living convenient. A small terrace, air conditioning, Wi-Fi and TV complete the spaces.",
+        "guestAccessEn": "Place du Barlet is very close to the property. Contact the team to plan your arrival and arrange access.",
+        "otherRemarksEn": "The house is arranged over three levels. Pets are welcome."
+      },
+      "amenities": ["amenities.wifi", "amenities.television", "amenities.kitchen", "amenities.air_conditioning", "amenities.small_terrace", "amenities.washing_machine", "amenities.pets_allowed"]
+    },
+    {
+      "guestLuckyId": 2474,
+      "slug": "roubaix",
+      "city": "Roubaix",
+      "verification": "Annonce Airbnb consultée le 23 octobre 2026. Aucune note de l'hôte reprise comme note de ce logement. Types des cinq lits non précisés.",
+      "fields": {
+        "title": "La Maison du Patio – Terrasse & Jeux",
+        "type": "house",
+        "travelers": 9,
+        "bedrooms": 5,
+        "beds": 5,
+        "bathrooms": 2,
+        "airbnbUrl": "https://www.airbnb.fr/rooms/1791266310046498117",
+        "shortDescription": "À Roubaix, cinq chambres autour d'un séjour convivial : patio abrité, baby-foot et jeux de société, à proximité du métro et du musée La Piscine.",
+        "description": "Faites place aux moments partagés à La Maison du Patio. Cette maison de Roubaix accueille jusqu'à neuf voyageurs avec cinq chambres et deux salles de bain. Son patio intérieur abrité prolonge les pauses, tandis que le baby-foot et les jeux de société donnent le ton des soirées ensemble. Préparez vos repas dans la cuisine équipée, installez-vous dans l'espace de travail quand il le faut, puis partez découvrir le musée La Piscine ou rejoindre le métro à proximité. Linge de lit et serviettes sont fournis.",
+        "about": "Faites place aux moments partagés à La Maison du Patio. Cette maison de Roubaix accueille jusqu'à neuf voyageurs avec cinq chambres et deux salles de bain. Son patio intérieur abrité prolonge les pauses, tandis que le baby-foot et les jeux de société donnent le ton des soirées ensemble. Préparez vos repas dans la cuisine équipée, installez-vous dans l'espace de travail quand il le faut, puis partez découvrir le musée La Piscine ou rejoindre le métro à proximité. Linge de lit et serviettes sont fournis.",
+        "accommodation": "Le logement propose cinq chambres, cinq lits et deux salles de bain. Le patio intérieur abrité, le baby-foot et les jeux de société invitent à se retrouver. Une cuisine équipée, un espace de travail, le Wi-Fi et la télévision sont disponibles. Le linge de lit et les serviettes sont fournis.",
+        "guestAccess": "Le métro et le musée La Piscine se trouvent à proximité. L'équipe peut vous accompagner dans la préparation de votre arrivée.",
+        "otherRemarks": "Les animaux sont acceptés.",
+        "shortDescriptionEn": "A sociable Roubaix home with five bedrooms, a sheltered patio, table football and board games, close to the metro and La Piscine museum.",
+        "aboutEn": "Make time for each other at La Maison du Patio. This Roubaix house welcomes up to nine guests with five bedrooms and two bathrooms. Its sheltered courtyard patio is a place to take a break, while table football and board games set the scene for evenings together. Cook in the equipped kitchen or use the workspace when you need to, then head out to nearby La Piscine museum or the metro. Bed linen and towels are provided.",
+        "accommodationEn": "The house has five bedrooms, five beds and two bathrooms. A sheltered courtyard patio, table football and board games offer ways to spend time together. An equipped kitchen, workspace, Wi-Fi and TV are available. Bed linen and towels are provided.",
+        "guestAccessEn": "The metro and La Piscine museum are nearby. The team can help you plan your arrival.",
+        "otherRemarksEn": "Pets are welcome."
+      },
+      "amenities": ["amenities.wifi", "amenities.television", "amenities.equipped_kitchen", "amenities.sheltered_patio", "amenities.foosball", "amenities.board_games", "amenities.workspace", "amenities.bed_linen", "amenities.towels", "amenities.pets_allowed"]
+    }
+  ]
+}

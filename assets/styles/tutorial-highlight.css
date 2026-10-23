@@ -1,6 +1,6 @@
 /* Pure visual effect. The real controls retain their styles, focus and events.
    The dynamic clip path cuts out the button AND navigation, including blur. */
-.tutorial-highlight-overlay {
+.tutorial-highlight-overlay, .tutorial-highlight-exit {
     position: fixed;
     inset: 0;
     z-index: 10000;

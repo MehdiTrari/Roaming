@@ -2,11 +2,12 @@
 namespace App\Integration\GuestLucky;
 use App\Entity\Property;
 use App\Repository\PropertyRepository;
+use App\Service\PropertyContentCatalogue;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class CatalogueImporter
 {
-    public function __construct(private EntityManagerInterface $em, private PropertyRepository $properties) {}
+    public function __construct(private EntityManagerInterface $em, private PropertyRepository $properties, private PropertyContentCatalogue $content) {}
 
     public static function validate(array $catalogue): array
     {
@@ -53,6 +54,11 @@ final class CatalogueImporter
                 throw new \InvalidArgumentException('Conflicting mapping for '.$row['slug']);
             }
             $property = $idMatch ?? $slugMatch;
+            $editorial = $this->content->forProviderId($row['id']);
+            if ($editorial && (($property?->getSlug() ?? $row['slug']) !== $editorial['slug'] || mb_strtolower(trim($row['city'])) !== mb_strtolower($editorial['city']))) {
+                throw new \InvalidArgumentException('Conflicting editorial mapping for '.$row['slug']);
+            }
+            if ($editorial) { $row['editorialTitle'] = $editorial['fields']['title']; $row['editorialTravelers'] = $editorial['fields']['travelers']; }
             if ($property) { $keep[spl_object_id($property)] = true; }
             $changes[] = [$property ? 'update' : 'create', $property, $row];
         }
@@ -65,7 +71,8 @@ final class CatalogueImporter
             if (!$apply) { continue; }
             if ($action === 'archive') { $property->setActive(false); continue; }
             if (!$property) { $property = (new Property())->setSlug($row['slug']); $this->em->persist($property); }
-            $property->setGuestLuckyId($row['id'])->setActive(true)->setTitle($row['name'])->setCity($row['city'])->setTravelers($row['capacity']);
+            $property->setGuestLuckyId($row['id'])->setActive(true)->setTitle($row['editorialTitle'] ?? $row['name'])->setCity($row['city'])
+                ->setProviderCapacity($row['capacity'])->setTravelers($row['editorialTravelers'] ?? $row['capacity']);
             // Old snapshots omit the restriction; an explicit live null clears it.
             if (array_key_exists('minStay', $row)) { $property->setMinimumStay($row['minStay']); }
             if (isset($row['address']) && trim($row['address']) !== '') { $property->setAddress($row['address']); }
