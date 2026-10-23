@@ -342,8 +342,10 @@ showcase:
 locations:
   map_title: 'Emplacement des logements'
   explore: 'Repérez votre prochain séjour'
-  map_permission: 'Le fond de carte est fourni par OpenFreeMap. Son affichage transmet votre adresse IP et l’origine du site à ce service.'
-  show_map: 'Autoriser et afficher la carte'
+  map_permission: 'La carte utilise OpenFreeMap, qui reçoit votre adresse IP et l’origine du site. Vous pouvez gérer son affichage dans vos préférences.'
+  map_provider: 'Carte fournie par OpenFreeMap'
+  show_map: 'Afficher la carte'
+  loading: 'Préparation de votre quartier…'
   map_preferences: 'Gérer les services externes'
   overview: 'Voir tous les logements'
   directions: 'Itinéraire'

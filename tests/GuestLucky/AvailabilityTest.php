@@ -7,9 +7,11 @@ use App\Integration\GuestLucky\GuestLuckyClient;
 use App\Service\AvailabilityService;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\HttpClient\Exception\TransportException;
 
 final class AvailabilityTest extends TestCase
 {
@@ -129,6 +131,20 @@ final class AvailabilityTest extends TestCase
     {
         $http = new MockHttpClient([new MockResponse((function () { yield ''; })())]);
         self::assertSame('unverified', $this->calendar($this->service($http), [$this->property()])['properties'][0]['status']);
+    }
+    public function testTransportFailureIsClassifiedWithoutLoggingItsCredentialBearingMessage(): void
+    {
+        $http = new MockHttpClient(static function () {
+            throw new TransportException('Timeout on https://example.test/availability?key=must-not-be-logged');
+        });
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning')->with('GuestLucky read failed', [
+            'property' => 'property-1', 'operation' => 'calendar', 'reason' => 'transport',
+        ]);
+        $service = new AvailabilityService(new GuestLuckyClient($http, 'https://example.test', 'public-key'), new ArrayAdapter(), $logger, true);
+        $row = $this->calendar($service, [$this->property()])['properties'][0];
+        self::assertSame('unverified', $row['status']);
+        self::assertSame([], $row['days']);
     }
     public function testQuoteIsFreshAndRejectionDiffersFromProviderFailure(): void
     {

@@ -6,6 +6,7 @@
     <div class="stay-map-surface">
         <div class="stay-map-canvas" data-property-map-target="canvas" aria-label="{{ 'locations.map_title'|trans }}"></div>
         <div class="stay-map-placeholder" data-property-map-target="placeholder">
+            <div class="stay-map-loading" role="status"><span class="stay-map-spinner" aria-hidden="true"></span><span>{{ 'locations.loading'|trans }}</span></div>
             <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m9 18-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Zm0 0V3m6 3v15"/></svg>
             <h3>{{ 'locations.explore'|trans }}</h3>
             <p>{{ 'locations.map_permission'|trans }}</p>
@@ -23,5 +24,6 @@
             <svg class="stay-map-directions-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
         </a>
     </div>
+    <p class="stay-map-disclosure"><a href="https://openfreemap.org/privacy/" target="_blank" rel="noopener noreferrer">{{ 'locations.map_provider'|trans }}</a><span aria-hidden="true">·</span><a href="{{ path('app_cookies', {_locale: app.request.locale}) }}" data-privacy-open>{{ 'locations.map_preferences'|trans }}</a></p>
     <noscript><div class="p-3">{% for item in properties %}<p><strong>{{ item.title }}</strong><br>{{ item.address ?: item.city }}{% if item.directionsUrl %}<br><a href="{{ item.directionsUrl }}" target="_blank" rel="noopener noreferrer">{{ 'locations.directions'|trans }}</a>{% endif %}</p>{% endfor %}</div></noscript>
 </section>

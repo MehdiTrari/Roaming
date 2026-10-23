@@ -5,6 +5,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import './styles/app.css';
 import './styles/ticket-manager.css';
 import './styles/property-showcase.css';
+import './styles/tutorial-highlight.css';
 import './styles/calendar-loading.css';
 import './styles/legal.css';
 import './styles/page-reveal.css';

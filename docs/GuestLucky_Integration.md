@@ -191,3 +191,72 @@ Avant activation :
 - Seulement ensuite passer GUESTLUCKY_AVAILABILITY_ENABLED à 1 et renouveler le cache/configuration de déploiement.
 
 Repli immédiat : remettre GUESTLUCKY_AVAILABILITY_ENABLED=0. Les fiches restent consultables et le contact reste accessible. Ne pas réintroduire l'ancien fournisseur ni afficher des disponibilités calculées par défaut.
+
+## PHP local Windows : appels lents ou non vérifiés
+
+Diagnostic du 20 octobre 2026 : PHP `C:\php\php.exe` disposait de cURL, mais
+`curl.cainfo` et `openssl.cafile` étaient vides. La fabrique HttpClient de Symfony
+choisissait donc `NativeHttpClient` au lieu de `CurlHttpClient`. Certaines connexions
+prenaient plusieurs secondes ou dépassaient le délai de huit secondes ; le serveur
+PHP de développement sous Windows traitant les requêtes une à une, un appel lent
+retardait aussi les suivants. Ce symptôme ne démontre pas une panne de GuestLucky.
+
+Configuration locale appliquée, en conservant la vérification TLS :
+
+1. Repérer le PHP utilisé par **le serveur** et son fichier INI avec `php --ini`.
+2. Télécharger le bundle de certificats depuis `https://curl.se/ca/cacert.pem`
+   dans `C:\php\extras\ssl\cacert.pem` (adapter au chemin de PHP).
+3. Dans le fichier INI chargé, configurer :
+
+```ini
+curl.cainfo = "C:/php/extras/ssl/cacert.pem"
+openssl.cafile = "C:/php/extras/ssl/cacert.pem"
+```
+
+4. Redémarrer le serveur PHP/Laragon/Symfony pour charger ces paramètres.
+5. Refaire le diagnostic en lecture seule avec des dates futures :
+
+```powershell
+php bin/console app:guestlucky:check roubaix 2026-11-29 2026-12-09 --guests=3
+```
+
+Après configuration, les trois mêmes lectures directes de Roubaix (novembre,
+décembre, devis) ont été validées en environ 493, 146 et 167 ms lors de ce contrôle.
+Ce sont des mesures locales ponctuelles, pas une garantie de délai du fournisseur.
+Des pointes de connexion de plusieurs secondes ont également été observées après
+la correction ; un appel distant lent peut encore mettre en attente les autres
+requêtes du serveur PHP intégré Windows. Distinguer la durée de connexion/lecture
+GuestLucky dans le profiler de l'attente totale côté navigateur. Le serveur intégré
+est destiné au développement ; le serveur PHP de production doit traiter les
+requêtes simultanément.
+Le calendrier reste mis en cache 60 secondes ; les devis et la revalidation avant
+réservation restent des lectures fraîches.
+
+Les routes JSON peuvent répondre HTTP 200 avec une ligne `status: unverified` :
+l'enveloppe a été produite correctement, mais cette disponibilité n'a pas pu être
+confirmée. Une ligne inconnue ne devient jamais « disponible » par défaut. L'interface
+affiche une explication et un bouton de nouvelle vérification. Les journaux ajoutent
+une catégorie d'échec (`transport`, `invalid_json`, `invalid_response`, `internal`),
+sans enregistrer de message d'exception ou d'URL contenant la clé.
+
+## Connexions intermittentes : reprise bornée des lectures
+
+Le 20 octobre, de nouvelles erreurs ont été isolées avant la connexion TCP/TLS
+(`connect_time: 0`, aucun premier octet), même avec cURL et les certificats
+correctement configurés. Le devis de Douai du 15 au 18 novembre pour deux voyageurs
+était valide lors d'une autre lecture ; une erreur de transport n'est donc pas
+une indisponibilité métier.
+
+`GuestLuckyClient` applique désormais à ses GET au plus deux reprises automatiques pour
+les erreurs réseau, avec une courte pause de 150 ms. Le suivi de progression coupe
+une tentative qui n'a toujours pas établi sa connexion au bout de 2,5 secondes,
+au lieu de gaspiller le délai d'inactivité complet. Le transport contrôle ce délai
+aux notifications de progression ; il peut donc être légèrement dépassé.
+
+La reprise utilise le temps restant du budget total de 12 secondes. Une connexion
+établie conserve le délai normal de lecture (8 secondes). Aucun changement du
+protocole HTTP ou de la résolution IPv4/IPv6 n'est forcé. Les réponses de refus,
+les erreurs HTTP, les limitations de débit et les devis mal formés ne déclenchent
+pas cette reprise. Après trois échecs réseau, le résultat reste non vérifié. Les
+tests couvrent la récupération, l'épuisement des tentatives et le maintien des
+refus du fournisseur ; aucune réservation n'est créée par ces contrôles.

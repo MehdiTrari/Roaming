@@ -2,6 +2,20 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
+const apertureMatches=()=>{
+ const cover=document.querySelector('.tutorial-highlight-overlay'),button=document.querySelector('.booking-submit'),bar=document.querySelector('.booking-bar');
+ if(!cover||!button)return false;
+ const rect=button.getBoundingClientRect(),source=getComputedStyle(cover).clipPath.match(/"([^"]+)"/)?.[1];
+ if(!source)return false;
+ const path=new Path2D(source),canvas=document.createElement('canvas').getContext('2d');
+ const masked=(x,y)=>canvas.isPointInPath(path,x,y,'evenodd');
+ const cx=rect.x+rect.width/2,cy=rect.y+rect.height/2,region=bar.getBoundingClientRect();
+ const guide=document.querySelector('#booking-guide').getBoundingClientRect();
+ return rect.top>=0&&rect.bottom<=innerHeight&&
+  [[cx,cy],[rect.left+.25,cy],[rect.right-.25,cy],[cx,rect.top+.25],[cx,rect.bottom-.25]].every(([x,y])=>!masked(x,y))&&
+  [[region.x+region.width/2,region.y+region.height/2],[guide.x+guide.width/2,guide.y+guide.height/2],...[...bar.querySelectorAll('.booking-field-horizontal')].map(element=>{const box=element.getBoundingClientRect();return [box.x+box.width/2,box.y+box.height/2];})].every(([x,y])=>!masked(x,y))&&
+  [[region.x+region.width/2,region.top-2],[region.x+region.width/2,region.bottom+2],[region.left-2,region.y+region.height/2],[region.right+2,region.y+region.height/2]].filter(([x,y])=>x>=0&&x<innerWidth&&y>document.querySelector('header.sticky-top').getBoundingClientRect().bottom&&y<innerHeight).every(([x,y])=>masked(x,y));
+};
 (async()=>{
  const browser=await chromium.launch({headless:true,channel:'chrome'});
  try {
@@ -63,10 +77,14 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
     assert.equal(await page.locator('#booking-guide [aria-current="step"]').getAttribute('data-guide-step'),'1');
     assert.equal(await page.locator('#property-panel').evaluate(panel=>panel.contains(document.activeElement)),true);
     assert.equal(await page.locator('#property-panel [data-guide-hint="property"]').isVisible(),true);
+    assert.equal(await page.locator('.tutorial-highlight-overlay').count(),1,'blur starts with the property step');
+    assert.equal(await page.locator('.booking-submit').evaluate(button=>button.getAnimations().some(animation=>animation.effect.getTiming().iterations===Infinity)),false,'search only pulses at the final step');
+    assert.equal(await page.locator('#property-panel').evaluate(panel=>getComputedStyle(panel,'::backdrop').backgroundColor),'rgba(0, 0, 0, 0)','the guided panel does not dim the clear search module');
     assert.equal(calls.length,before,'opening properties does not query availability');
     await page.locator(`[data-property-option="${photoSlug}"]`).click();
    }
    await page.waitForSelector('#date-panel[open]');
+   assert.equal(await page.locator('.tutorial-highlight-overlay').count(),1,'blur remains active on dates, including carousel entry');
    assert.equal(await page.locator('#booking-property').inputValue(),photoSlug);
    assert.equal(await page.locator('#property-display').innerText(),await page.locator('#property-display-text').innerText(),'no stray v after the selected property');
    assert.equal(new URL(page.url()).searchParams.get('slug'),photoSlug);
@@ -83,6 +101,7 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
    await page.locator(`#date-panel .flatpickr-day[data-date="${dates[1]}"]`).click();
    await page.locator('#date-apply').click();
    await page.waitForSelector('#guests-panel[open]');
+   assert.equal(await page.locator('.tutorial-highlight-overlay').count(),1,'blur remains active on guests');
    assert.equal(await page.locator('#date-panel').isVisible(),false);
    assert.equal(await page.locator('#booking-guide [aria-current="step"]').getAttribute('data-guide-step'),'3');
    await page.locator('#guests-increase').click();
@@ -94,47 +113,47 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
    assert.equal(await page.locator('#booking-guide [aria-current="step"]').getAttribute('data-guide-step'),'4');
    assert.equal(await page.locator('.booking-submit').evaluate(e=>e===document.activeElement),true);
    assert.equal(await page.locator('#booking-guide-search, .booking-guide-search-arrow').count(),0,'no message or arrow under the search button');
-   assert.equal(await page.locator('.booking-search-spotlight').count(),1);
-   assert.equal(await page.locator('.booking-search-spotlight').getAttribute('aria-hidden'),'true');
+   assert.equal(await page.locator('.tutorial-highlight-overlay').count(),1);
+   assert.equal(await page.locator('.tutorial-highlight-overlay').getAttribute('aria-hidden'),'true');
    assert.equal(await page.locator('.booking-submit').getAttribute('aria-describedby'),null);
    await page.waitForFunction(()=>getComputedStyle(document.querySelector('.booking-submit')).boxShadow==='none');
    assert.equal(await page.locator('.booking-submit').evaluate(e=>getComputedStyle(e).boxShadow),'none','no animated ring or underlay around the button');
-   await page.waitForFunction(()=>{
-    const button=document.querySelector('.booking-submit').getBoundingClientRect(),spotlight=document.querySelector('.booking-search-spotlight').getBoundingClientRect();
-    return button.top>=0&&button.bottom<=innerHeight&&Math.abs(spotlight.left-button.left)<1&&Math.abs(spotlight.top-button.top)<1;
+   await page.waitForFunction(apertureMatches);
+   await page.mouse.move(0,0);
+   const duration=await page.locator('.booking-submit').evaluate(button=>{
+    const animation=button.getAnimations().find(item=>item.effect.getTiming().iterations===Infinity);
+    animation.pause();return animation.effect.getTiming().duration;
    });
-   const pulse=await page.locator('.booking-submit').evaluate(button=>{
-    const cover=document.querySelector('.booking-search-spotlight');
-    const animations=[...button.getAnimations(),...cover.getAnimations()].filter(animation=>animation.effect.getTiming().iterations===Infinity);
-    animations.forEach(animation=>animation.pause());
-    const duration=animations[0].effect.getTiming().duration,frames=[];
-    for(const time of [0,duration/2,duration]){
-     animations.forEach(animation=>animation.currentTime=time);
-     const b=button.getBoundingClientRect(),h=cover.getBoundingClientRect();
-     frames.push({width:b.width,height:b.height,pageHeight:document.documentElement.scrollHeight,error:Math.max(Math.abs(b.left-h.left),Math.abs(b.top-h.top),Math.abs(b.width-h.width),Math.abs(b.height-h.height))});
-    }
-    const start=document.timeline.currentTime;
-    animations.forEach(animation=>{animation.play();animation.startTime=start;});
-    return frames;
-   });
+   const pulse=[];
+   for(const time of [0,duration/2,duration]){
+    await page.locator('.booking-submit').evaluate((button,time)=>button.getAnimations().find(item=>item.effect.getTiming().iterations===Infinity).currentTime=time,time);
+    await page.waitForFunction(apertureMatches);
+    pulse.push(await page.locator('.booking-submit').evaluate(button=>{
+     const rect=button.getBoundingClientRect();return {width:rect.width,height:rect.height,pageHeight:document.documentElement.scrollHeight};
+    }));
+   }
+   await page.locator('.booking-submit').evaluate(button=>button.getAnimations().forEach(animation=>animation.play()));
    assert.ok(pulse[1].width>pulse[0].width*1.05&&pulse[1].height>pulse[0].height*1.05,'the actual button visibly grows');
    assert.ok(Math.abs(pulse[2].width-pulse[0].width)<1,'the button smoothly returns to its original size');
-   assert.ok(pulse.every(frame=>frame.error<1),'shade opening follows every sampled animation phase without a surrounding ring');
    assert.ok(pulse.every(frame=>frame.pageHeight===pulse[0].pageHeight),'scaling does not move the page layout');
    const spotlightState=await page.locator('.booking-submit').evaluate(button=>{
-    const rect=button.getBoundingClientRect(),cover=document.querySelector('.booking-search-spotlight');
-    return {clickable:button.contains(document.elementFromPoint(rect.x+rect.width/2,rect.y+rect.height/2)),animation:button.getAnimations().some(animation=>animation.playState==='running'),shade:getComputedStyle(cover).boxShadow};
+    const rect=button.getBoundingClientRect(),cover=document.querySelector('.tutorial-highlight-overlay');
+    return {clickable:button.contains(document.elementFromPoint(rect.x+rect.width/2,rect.y+rect.height/2)),animation:button.getAnimations().some(animation=>animation.playState==='running'),shade:getComputedStyle(cover).backgroundColor,blur:getComputedStyle(cover).backdropFilter};
    });
    assert.equal(spotlightState.clickable,true,'the genuine search button remains clickable through the spotlight');
    assert.equal(spotlightState.animation,true);
    assert.match(spotlightState.shade,/0\.56/,'the rest of the viewport is shaded');
+   assert.equal(spotlightState.blur,'blur(5px)','the backdrop is blurred');
    await page.emulateMedia({reducedMotion:'reduce'});
-   assert.equal(await page.locator('.booking-submit').evaluate(e=>e.getAnimations().some(animation=>animation.playState==='running')),true,'the requested button pulse also works with the user’s Windows setting');
+   await page.waitForFunction(()=>document.querySelector('.booking-submit').getAnimations().some(animation=>animation.playState==='running'&&animation.effect.getTiming().duration>=2600));
    await page.emulateMedia({reducedMotion:'no-preference'});
    await page.evaluate(()=>window.scrollBy({top:16,behavior:'instant'}));
-   await page.waitForFunction(()=>Math.abs(document.querySelector('.booking-search-spotlight').getBoundingClientRect().top-document.querySelector('.booking-submit').getBoundingClientRect().top)<1);
+   await page.waitForFunction(apertureMatches);
    assert.equal(calls.filter(url=>url.pathname==='/api/availability').length,quotesBefore,'guidance never launches the search automatically');
-   if([1440,390].includes(width))await page.screenshot({path:`var/guide-search-step-${width}.png`});
+   if([1440,390].includes(width)){
+    await page.locator('#booking-guide').evaluate(element=>Promise.allSettled(element.getAnimations().filter(animation=>animation.effect.getTiming().iterations!==Infinity).map(animation=>animation.finished)));
+    await page.screenshot({path:`var/guide-search-step-${width}.png`});
+   }
    if(width===320)await page.keyboard.press('Enter');
    else{
     const target=await page.locator('.booking-submit').boundingBox();
@@ -144,7 +163,7 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
    }
    await page.waitForSelector('.booking-quote-card');
    assert.equal(await page.locator('#booking-guide').isVisible(),false);
-   assert.equal(await page.locator('.booking-search-spotlight').count(),0,'search removes the shade');
+   assert.equal(await page.locator('.tutorial-highlight-overlay').count(),0,'search removes the shade');
    assert.equal(await page.locator('.booking-submit').getAttribute('aria-describedby'),null);
    assert.equal(await page.locator('#guests-count').inputValue(),'3');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
@@ -192,17 +211,14 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
    await page.locator(`#date-panel .flatpickr-day[data-date="${dates[0]}"]`).click();
    await page.locator(`#date-panel .flatpickr-day[data-date="${dates[1]}"]`).click();
    await page.locator('#date-apply').click();await page.locator('#guests-apply').click();
-   assert.equal(await page.locator('.booking-search-spotlight').count(),1);
+   assert.equal(await page.locator('.tutorial-highlight-overlay').count(),1);
    await page.setViewportSize({width:390,height:844});
-   await page.waitForFunction(()=>{
-    const hole=document.querySelector('.booking-search-spotlight').getBoundingClientRect(),button=document.querySelector('.booking-submit').getBoundingClientRect();
-    return Math.abs(hole.width-button.width)<1&&Math.abs(hole.left-button.left)<1;
-   });
+   await page.waitForFunction(apertureMatches);
    if(dismissal==='escape')await page.keyboard.press('Escape');
    if(dismissal==='outside')await page.locator('#featured h2').click();
    if(dismissal==='focus')await page.locator('#date-display').focus();
    if(dismissal==='turbo'){await page.evaluate(()=>window.Turbo.visit('/contact-us'));await page.waitForURL('**/contact-us*');}
-   assert.equal(await page.locator('.booking-search-spotlight').count(),0,`${dismissal} removes the shade`);
+   assert.equal(await page.locator('.tutorial-highlight-overlay').count(),0,`${dismissal} removes the shade`);
    if(dismissal!=='turbo')assert.equal(await page.locator('.booking-submit').evaluate(button=>button.getAnimations().some(animation=>animation.effect.getTiming().iterations===Infinity)),false,'the invitation animation is cancelled');
   }
   await page.goto(base+'/?_locale=fr');await fresh();

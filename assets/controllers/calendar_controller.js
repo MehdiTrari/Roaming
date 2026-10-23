@@ -3,6 +3,7 @@ import { node, t, language, money, renderQuotes, clearQuotes, showBookingError, 
 import { readStay, writeStay, validStay, realDate } from '../booking-state';
 import {CalendarAvailability, addNights} from '../calendar-availability';
 import {SearchProgress} from '../search-progress';
+import {CalendarProgress} from '../calendar-progress';
 
 export default class extends Controller {
     static targets = ['previous', 'next', 'status', 'board', 'calendarSurface', 'fields', 'arrival', 'departure', 'guests', 'quote', 'progress', 'notice', 'content', 'propertyButton', 'summary', 'selection', 'propertyName', 'submit', 'feedback', 'clear', 'stage', 'popover', 'dateTrigger', 'dateHint', 'applyDates', 'monthLabel'];
@@ -10,6 +11,7 @@ export default class extends Controller {
     connect() {
         if (document.documentElement.hasAttribute('data-turbo-preview')) return;
         this.progress = new SearchProgress(this.progressTarget);
+        this.calendarProgress = new CalendarProgress(this.calendarSurfaceTarget);
         const [year, month] = parisToday().split('-').map(Number);
         this.base = year * 12 + month - 1; this.current = this.base;
         this.days = new Map(); this.months = [];
@@ -55,6 +57,7 @@ export default class extends Controller {
         document.removeEventListener('visibilitychange', this.onVisibility);
         document.removeEventListener('turbo:before-cache', this.onBeforeCache);
         this.request?.abort(); this.invalidateQuote();
+        this.calendarProgress?.cancel();
         this.setChecking(false);
     }
     selectProperty(event) {
@@ -133,6 +136,7 @@ export default class extends Controller {
         this.render();
     }
     setChecking(checking) {
+        if (checking) this.calendarProgress.start(); else this.calendarProgress.cancel();
         this.calendarSurfaceTarget.classList.toggle('is-checking', checking);
         this.calendarSurfaceTarget.setAttribute('aria-busy', String(checking));
         this.boardTarget.inert = checking;
@@ -153,13 +157,18 @@ export default class extends Controller {
                 const data = await this.availability.load(index, this.selected.dataset.url || this.urlValue, request.signal);
                 return {index, enabled: data?.enabled, row: data?.rows.find(row => row.slug === this.slug)};
             }));
+            if (this.request === request) this.calendarProgress.update(72);
             await this.availability.loadArrivalNights([this.current, this.current + 1], this.selected.dataset.url || this.urlValue, request.signal);
             if (request.signal.aborted) return;
             this.months = months; this.enabled = months.every(month => month.enabled);
             this.noticeTarget.hidden = this.enabled; this.contentTarget.hidden = !this.enabled;
             if (this.compactValue && !this.enabled) this.closeDates(true);
             const fresh = this.enabled && months.every(month => month.row?.status === 'fresh');
-            if (fresh) { this.loadedKey = key; this.loadedAt = Date.now(); }
+            if (fresh) {
+                await this.calendarProgress.finish();
+                if (request.signal.aborted || this.request !== request) return;
+                this.loadedKey = key; this.loadedAt = Date.now();
+            }
             this.fieldsTarget.disabled = !fresh;
             let availabilityChanged = false;
             for (const month of months) {
@@ -178,7 +187,9 @@ export default class extends Controller {
             if (error.name === 'AbortError') return;
             this.days.clear(); this.availability.clear(); this.months = []; this.fieldsTarget.disabled = true; this.invalidateQuote();
             this.statusTarget.textContent = t('failed'); this.statusTarget.dataset.state = 'unverified'; this.render();
-        } finally { if (this.request === request) { this.request = null; this.setChecking(false); } }
+        } finally {
+            if (this.request === request) { this.request = null; this.setChecking(false); }
+        }
     }
     selectionIssue() {
         return this.availability.issue(this.criteria(), this.activeProperties(), false);

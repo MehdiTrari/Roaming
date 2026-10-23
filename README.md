@@ -282,6 +282,8 @@ Le catalogue, les calendriers et la recherche utilisent GuestLucky. La mise en l
 
 Voir [la documentation d’intégration](docs/GuestLucky_Integration.md) pour l’import du catalogue, les variables d’environnement, les tests et la bascule.
 
+Sous Windows, si les appels prennent 8 à 12 secondes puis affichent une vérification impossible, contrôler aussi [la configuration des certificats PHP](docs/GuestLucky_Integration.md#php-local-windows--appels-lents-ou-non-vérifiés). Le PHP utilisé par le serveur doit avoir `curl.cainfo` et `openssl.cafile` configurés, puis être redémarré.
+
 En local : `/test-disponibilites` permet de lire les calendriers et de tester les devis sans réserver, même si la publication est désactivée. `/disponibilites` explique le verrou et propose un accès au test en environnement `dev` uniquement.
 
 Diagnostic en lecture seule : `php bin/console app:guestlucky:check lambersart 2026-10-01 2026-10-03 --guests=2` (adapter les dates).

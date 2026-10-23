@@ -1,6 +1,7 @@
 import {Controller} from '@hotwired/stimulus';
 import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?map-worker';
 import {enableMaps, mapsAllowed} from '../privacy';
+import {roamingMapStyle, registerRoamingMapIcons} from '../map-style';
 
 export default class extends Controller {
     static targets = ['canvas', 'placeholder', 'activate', 'overview', 'error', 'city', 'name', 'address', 'directions'];
@@ -54,40 +55,47 @@ export default class extends Controller {
         const generation = this.generation = (this.generation || 0) + 1;
         this.activating = true;
         this.activateTarget.disabled = true;
+        this.placeholderTarget.classList.add('is-loading');
+        this.canvasTarget.setAttribute('aria-busy', 'true');
         let library;
         try { library = await import('maplibre-gl'); }
         catch {
-            if (this.generation === generation) { this.activating = false; this.activateTarget.disabled = false; this.errorTarget.hidden = false; }
+            if (this.generation === generation) { this.activating = false; this.activateTarget.disabled = false; this.placeholderTarget.classList.remove('is-loading'); this.canvasTarget.setAttribute('aria-busy', 'false'); this.errorTarget.hidden = false; }
             return;
         }
         if (this.generation !== generation || !this.element.isConnected || !mapsAllowed()) return;
         library.setWorkerUrl(mapWorkerUrl);
         this.activating = false;
         this.activateTarget.disabled = false;
-        this.placeholderTarget.hidden = true;
         this.canvasSize = `${this.canvasTarget.offsetWidth}:${this.canvasTarget.offsetHeight}`;
         const english = document.documentElement.lang.startsWith('en');
         const initial = this.located(this.selected) ? this.selected : located[0];
         try {
             this.map = new library.Map({
-                container: this.canvasTarget, style: 'https://tiles.openfreemap.org/styles/liberty', center: [initial.longitude, initial.latitude], zoom: 14,
+                container: this.canvasTarget, style: null, center: [initial.longitude, initial.latitude], zoom: 14.7,
                 minZoom: 5, maxZoom: 19, scrollZoom: true, dragRotate: false, pitchWithRotate: false,
                 attributionControl: false, trackResize: false, renderWorldCopies: false,
-                transformRequest: url => ({url, referrerPolicy: 'origin'}),
+                transformRequest: url => ({url, referrerPolicy: 'origin', credentials: new URL(url, location.href).origin === location.origin ? 'same-origin' : 'omit'}),
                 locale: {'NavigationControl.ZoomIn': english ? 'Zoom in' : 'Agrandir', 'NavigationControl.ZoomOut': english ? 'Zoom out' : 'Réduire'}
             });
         } catch {
+            this.placeholderTarget.classList.remove('is-loading'); this.canvasTarget.setAttribute('aria-busy', 'false');
             this.canvasTarget.replaceChildren(); this.placeholderTarget.hidden = false; this.errorTarget.hidden = false;
             return;
         }
         const map = this.map;
+        registerRoamingMapIcons(map);
         map.addControl(new library.NavigationControl({showCompass: false}), 'top-right');
         map.addControl(new library.AttributionControl({compact: false}), 'bottom-right');
         map.getCanvas().setAttribute('aria-label', this.canvasTarget.getAttribute('aria-label'));
-        map.on('error', () => { if (this.map === map) this.errorTarget.hidden = false; });
+        map.on('error', () => {
+            if (this.map !== map) return;
+            this.placeholderTarget.hidden = true; this.canvasTarget.setAttribute('aria-busy', 'false'); this.errorTarget.hidden = false;
+        });
         map.on('idle', () => {
             if (this.map !== map) return;
             this.element.dataset.mapLoaded = String(map.isStyleLoaded() && map.areTilesLoaded());
+            if (this.element.dataset.mapLoaded === 'true') { this.placeholderTarget.hidden = true; this.placeholderTarget.classList.remove('is-loading'); this.canvasTarget.setAttribute('aria-busy', 'false'); }
         });
         this.markers = new Map();
         located.forEach((item, index) => {
@@ -115,9 +123,10 @@ export default class extends Controller {
         map.on('moveend', () => { this.element.dataset.mapMoving = 'false'; updatePosition(); });
         this.overviewTarget.hidden = located.length < 2;
         this.element.dataset.mapReady = 'true'; this.element.dataset.mapMoving = 'false';
-        this.element.dataset.mapStyle = 'liberty';
+        this.element.dataset.mapStyle = 'roaming-pastel';
         if (!this.located(this.selected)) this.overview(false);
         updatePosition(); this.renderAddress();
+        map.setStyle('https://tiles.openfreemap.org/styles/liberty', {transformStyle: (_previous, next) => roamingMapStyle(next, english ? 'en' : 'fr')});
     }
     focus(slug) {
         const property = this.properties.find(item => item.slug === slug);
@@ -129,7 +138,7 @@ export default class extends Controller {
             // Explicit navigation keeps the same smooth travel on Windows.
             // Stop at the current centre so a new choice can interrupt a flight.
             this.map.stop();
-            this.map.flyTo({center: [property.longitude, property.latitude], zoom: 14, duration: 1650, essential: true});
+            this.map.flyTo({center: [property.longitude, property.latitude], zoom: 14.7, duration: 1650, essential: true});
         } else this.overview();
     }
     overview(animate = true) {
@@ -137,13 +146,14 @@ export default class extends Controller {
         if (!this.map || !points.length) return;
         this.map.stop();
         const bounds = points.reduce((bounds, point) => [[Math.min(bounds[0][0], point[0]), Math.min(bounds[0][1], point[1])], [Math.max(bounds[1][0], point[0]), Math.max(bounds[1][1], point[1])]], [points[0], points[0]]);
-        this.map.fitBounds(bounds, {padding: 48, maxZoom: 14, duration: animate === false ? 0 : 1400, essential: true});
+        this.map.fitBounds(bounds, {padding: 48, maxZoom: 14.7, duration: animate === false ? 0 : 1400, essential: true});
     }
     deactivate() {
         this.generation = (this.generation || 0) + 1; this.activating = false;
         this.map?.stop(); this.markers?.forEach(marker => marker.remove()); this.map?.remove(); this.map = null; this.markers?.clear();
         if (!this.hasPlaceholderTarget) return;
         this.placeholderTarget.hidden = false; this.overviewTarget.hidden = true; this.errorTarget.hidden = true;
+        this.placeholderTarget.classList.remove('is-loading'); this.canvasTarget.setAttribute('aria-busy', 'false');
         this.activateTarget.disabled = false;
         this.element.dataset.mapLoaded = 'false';
         this.element.dataset.mapReady = 'false'; this.element.dataset.mapMoving = 'false';

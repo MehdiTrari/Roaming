@@ -9,14 +9,6 @@ const mapSelector = '.availability-explorer .stay-map';
     const browser = await chromium.launch({headless: true, channel: 'chrome'});
     try {
         const context = await browser.newContext(process.env.ROAMING_BROWSER_STORAGE ? {storageState: process.env.ROAMING_BROWSER_STORAGE} : {});
-        // An old OpenStreetMap-provider permission must not silently authorise
-        // the new provider; booking permission remains independent.
-        await context.addInitScript(() => {
-            if (!sessionStorage.getItem('map-migration-checked')) {
-                localStorage.setItem('roaming.maps.v1', JSON.stringify({version: 1, maps: true, updatedAt: Date.now(), expiresAt: Date.now() + 86400000}));
-                sessionStorage.setItem('map-migration-checked', 'true');
-            }
-        });
         const page = await context.newPage(), errors = [], tiles = [], calls = [];
         let properties = [], offlineTiles = false;
         page.on('pageerror', error => errors.push(error.message));
@@ -53,13 +45,25 @@ const mapSelector = '.availability-explorer .stay-map';
         properties = await page.locator(mapSelector).evaluate(element => JSON.parse(element.dataset.propertyMapPropertiesValue));
         assert.equal(properties.length, 4);
         assert.ok(properties.every(item => item.address && Number.isFinite(item.latitude) && Number.isFinite(item.longitude)));
-        assert.equal(tiles.length, 0, 'no external tiles before permission'); assert.equal(calls.length, 0, 'choosing a property does not query availability');
-        const startSlug = await page.locator(mapSelector).getAttribute('data-map-selected-slug');
-        await page.locator(`${mapSelector} [data-action="property-map#allow"]`).click();
+        assert.equal(calls.length, 0, 'choosing a property does not query availability');
         await page.waitForSelector(`${mapSelector}[data-map-ready="true"]`);
         await page.waitForSelector(`${mapSelector}[data-map-loaded="true"]`);
+        assert.equal(await page.evaluate(() => localStorage.getItem('roaming.maps.v1')), null, 'automatic display does not invent or persist consent');
+        assert.equal(await page.evaluate(() => localStorage.getItem('roaming.privacy.v1')), null, 'automatic maps never grant booking consent');
+        if (!realTiles) for (const version of [1, 2]) {
+            await page.evaluate(version => localStorage.setItem('roaming.maps.v1', JSON.stringify({version, maps: false, updatedAt: Date.now(), expiresAt: Date.now() + 86400000})), version);
+            const before = tiles.length; await page.reload(); await ready();
+            await page.locator(mapSelector).scrollIntoViewIfNeeded(); await page.waitForTimeout(150);
+            assert.equal(tiles.length, before, 'an earlier refusal still prevents provider requests');
+            assert.equal(await page.locator(mapSelector).getAttribute('data-map-ready'), 'false');
+        }
+        if (!realTiles) {
+            await page.locator(`${mapSelector} [data-action="property-map#allow"]`).click();
+            await page.waitForSelector(`${mapSelector}[data-map-loaded="true"]`);
+            assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('roaming.maps.v1')).version), 3);
+        }
         assert.equal(await page.locator('.stay-map-marker').count(), properties.length);
-        assert.equal(await page.locator(mapSelector).getAttribute('data-map-style'), 'liberty');
+        assert.equal(await page.locator(mapSelector).getAttribute('data-map-style'), 'roaming-pastel');
         assert.ok(tiles.some(tile => tile.url.endsWith('/styles/liberty')));
         const zoom = await page.locator(mapSelector).evaluate(element => Number(element.dataset.mapZoom));
         const mapBounds = await page.locator(`${mapSelector} canvas`).boundingBox();
@@ -75,15 +79,17 @@ const mapSelector = '.availability-explorer .stay-map';
         await waitFlight();
         const stageBounds = await page.locator('.availability-showcase .showcase-stage').boundingBox();
         await page.mouse.move(stageBounds.x + stageBounds.width / 2, mapBounds.y + mapBounds.height / 2);
-        await page.mouse.wheel(0, -200);
-        await page.waitForFunction(previous => scrollY < previous - 20, scrollBeforeZoom);
+        await page.mouse.wheel(0, scrollBeforeZoom > 40 ? -200 : 200);
+        await page.waitForFunction(previous => Math.abs(scrollY - previous) > 20, scrollBeforeZoom);
         const beforeTheme = await page.locator(mapSelector).evaluate(element => [element.dataset.mapLatitude, element.dataset.mapLongitude, element.dataset.mapZoom]);
         await page.evaluate(() => document.documentElement.dataset.bsTheme = 'dark');
         assert.deepEqual(await page.locator(mapSelector).evaluate(element => [element.dataset.mapLatitude, element.dataset.mapLongitude, element.dataset.mapZoom]), beforeTheme, 'theme changes keep the same detailed map and camera');
         await page.evaluate(() => document.documentElement.dataset.bsTheme = 'light');
         assert.equal(await page.evaluate(() => localStorage.getItem('roaming.privacy.v1')), null, 'map permission is independent from booking permission');
-        const mapChoice = await page.evaluate(() => JSON.parse(localStorage.getItem('roaming.maps.v1')));
-        assert.equal(mapChoice.maps, true); assert.equal(mapChoice.version, 2); assert.equal(mapChoice.expiresAt - mapChoice.updatedAt, 180 * 86400000);
+        if (!realTiles) {
+            const mapChoice = await page.evaluate(() => JSON.parse(localStorage.getItem('roaming.maps.v1')));
+            assert.equal(mapChoice.maps, true); assert.equal(mapChoice.expiresAt - mapChoice.updatedAt, 180 * 86400000);
+        }
         const destination = properties.find(item => item.city === 'Douai');
         const start = await page.locator(mapSelector).evaluate(element => Number(element.dataset.mapLatitude));
         await page.locator('[data-availability-explorer-target="select"]').selectOption(destination.slug);
@@ -109,10 +115,18 @@ const mapSelector = '.availability-explorer .stay-map';
         if (realTiles) {
             await page.waitForSelector(`${mapSelector}[data-map-loaded="true"]`);
             assert.ok(tiles.some(tile => tile.url.includes('/planet/')));
+            assert.ok(tiles.every(tile => !tile.headers.cookie), 'map requests carry no cookies');
+            assert.ok(tiles.every(tile => !tile.headers.referer || new URL(tile.headers.referer).pathname === '/' && !new URL(tile.headers.referer).search), 'map requests do not disclose stay criteria');
             await page.evaluate(() => {document.activeElement.blur(); window.scrollTo({top: 0, behavior: 'instant'});});
             await page.waitForTimeout(1400);
             await page.screenshot({path: 'var/availability-map-real.png'});
-            assert.deepEqual(errors, []); console.log('PASS real OpenFreeMap: Liberty vector map, wheel zoom without page scroll, normal scroll outside, exact coordinates and smooth flight. No booking/provider API calls.');
+            await page.setViewportSize({width: 390, height: 900});
+            await page.evaluate(() => document.documentElement.dataset.bsTheme = 'dark');
+            await page.locator(mapSelector).scrollIntoViewIfNeeded();
+            await page.waitForSelector(`${mapSelector}[data-map-loaded="true"]`);
+            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+            await page.waitForTimeout(800); await page.screenshot({path: 'var/pastel-map-mobile.png'});
+            assert.deepEqual(errors, []); console.log('PASS real OpenFreeMap: automatic pastel map, cookie-free requests, wheel zoom, exact coordinates, smooth flight and active mobile map. No booking/provider API calls.');
             return;
         }
         // Dragging changes both the active photo card and selected map address.
@@ -167,13 +181,21 @@ const mapSelector = '.availability-explorer .stay-map';
                 await page.screenshot({path: `var/property-map-${theme}-${width}.png`});
             }
         }
+        // Changing only the map setting never renews existing booking consent.
+        const existingGuestChoice = JSON.stringify({version: 1, guestlucky: true, updatedAt: Date.now() - 10000, expiresAt: Date.now() + 86400000});
+        await page.evaluate(value => localStorage.setItem('roaming.privacy.v1', value), existingGuestChoice);
+        await page.locator(`${mapSelector} [data-privacy-open]`).last().click();
+        await page.locator('[data-privacy-service="maps"]').check(); await page.locator('[data-privacy-save]').click();
+        assert.equal(await page.evaluate(() => localStorage.getItem('roaming.privacy.v1')), existingGuestChoice);
+        await page.evaluate(() => localStorage.removeItem('roaming.privacy.v1'));
         // The exact address and directions also work without graphics support.
         await page.addInitScript(() => {
             const original = HTMLCanvasElement.prototype.getContext;
             HTMLCanvasElement.prototype.getContext = function (type, ...args) { return type.includes('webgl') ? null : original.call(this, type, ...args); };
         });
+        await page.evaluate(() => localStorage.removeItem('roaming.maps.v1'));
         await page.goto(base + '/disponibilites?_locale=fr'); await ready();
-        await page.locator(`${mapSelector} [data-action="property-map#allow"]`).click();
+        await page.locator(mapSelector).scrollIntoViewIfNeeded();
         await page.waitForSelector(`${mapSelector} .stay-map-error:not([hidden])`);
         assert.equal(await page.locator(`${mapSelector} [data-property-map-target="directions"]`).isVisible(), true);
         // No-JS fallback keeps every property's link available.
@@ -184,6 +206,6 @@ const mapSelector = '.availability-explorer .stay-map';
         assert.equal(await noJsPage.locator('noscript a[href^="https://www.google.com/maps/dir/"]').count(), properties.length);
         assert.equal(await noJsPage.locator('.availability-property-card').first().isVisible(), true); await noJs.close();
         assert.deepEqual(errors, []);
-        console.log('PASS maps: 4 exact locations, no requests before independent map permission, real intermediate flight coordinates, markers/carousel/dropdown/drag sync, directions, targeted calendars, property map, withdrawal, 16 responsive theme/language layouts and no-JS links. All provider calls mocked.');
+        console.log('PASS maps: automatic display, legacy opt-outs, independent booking consent without renewal, 4 exact locations, wheel zoom and intermediate flight coordinates, carousel/markers/drag sync, directions, calendars, disable/re-enable, outages, 16 layouts and no-WebGL/no-JS fallbacks. All provider calls mocked.');
     } finally {await browser.close();}
 })().catch(error => {console.error(error); process.exitCode = 1;});

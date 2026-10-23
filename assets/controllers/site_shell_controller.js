@@ -26,14 +26,14 @@ export default class extends Controller {
             try { localStorage.setItem('theme', value); } catch {}
             setTheme(value);
         });
-        on(header, 'focusin', () => header.classList.remove('navbar-hidden'));
+        header?.classList.remove('navbar-hidden');
         on(header, 'keydown', event => {
             if (event.key !== 'Escape') return;
             const dropdown = header.querySelector('.dropdown-toggle[aria-expanded="true"]');
             if (dropdown) { event.stopPropagation(); Dropdown.getOrCreateInstance(dropdown).hide(); dropdown.focus(); }
             else if (menu.classList.contains('show')) { Collapse.getOrCreateInstance(menu, {toggle: false}).hide(); toggler.focus(); }
         });
-        let lastScrollY = window.scrollY;
+        header?.classList.toggle('navbar-scrolled', window.scrollY > 10);
         on(window, 'scroll', () => {
             if (this.scrollFrame) return;
             this.scrollFrame = requestAnimationFrame(() => {
@@ -41,8 +41,6 @@ export default class extends Controller {
                 if (!header) return;
                 const current = window.scrollY;
                 header.classList.toggle('navbar-scrolled', current > 10);
-                header.classList.toggle('navbar-hidden', current > 100 && current > lastScrollY && !header.contains(document.activeElement) && !menu.classList.contains('show'));
-                lastScrollY = current;
             });
         }, {passive: true});
         this.tooltips = [...this.element.querySelectorAll('[data-bs-toggle="tooltip"]')].map(element => Tooltip.getOrCreateInstance(element));

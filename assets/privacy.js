@@ -2,8 +2,9 @@ const storageKey = 'roaming.privacy.v1';
 const mapStorageKey = 'roaming.maps.v1';
 const lifetime = 180 * 24 * 60 * 60 * 1000;
 const memoryChoices = {};
-// A new provider needs a fresh map choice; GuestLucky's permission stays independent.
-const choiceVersion = service => service === 'maps' ? 2 : 1;
+// Map display is a preference for a service without advertising trackers.
+// Preserve older refusals; GuestLucky still requires its own explicit consent.
+const choiceVersion = service => service === 'maps' ? 3 : 1;
 let dismiss = () => {};
 
 function readChoice(service = 'guestlucky') {
@@ -13,14 +14,15 @@ function readChoice(service = 'guestlucky') {
         catch { choice = null; }
     }
     const now = Date.now();
-    return choice?.version === choiceVersion(service) && typeof choice[service] === 'boolean'
+    const validVersion = service === 'maps' ? [1, 2, 3].includes(choice?.version) : choice?.version === 1;
+    return validVersion && typeof choice[service] === 'boolean'
         && Number.isFinite(choice.updatedAt) && choice.updatedAt <= now
         && Number.isFinite(choice.expiresAt) && choice.expiresAt > now
         && choice.expiresAt <= choice.updatedAt + lifetime ? choice : null;
 }
 
 export const guestLuckyAllowed = () => readChoice()?.guestlucky === true;
-export const mapsAllowed = () => readChoice('maps')?.maps === true;
+export const mapsAllowed = () => readChoice('maps')?.maps !== false;
 export const enableMaps = () => storeChoice(true, 'maps');
 const notifyChoice = () => document.dispatchEvent(new CustomEvent('privacy:change', {detail: {guestlucky: guestLuckyAllowed(), maps: mapsAllowed()}}));
 
@@ -58,7 +60,12 @@ function openPreferences(trigger, signal) {
         guestChoice.checked = guestLuckyAllowed(); mapChoice.checked = mapsAllowed();
         on(dialog.querySelector('[data-privacy-allow]'), 'click', () => { storeChoice(true); storeChoice(true, 'maps'); finish(true); });
         on(dialog.querySelector('[data-privacy-refuse]'), 'click', () => { storeChoice(false); storeChoice(false, 'maps'); finish(false); });
-        on(dialog.querySelector('[data-privacy-save]'), 'click', () => { storeChoice(guestChoice.checked); storeChoice(mapChoice.checked, 'maps'); finish(guestChoice.checked); });
+        on(dialog.querySelector('[data-privacy-save]'), 'click', () => {
+            // Saving only a map preference must not renew booking consent.
+            if (guestChoice.checked !== guestLuckyAllowed()) storeChoice(guestChoice.checked);
+            if (mapChoice.checked !== mapsAllowed()) storeChoice(mapChoice.checked, 'maps');
+            finish(guestChoice.checked);
+        });
         on(dialog.querySelector('[data-privacy-close]'), 'click', aborted);
         on(dialog, 'cancel', event => { event.preventDefault(); finish(false); });
         on(dialog, 'close', aborted);

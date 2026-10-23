@@ -1,7 +1,7 @@
 # Public information only. Complete the empty fields from contracts before launch.
 parameters:
     app.legal:
-        updated: '2026-10-18'
+        updated: '2026-10-20'
         company: 'ROAMING'
         form: 'SAS'
         capital: '1 000 €'

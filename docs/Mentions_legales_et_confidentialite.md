@@ -26,45 +26,49 @@ Un prestataire peut rédiger les pages ; le responsable de l’activité doit fo
 
 | Mécanisme | Usage | Conservation constatée |
 | --- | --- | --- |
-| Session Symfony | Langue, formulaires, accès équipe | Cookie de session ; `gc_maxlifetime` de 28 800 secondes, restauration dépendante du navigateur |
-| Jeton/cookie CSRF si nécessaire | Protection des soumissions | Cookie temporaire supprimé par le contrôleur après soumission |
-| `localStorage.theme` | Thème explicitement choisi | Jusqu’à modification/effacement |
-| `localStorage.roaming.privacy.v1` | Accord/refus GuestLucky, version et dates | 180 jours, même durée pour les deux choix |
-| `localStorage.roaming.maps.v1` | Accord/refus du fond OpenFreeMap, indépendant de GuestLucky | 180 jours, sans prolongation de l’autre choix |
-| Critères dans l’URL | Logement, dates, voyageurs | Historique, URL partagée et potentiels journaux ; aucun nom/e-mail dans ces critères |
-| Cookies de GuestLucky | Dépendent du service externe | À vérifier auprès du prestataire, sans inventer de noms/durées |
+| Session Symfony | Langue, formulaires, accès équipe | Cookie de session ; inactivité applicative de 8 heures |
+| Jeton/cookie CSRF si nécessaire | Protection des formulaires | Cookie temporaire supprimé après soumission |
+| `localStorage.theme` | Thème choisi | Jusqu’à modification/effacement |
+| `localStorage.roaming.privacy.v1` | Accord/refus GuestLucky, version 1 et dates | 180 jours maximum, accord explicite requis |
+| `localStorage.roaming.maps.v1` | Préférence de carte modifiée, version 3 et dates | 180 jours maximum ; aucune écriture lors de l’affichage automatique |
+| Critères dans l’URL | Logement, dates, voyageurs | Historique, URL partagée et potentiels journaux |
+| Cookies GuestLucky | Dépendent du module externe | À vérifier auprès du prestataire |
 
-Aucune intégration de publicité, Google Analytics, Meta Pixel, vidéo distante ou police Google n’a été trouvée dans le code courant. La police du site et les photos sont servies localement ; les glyphes et sprites de la carte viennent d’OpenFreeMap après activation. L’ancienne iframe Google de la fiche logement a été remplacée par MapLibre local et un fond vectoriel OpenFreeMap chargé seulement après accord. Le navigateur transmet alors son IP, les ressources demandées et l’origine du site, sans critères de séjour dans le référent. Aucun accès à la géolocalisation n’est demandé ; le lien Itinéraire ouvre volontairement Google Maps avec l’adresse du logement. Voir [Emplacements et cartes](Property_locations_et_cartes.md). Revalider sur l’hébergement : des outils ajoutés par un hébergeur, proxy ou gestionnaire de balises ne se déduisent pas du dépôt local.
+La police du site et les photos sont locales. MapLibre et son worker sont servis localement ; styles, tuiles vectorielles, glyphes et sprites proviennent d’OpenFreeMap. Aucun outil de publicité, Google Analytics, Meta Pixel ou vidéo distante n’a été trouvé dans le code. Revalider l’environnement de production et les services éventuellement ajoutés par l’hébergeur ou un gestionnaire de balises.
 
-Le contact stocke les coordonnées et le message en base puis les envoie par e-mail. Une information apparaît avant l’envoi avec lien vers la politique ; aucune case de consentement artificielle n’est imposée à la demande de contact. L’espace équipe conserve comptes, tickets, commentaires, captures et contexte technique. Les disponibilités et prix sont consultés auprès de GuestLucky par le serveur.
+Le contact enregistre les coordonnées et le message en base et les transmet par e-mail. Son information est présentée avant envoi. L’équipe conserve comptes, tickets, commentaires et captures. Les disponibilités et devis GuestLucky passent par le serveur ; la carte ne reçoit aucun nom ou critère de séjour.
 
-## Gestion des services externes
+## Module GuestLucky et préférence de carte
 
-`assets/privacy.js` ouvre un dialogue natif depuis « Cookies » ou lors d’une demande d’ouverture du module non autorisé. Aucun bandeau automatique à l’arrivée pour les seules fonctions techniques. Deux cases indépendantes couvrent GuestLucky et le fond de carte. « Tout refuser » et « Tout autoriser » ont le même style et la même taille ; « Enregistrer mes choix » applique les cases sélectionnées. Fermer ou appuyer sur Échap ne donne aucun accord. « Afficher la carte » active uniquement OpenFreeMap et ne prolonge pas GuestLucky.
+`assets/privacy.js` conserve deux réglages distincts. GuestLucky reste bloqué sans accord explicite valide, avec demande lors de l’ouverture de son module, puis revalidation du devis avant création de l’iframe. Une recherche ou une carte affichée ne donne jamais cet accord. Refus, fermeture et Échap ne l’autorisent pas. La navigation volontaire dans un nouvel onglet reste un parcours externe distinct.
 
-L’autorisation permet l’intégration puis le code revalide le devis avant de créer l’iframe ; elle ne réserve rien. Le refus conserve calendrier, recherche, contact et ouverture volontaire dans un nouvel onglet. Ce lien quitte le site et relève des informations/choix du service externe ; il n’autorise jamais l’iframe silencieusement.
+Le propriétaire a demandé un **affichage automatique des cartes le 20 octobre 2026**. Elles se chargent près de la zone visible, sans clic préalable. Une préférence valide `maps: false`, y compris des versions 1 ou 2, continue de bloquer les requêtes. Les modifications sont écrites en version 3 ; sans préférence valide, l’affichage est actif par défaut. Une préférence expirée reprend ce défaut. L’état par défaut n’est pas présenté comme un consentement obtenu ou enregistré.
 
-Chaque décision contient `version`, `guestlucky` ou `maps`, `updatedAt`, `expiresAt`, sans identifiant publicitaire. Les échéances des deux services sont indépendantes. Valeurs mal formées/expirées : aucun accord. En cas d’échec d’écriture, le choix fonctionne en mémoire dans l’onglet et peut être redemandé au rechargement. Le stockage local n’est pas un registre central de preuve du consentement : prévoir un dispositif adapté si l’activité ou de nouveaux traceurs le nécessitent.
+Le dialogue Cookies et les liens sous la carte permettent de désactiver celle-ci. « Tout refuser » désactive la carte et refuse GuestLucky ; enregistrer les réglages permet un choix indépendant. Désactiver la carte retire ses ressources dans les onglets ouverts, sans cacher les adresses et itinéraires. Une écriture de stockage bloquée conserve le choix en mémoire dans l’onglet. Les règles d’expiration GuestLucky ne sont pas modifiées par la carte.
 
-Le contenu du choix carte passe en version 2 : l’ancien accord pour le fond précédent ne permet pas le chargement d’OpenFreeMap. GuestLucky garde sa version 1 et son échéance.
+## Évaluation de la carte sans suivi
 
-Le retrait depuis le pied de page ferme une iframe ouverte ou retire les tuiles de carte selon le service ; le changement reçu depuis un autre onglet fait de même. Adresses et liens restent disponibles. Un contrôle après revalidation empêche aussi le chargement du module si le choix a changé pendant la requête. Le site ne peut pas effacer les cookies du domaine GuestLucky, ce qui est expliqué dans la page. Iframe et liens externes ne transmettent pas de référent ; les tuiles transmettent seulement l’origine.
+La seule présence d’un service tiers ou transmission d’IP n’implique pas automatiquement un consentement aux cookies. Les règles de la CNIL distinguent les opérations de stockage/lecture nécessitant un consentement et leurs exceptions ; les données personnelles restent également soumises au RGPD.
 
-Les demandes d’accord en attente sont annulées lors des changements de critères, de l’expiration du devis et du cache Turbo. Un futur outil de statistiques/publicité/vidéo exige une nouvelle vérification, une information et, si nécessaire, un accord distinct avant chargement. Les deux permissions actuelles couvrent seulement les services décrits ; renouveler leur version en cas de changement important de finalité.
+Le fonctionnement retenu vise à situer les logements publics, à proximité du choix d’un séjour. L’intégration ne demande pas la géolocalisation du visiteur, n’envoie ni identité ni critères de séjour au fond cartographique, ne crée pas d’identifiant publicitaire et utilise `credentials: omit` pour les ressources externes. `referrerPolicy: origin` évite de transmettre l’URL de recherche. L’IP et des informations techniques de connexion restent reçues par le fournisseur : il ne s’agit pas de requêtes anonymes.
 
-Les pages restent publiques en maintenance avec le cadre réduit, sans exposer le catalogue. Les liens figurent aussi sur la maintenance et les pages équipe.
+OpenFreeMap déclare ne pas utiliser de cookies ni de technologies de suivi. Sa politique prévoit toutefois des journaux techniques, des IP possibles en cas d’erreur ou d’incident et un CDN éventuel. La présence d’un cookie publicitaire ou d’une autre collecte ajoutée par le fournisseur imposerait une nouvelle évaluation ; la déclaration du fournisseur n’est pas une certification de conformité.
 
-## Sources consultées
+La version de travail décrit l’intérêt légitime de ROAMING à montrer ces emplacements, avec information au niveau de la carte et dans la politique, limitation des données et possibilité de désactivation. Cette analyse doit être confirmée pour les pratiques et contrats de production, les implantations et les garanties de transfert. `privacy_reviewed` reste faux : l’affichage automatique ne finalise ni les mentions de l’hébergeur, ni les durées de conservation, ni l’examen des prestataires.
 
+## Contrôles et limites
+
+Le retrait GuestLucky ferme les modules ouverts et reste contrôlé après une revalidation en cours. Les événements entre onglets sont pris en compte. Les demandes en attente sont annulées lors des changements de critères et du cache Turbo. Le site ne peut pas effacer les cookies appartenant au domaine GuestLucky ; iframe et liens n’envoient pas de référent.
+
+Les pages légales restent publiques en maintenance avec le cadre réduit, sans catalogue. Le contenu est disponible en français et en anglais. Un futur service de publicité, statistiques, vidéo ou un changement de fournisseur nécessite une nouvelle vérification et, lorsque requis, un consentement distinct avant chargement.
+
+`tests/Legal/LegalPagesTest.php` vérifie les pages en base isolée. `tests/browser/privacy.cjs` simule l’ouverture GuestLucky, l’accord, le refus, l’expiration, le retrait, les onglets et les dispositions mobiles. `tests/browser/property-maps.cjs` vérifie affichage automatique, anciennes désactivations, indépendance de GuestLucky, absence d’écriture automatique de consentement, désactivation et réactivation, pannes et replis, interactions et dispositions. Son mode réel vérifie les ressources du fournisseur, l’absence de cookies envoyés et de critères dans le référent, sans réservation.
+
+## Sources
+
+- [CNIL — cookies et traceurs](https://cnil.fr/fr/cookies-et-autres-traceurs/que-dit-la-loi).
+- [CNIL — intérêt légitime](https://www.cnil.fr/fr/les-bases-legales/interet-legitime).
+- [CNIL — information et transparence](https://www.cnil.fr/fr/conformite-rgpd-information-des-personnes-et-transparence).
 - [Service Public — mentions obligatoires](https://entreprendre.service-public.gouv.fr/vosdroits/F37351).
-- [Service Public — cookies et traceurs](https://entreprendre.service-public.gouv.fr/vosdroits/F31228).
-- [CNIL — cookies et traceurs : que dit la loi ?](https://www.cnil.fr/fr/cookies-et-autres-traceurs/que-dit-la-loi).
-- [CNIL — information des personnes et transparence](https://www.cnil.fr/fr/conformite-rgpd-information-des-personnes-et-transparence).
 - [Hostinger — conditions de service](https://www.hostinger.com/fr/legal/termes-universels-de-contrat-de-service).
 - [OpenFreeMap — confidentialité](https://openfreemap.org/privacy/).
-
-## Vérifications
-
-`tests/Legal/LegalPagesTest.php` utilise une base SQLite isolée : accès public en maintenance sans catalogue, traductions, brouillon, liens et information de contact. `tests/browser/privacy.cjs` simule calendriers, devis et réservations : refus, accord, fermeture sans accord, durées égales, valeurs expirées/invalides, retrait entre onglets et pendant une requête, lien externe explicite, focus, Turbo, stockage bloqué et 12 dispositions langue/thème/mobile. Aucun appel fournisseur réel ni réservation.
-
-`tests/browser/property-maps.cjs` couvre en plus l’absence de tuiles avant accord, l’indépendance du choix carte, le retrait individuel, les adresses et itinéraires, les animations et les dispositions mobiles. Son mode de vérification visuelle réel est décrit dans le document des cartes.

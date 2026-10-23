@@ -2,10 +2,19 @@
 namespace App\Integration\GuestLucky;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
+use Symfony\Component\HttpClient\Exception\TransportException;
+use Symfony\Component\HttpClient\Retry\GenericRetryStrategy;
+use Symfony\Component\HttpClient\RetryableHttpClient;
 
 final class GuestLuckyClient
 {
-    public function __construct(private HttpClientInterface $http, private string $baseUrl, private string $bookingKey) {}
+    public function __construct(private HttpClientInterface $http, private string $baseUrl, private string $bookingKey)
+    {
+        // Only these read-only GETs are retried, at most twice, for network failures.
+        // A refusal, rate limit or invalid quote must keep its original meaning.
+        // No logger here: transport exception messages can contain the key.
+        $this->http = new RetryableHttpClient($http, new GenericRetryStrategy([0 => ['GET']], 150, 1, 150, 0), 2);
+    }
 
     private function request(int $id, string $operation, array $query): ResponseInterface
     {
@@ -16,6 +25,16 @@ final class GuestLuckyClient
             'query' => ['key' => $this->bookingKey] + $query,
             'timeout' => 8, 'max_duration' => 12, 'max_redirects' => 0,
             'headers' => ['Accept' => 'application/json'],
+            'on_progress' => static function (int $downloaded, int $size, array $info): void {
+                // A stalled connection used to consume the full idle timeout
+                // before returning "unverified". Release it early and let the
+                // bounded retry establish a fresh connection instead. Once TLS
+                // is ready, retain the normal timeout for the provider's work.
+                $ready = (float) ($info['pretransfer_time'] ?? $info['connect_time'] ?? 0) > 0;
+                if (!$ready && (float) ($info['total_time'] ?? 0) >= 2.5) {
+                    throw new TransportException('GuestLucky connection could not be established in time.');
+                }
+            },
         ]);
     }
 

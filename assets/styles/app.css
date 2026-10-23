@@ -74,14 +74,10 @@ body {
 #contact .form-control { min-height: 44px; }
 @media (max-width: 575px) { #contact .card { padding: 1rem !important; } #contact .card-body { padding: .5rem; } }
 
-/* Navbar Hide on Scroll */
+/* Navigation stays visible while scrolling in either direction. */
 header.sticky-top {
     background-color: var(--roaming-header-bg);
-    transition: transform 0.3s ease-in-out, box-shadow 0.5s ease;
-}
-
-header.sticky-top.navbar-hidden {
-    transform: translateY(-100%);
+    transition: box-shadow 0.5s ease;
 }
 
 header.sticky-top.navbar-scrolled {

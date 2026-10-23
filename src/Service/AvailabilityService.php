@@ -6,6 +6,9 @@ use App\Integration\GuestLucky\GuestLuckyClient;
 use App\Integration\GuestLucky\StayUnavailable;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 final class AvailabilityService
 {
@@ -39,7 +42,7 @@ final class AvailabilityService
                 }
                 // Start every request before waiting for responses (HttpClient is lazy).
                 $pending[$slug] = [$this->client->startCalendar($property->getGuestLuckyId(), $year, $month), $property, $item];
-            } catch (\Throwable) { $this->logFailure($slug, 'calendar'); }
+            } catch (\Throwable $error) { $this->logFailure($slug, 'calendar', $error); }
         }
         foreach ($pending as $slug => [$response, $property, $item]) {
             try {
@@ -47,7 +50,7 @@ final class AvailabilityService
                 $item->set($result)->expiresAfter(60);
                 $this->cache->save($item);
                 $rows[$slug] = array_replace($rows[$slug], $result);
-            } catch (\Throwable) { $this->logFailure($slug, 'calendar'); }
+            } catch (\Throwable $error) { $this->logFailure($slug, 'calendar', $error, $response); }
         }
         // The booking API can advertise one-night gaps despite the listing's
         // minimum. Apply the synchronized floor on every read, including cache hits.
@@ -82,14 +85,14 @@ final class AvailabilityService
             $nights = (new \DateTimeImmutable($arrival))->diff(new \DateTimeImmutable($departure))->days;
             if ($guests > $property->getTravelers() || $nights < ($property->getMinimumStay() ?? 1)) { $rows[$slug]['status'] = 'unavailable'; continue; }
             try { $pending[$slug] = [$this->client->startQuote($property->getGuestLuckyId(), $arrival, $departure, $guests), $property]; }
-            catch (\Throwable) { $this->logFailure($slug, 'quote'); }
+            catch (\Throwable $error) { $this->logFailure($slug, 'quote', $error); }
         }
         foreach ($pending as $slug => [$response, $property]) {
             try {
                 $quote = $this->client->readQuote($response, $property->getGuestLuckyId(), $arrival, $departure, $guests);
                 $rows[$slug] = array_replace($rows[$slug], $quote, ['status' => 'available', 'available' => true]);
             } catch (StayUnavailable) { $rows[$slug]['status'] = 'unavailable'; }
-            catch (\Throwable) { $this->logFailure($slug, 'quote'); }
+            catch (\Throwable $error) { $this->logFailure($slug, 'quote', $error, $response); }
         }
         return ['enabled' => $useProvider, 'arrivalDate' => $arrival, 'departureDate' => $departure, 'guests' => $guests, 'availability' => array_values($rows)];
     }
@@ -101,9 +104,23 @@ final class AvailabilityService
         return ['name' => $property->getTitle(), 'slug' => $property->getSlug(), 'city' => $property->getCity(), 'maxGuests' => $property->getTravelers(), 'image' => $image ? '/uploads/'.$image->getFilename() : null];
     }
 
-    private function logFailure(string $slug, string $operation): void
+    private function logFailure(string $slug, string $operation, \Throwable $error, ?ResponseInterface $response = null): void
     {
         // Transport exceptions can contain the key; never log their message or URL.
-        $this->logger->warning('GuestLucky read failed', ['property' => $slug, 'operation' => $operation]);
+        $reason = match (true) {
+            $error instanceof TransportExceptionInterface => 'transport',
+            $error instanceof DecodingExceptionInterface => 'invalid_json',
+            $error instanceof \App\Integration\GuestLucky\GuestLuckyException => 'invalid_response',
+            default => 'internal',
+        };
+        $context = ['property' => $slug, 'operation' => $operation, 'reason' => $reason];
+        if ($response) {
+            // Whitelist numeric diagnostics, never the full info array or URL.
+            $context += ['retries' => (int) $response->getInfo('retry_count'),
+                'connect_ms' => (int) round(1000 * (float) $response->getInfo('connect_time')),
+                'transfer_start_ms' => (int) round(1000 * (float) $response->getInfo('starttransfer_time')),
+                'last_attempt_ms' => (int) round(1000 * (float) $response->getInfo('total_time'))];
+        }
+        $this->logger->warning('GuestLucky read failed', $context);
     }
 }

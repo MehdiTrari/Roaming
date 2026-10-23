@@ -340,8 +340,10 @@ showcase:
 locations:
   map_title: 'Property locations'
   explore: 'Explore your next stay'
-  map_permission: 'Map tiles are provided by OpenFreeMap. Displaying them shares your IP address and this website’s origin with that service.'
-  show_map: 'Allow and show the map'
+  map_permission: 'Maps use OpenFreeMap, which receives your IP address and this website’s origin. You can manage map display in your preferences.'
+  map_provider: 'Map provided by OpenFreeMap'
+  show_map: 'Show the map'
+  loading: 'Preparing your neighbourhood…'
   map_preferences: 'Manage external services'
   overview: 'See all properties'
   directions: 'Directions'

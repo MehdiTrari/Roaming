@@ -223,6 +223,16 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
             assert.equal(await page.locator('.booking-module-actions, .guestlucky-booking-frame').count(), 0, mode);
             assert.ok(await page.locator('#results-list a[href^="/contact-us"]').count() > 0, mode);
             if (mode === 'closed') { assert.equal(await page.locator('.booking-total').count(), 0); assert.match(await page.locator('#results-list').innerText(), /réservation en ligne.*fermée/); }
+            if (mode === 'unverified') {
+                assert.match(await page.locator('#results-list .booking-state').first().innerText(), /Vérification temporairement impossible/);
+                assert.match(await page.locator('.booking-verification-error').innerText(), /ne signifie pas que le logement est indisponible/);
+                const beforeRetry = calls.filter(url => url.pathname === '/api/availability').length;
+                mode = 'available';
+                await page.locator('.booking-verification-error button').click();
+                await page.waitForSelector('#results-list .booking-total');
+                assert.equal(calls.filter(url => url.pathname === '/api/availability').length, beforeRetry + 1, 'retry performs one fresh check');
+                assert.equal(await page.locator('.booking-verification-error').count(), 0, 'successful retry clears the failure');
+            }
         }
         // A successful quote cannot survive a refusal or closed publication on revalidation.
         for (const refusal of ['422', 'unverified', 'closed']) {

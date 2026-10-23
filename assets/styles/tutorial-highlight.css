@@ -1,0 +1,11 @@
+/* Pure visual effect. The real controls retain their styles, focus and events.
+   The dynamic clip path cuts out the button AND navigation, including blur. */
+.tutorial-highlight-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    pointer-events: none;
+    background: rgb(0 0 0 / var(--tutorial-highlight-opacity, .56));
+    -webkit-backdrop-filter: blur(var(--tutorial-highlight-blur, 5px));
+    backdrop-filter: blur(var(--tutorial-highlight-blur, 5px));
+}

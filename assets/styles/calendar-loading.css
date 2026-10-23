@@ -12,12 +12,12 @@
 .calendar-fetch-card strong { display: block; font-size: .88rem; font-weight: 700; line-height: 1.45; }
 .calendar-fetch-card p { margin: 6px 0 16px; font-size: .76rem; line-height: 1.5; color: var(--roaming-muted); }
 .calendar-fetch-track { display: block; height: 4px; overflow: hidden; border-radius: 10px; background: color-mix(in srgb, var(--roaming-accent) 12%, var(--roaming-card-bg)); }
-.calendar-fetch-track > span { display: block; height: 100%; width: 42%; border-radius: inherit; background: linear-gradient(90deg, var(--roaming-primary), var(--roaming-accent)); animation: calendar-check-sweep 1.45s ease-in-out infinite; }
+.calendar-fetch-percent { display: block; margin-bottom: 6px; text-align: right; font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--roaming-accent); }
+.calendar-fetch-track > span { display: block; height: 100%; width: 0; border-radius: inherit; background: repeating-linear-gradient(115deg, transparent 0 10px, rgb(255 255 255 / .17) 10px 20px), linear-gradient(90deg, var(--roaming-primary), var(--roaming-accent)); background-size: 44px 100%, 100% 100%; transition: width .35s ease-out; animation: booking-progress-stripes 1s linear infinite; }
 .home-search-popover.is-calendar-loading .search-calendar-legend { visibility: hidden; }
-@keyframes calendar-check-sweep { from { transform: translateX(-110%); } to { transform: translateX(350%); } }
 @keyframes calendar-cell-breathe { 0%, 100% { opacity: .4; } 50% { opacity: .9; } }
 @keyframes calendar-dot-breathe { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
     .calendar-fetch-skeleton span, .calendar-fetch-dot, .calendar-fetch-track > span { animation: none; }
-    .calendar-fetch-track > span { width: 60%; margin: 0 auto; }
+    .calendar-fetch-track > span { transition: none; }
 }

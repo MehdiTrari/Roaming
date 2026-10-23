@@ -67,7 +67,10 @@
                         <div class="booking-guide-heading"><p>{{ 'showcase.guide_title'|trans }} <strong id="booking-guide-property"></strong></p><button type="button" id="booking-guide-close" aria-label="{{ 'showcase.exit_guide'|trans }}">×</button></div>
                         <ol class="booking-guide-steps" aria-label="{{ 'showcase.guide_steps'|trans }}"><li data-guide-step="1"><span>1</span>{{ 'calendar.property'|trans }}</li><li data-guide-step="2"><span>2</span>{{ 'ui.stay_dates'|trans }}</li><li data-guide-step="3"><span>3</span>{{ 'home.guests'|trans }}</li><li data-guide-step="4"><span>4</span>{{ 'home.search'|trans }}</li></ol>
                     </div>
-                    <form id="booking-search-form" data-calendar-url="{{ path('api_calendar') }}" data-availability-enabled="{{ booking_availability_enabled ? 'true' : 'false' }}" class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center">
+                    <form id="booking-search-form" data-controller="tutorial-highlight"
+                          data-tutorial-highlight-exclude-value=".booking-bar, header.sticky-top, header.sticky-top .dropdown-menu.show"
+                          data-action="tutorial-highlight:toggle->tutorial-highlight#toggle"
+                          data-calendar-url="{{ path('api_calendar') }}" data-availability-enabled="{{ booking_availability_enabled ? 'true' : 'false' }}" class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center">
                         
                         <!-- Property -->
                         <div class="booking-field-horizontal flex-grow-1 position-relative px-4 py-2 border-end-lg" id="property-toggle">
@@ -169,7 +172,7 @@
 
                         <!-- Submit -->
                         <div class="p-1">
-                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-3 fw-bold h-100 w-100 d-flex align-items-center justify-content-center gap-2 hover-lift booking-submit">
+                            <button type="submit" data-tutorial-highlight-target="button" class="btn btn-primary rounded-pill px-4 py-3 fw-bold h-100 w-100 d-flex align-items-center justify-content-center gap-2 hover-lift booking-submit">
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>

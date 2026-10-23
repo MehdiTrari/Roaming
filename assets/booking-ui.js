@@ -8,6 +8,7 @@ const labels = {
         noArrival: 'Arrivée impossible : pas assez de nuits consécutives pour la durée minimale.', checkingDates: 'Vérification des disponibilités…',
         loading: 'Chargement…', available: 'Disponible', unavailable: 'Indisponible', unverified: 'Non vérifié', checkoutOnly: 'Départ uniquement', candidate: 'Date candidate · séjour à vérifier',
         confirm: 'Disponibilités à confirmer', failed: 'Actualisation impossible — disponibilités à confirmer.',
+        verificationUnavailable: 'Vérification temporairement impossible', verificationHint: 'Le service de réservation n’a pas pu confirmer ce séjour. Réessayez dans un instant ; cela ne signifie pas que le logement est indisponible.',
         refreshed: 'Dernière lecture', choose: 'Choisissez un séjour', quote: 'Vérifier le séjour',
         contact: 'Contactez-nous', total: 'Total du séjour', book: 'Réserver chez GuestLucky', details: 'Voir le logement',
         invalid: 'Vérifiez les dates et le nombre de voyageurs.', guests: 'voyageurs max', nights: 'nuits', minimum: 'nuits min', minimumShort: 'n min',
@@ -27,6 +28,7 @@ const labels = {
         noArrival: 'Arrival unavailable: not enough consecutive nights for the minimum stay.', checkingDates: 'Checking available dates…',
         loading: 'Loading…', available: 'Available', unavailable: 'Unavailable', unverified: 'Unverified', checkoutOnly: 'Check-out only', candidate: 'Candidate date · stay to be checked',
         confirm: 'Availability to be confirmed', failed: 'Unable to refresh — availability to be confirmed.',
+        verificationUnavailable: 'Unable to verify at the moment', verificationHint: 'The booking service could not confirm this stay. Please try again shortly; this does not mean the property is unavailable.',
         refreshed: 'Last checked', choose: 'Choose a stay', quote: 'Check your stay',
         contact: 'Contact us', total: 'Stay total', book: 'Book with GuestLucky', details: 'View property',
         invalid: 'Check your dates and number of guests.', guests: 'guests maximum', nights: 'nights', minimum: 'night minimum', minimumShort: 'n min',
@@ -130,17 +132,19 @@ export function renderQuotes(container, data, options = {}) {
     if (!data.enabled) container.append(node('p', t('closed'), 'booking-feedback'));
     const rows = [...(data.availability || [])].sort((a, b) => Number(b.status === 'available') - Number(a.status === 'available'));
     const hasAvailable = rows.some(item => data.enabled === true && item.status === 'available' && item.available === true && Number.isFinite(item.price));
+    let verificationFailed = false;
     if (!rows.length) container.append(node('p', t('empty')));
     for (const item of rows) {
         const available = data.enabled === true && item.status === 'available' && item.available === true && Number.isFinite(item.price);
         const status = !data.enabled ? 'unverified' : available ? 'available' : item.status === 'unavailable' ? 'unavailable' : 'unverified';
+        if (data.enabled && status === 'unverified') verificationFailed = true;
         const card = node('article', '', 'booking-quote-card'); card.dataset.state = status;
         const heading = node('div', '', 'booking-quote-heading');
         if (item.image) { const image = node('img'); image.src = item.image; image.alt = ''; image.loading = 'lazy'; image.width = 80; image.height = 64; heading.append(image); }
         const info = node('div'); const title = node('a', item.name, 'booking-property-title');
         title.href = stayLink(item.detailsUrl, {...criteria, slug: item.slug});
         info.append(title, node('p', `${item.city} · ${item.maxGuests} ${t('guests')}`, 'small text-muted')); heading.append(info); card.append(heading);
-        card.append(node('p', t(status), 'booking-state'));
+        card.append(node('p', t(data.enabled && status === 'unverified' ? 'verificationUnavailable' : status), 'booking-state'));
         if (status === 'unavailable' && Number(criteria.guests) > item.maxGuests) card.append(node('p', t('capacity'), 'small text-muted'));
         if (available) {
             const breakdown = node('dl', '', 'booking-breakdown');
@@ -189,6 +193,17 @@ export function renderQuotes(container, data, options = {}) {
             }
         }
         container.append(card);
+    }
+    if (verificationFailed) {
+        const feedback = node('div', '', 'booking-feedback booking-verification-error');
+        feedback.setAttribute('role', 'status');
+        feedback.append(node('p', t('verificationHint')));
+        if (options.onRefresh) {
+            const retry = node('button', t('retry'), 'btn btn-outline-secondary'); retry.type = 'button';
+            retry.addEventListener('click', () => { if (state.active && quotes.get(container) === state) options.onRefresh(); });
+            feedback.append(retry);
+        }
+        container.append(feedback);
     }
     const expire = () => {
         if (quotes.get(container) !== state || !state.active) return;

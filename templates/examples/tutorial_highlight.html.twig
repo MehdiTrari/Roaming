@@ -1,0 +1,11 @@
+{# Usage example: pass tutorialActive from a controller/session if needed.
+   Keep the button's existing project classes. No navigation changes required. #}
+<form data-controller="tutorial-highlight"
+      data-tutorial-highlight-active-value="{{ tutorialActive|default(false) ? 'true' : 'false' }}"
+      data-tutorial-highlight-exclude-value="header.sticky-top, header.sticky-top .dropdown-menu.show"
+      data-action="tutorial-highlight:toggle->tutorial-highlight#toggle">
+    <button type="submit" data-tutorial-highlight-target="button"
+            class="btn btn-primary rounded-pill px-4 py-3 fw-bold h-100 w-100 d-flex align-items-center justify-content-center gap-2 hover-lift booking-submit">
+        {{ 'home.search'|trans }}
+    </button>
+</form>

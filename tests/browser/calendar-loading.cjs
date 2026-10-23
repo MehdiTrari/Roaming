@@ -10,6 +10,14 @@ const deferred = () => { let resolve; const promise = new Promise(done => resolv
     const browser = await chromium.launch({headless: true, channel: 'chrome'});
     const context = await browser.newContext(process.env.ROAMING_BROWSER_STORAGE ? {storageState: process.env.ROAMING_BROWSER_STORAGE} : {});
     const page = await context.newPage(), errors = [];
+    await context.addInitScript(() => {
+        window.__calendarPercentages = [];
+        new MutationObserver(records => {
+            for (const record of records) if (record.target.matches('.calendar-fetch-loader')) {
+                window.__calendarPercentages.push(Number(record.target.getAttribute('aria-valuenow')));
+            }
+        }).observe(document, {subtree: true, attributes: true, attributeFilter: ['aria-valuenow']});
+    });
     page.on('pageerror', error => errors.push(error.message));
     let gate = deferred(), failure = false, slugs = [], requests = 0;
     await context.route('**/*', async route => {
@@ -40,6 +48,11 @@ const deferred = () => { let resolve; const promise = new Promise(done => resolv
             gate = deferred(); await home(locale);
             const surface = page.locator('#date-calendar-surface'), loader = surface.locator('.calendar-fetch-loader');
             assert.equal(await surface.getAttribute('aria-busy'), 'true');
+            assert.equal(await loader.getAttribute('role'), 'progressbar');
+            assert.equal(await page.evaluate(() => window.__calendarPercentages.includes(0)), true, 'each new check starts at zero');
+            const initialPercentage = Number(await loader.getAttribute('aria-valuenow'));
+            await page.waitForFunction(value => Number(document.querySelector('#date-calendar-surface .calendar-fetch-loader').getAttribute('aria-valuenow')) > value, initialPercentage);
+            assert.ok(Number(await loader.getAttribute('aria-valuenow')) < 100, 'an unresolved check cannot reach 100');
             assert.match(await loader.innerText(), locale === 'fr' ? /Vérification des disponibilités/ : /Checking available dates/);
             assert.equal(await page.locator('#date-calendar .flatpickr-days').isVisible(), false, 'no provisional dates or question marks while checking');
             assert.equal(await page.locator('#date-calendar .flatpickr-days').evaluate(e => e.inert), true);
@@ -53,7 +66,10 @@ const deferred = () => { let resolve; const promise = new Promise(done => resolv
             await page.emulateMedia({reducedMotion: 'reduce'});
             assert.equal(await loader.locator('.calendar-fetch-track > span').evaluate(e => getComputedStyle(e).animationName), 'none');
             await page.emulateMedia({reducedMotion: 'no-preference'});
-            gate.resolve(); await ready();
+            gate.resolve();
+            await page.waitForFunction(() => document.querySelector('#date-calendar-surface .calendar-fetch-loader').getAttribute('aria-valuenow') === '100');
+            assert.equal(await loader.locator('[data-calendar-progress-percent]').innerText(), '100%');
+            await ready();
             assert.equal(await loader.isVisible(), false);
             assert.equal(await page.locator('#date-calendar .flatpickr-days').isVisible(), true);
             assert.equal(await page.locator('#date-calendar .flatpickr-days').evaluate(e => e.inert), false);
@@ -76,6 +92,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => resolv
         await home(); gate.resolve();
         await page.waitForFunction(() => document.querySelector('#date-availability-status').dataset.state === 'unverified');
         assert.equal(await page.locator('#date-calendar-surface .calendar-fetch-loader').isVisible(), false);
+        assert.ok(Number(await page.locator('#date-calendar-surface .calendar-fetch-loader').getAttribute('aria-valuenow')) < 100, 'failed checks never show successful completion');
         assert.equal(await page.locator('#date-calendar-contact').isVisible(), true);
         failure = false; await page.keyboard.press('Escape'); await page.locator('#date-display').click(); await ready();
         // Both shared calendars use the same component and keep dates inert.
@@ -88,6 +105,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => resolv
             await surface.locator('.calendar-fetch-loader').waitFor({state: 'visible'});
             assert.equal(await page.locator('[data-calendar-target="board"]').evaluate(e => e.inert), true);
             gate.resolve();
+            await page.waitForFunction(() => document.querySelector('[data-calendar-target="calendarSurface"] .calendar-fetch-loader').getAttribute('aria-valuenow') === '100');
             await page.waitForFunction(() => document.querySelector('[data-calendar-target="status"]').dataset.state === 'fresh');
             assert.equal(await surface.locator('.calendar-fetch-loader').isVisible(), false);
             assert.equal(await page.locator('[data-calendar-target="board"]').evaluate(e => e.inert), false);

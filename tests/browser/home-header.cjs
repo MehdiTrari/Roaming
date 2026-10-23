@@ -38,6 +38,13 @@ let catalogue = [];
             assert.equal(await page.locator('html').getAttribute('lang'), locale);
             assert.equal(await page.locator('html').getAttribute('data-bs-theme'), theme);
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+            for (const top of [500, 800, 300, 0]) {
+                await page.evaluate(top=>window.scrollTo({top,behavior:'instant'}),top);
+                await page.waitForFunction(()=>{
+                    const header=document.querySelector('header.sticky-top'),box=header.getBoundingClientRect();
+                    return !header.classList.contains('navbar-hidden')&&box.top>=-1&&box.bottom>0&&box.top<innerHeight;
+                });
+            }
             await page.locator('#date-display').scrollIntoViewIfNeeded();
             const before = await page.locator('.booking-bar').boundingBox();
             await page.locator('#date-display').click(); await bounded('#date-panel');

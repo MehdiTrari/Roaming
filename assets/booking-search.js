@@ -4,6 +4,7 @@ import { language, t, renderQuotes, clearQuotes, showBookingError } from './book
 import { readStay, writeStay, validStay, realDate, parisToday, bookingHorizon } from './booking-state';
 import {CalendarAvailability} from './calendar-availability';
 import {SearchProgress} from './search-progress';
+import {CalendarProgress} from './calendar-progress';
 
 let cleanup = () => {};
 function initialize() {
@@ -27,40 +28,7 @@ function initialize() {
     const panels = [[panel, dateButton], [guestsPanel, guestsButton], [propertyPanel, propertyButton]];
     const guide = document.getElementById('booking-guide');
     let guideStep = 0, guideRequest;
-    let spotlight, spotlightAnimation, spotlightMaskAnimation;
-    const updateSpotlight = () => {
-        if (!spotlight) return;
-        const box = submit.getBoundingClientRect(), style = getComputedStyle(submit);
-        const scale = style.transform === 'none' ? 1 : new DOMMatrixReadOnly(style.transform).a;
-        const width = box.width / scale, height = box.height / scale;
-        const radius = Math.min(Number.parseFloat(style.borderTopLeftRadius) || 0, height / 2);
-        // The opening has no padding/ring. Its own synchronized scale follows
-        // the button, so measure its untransformed bounds on scroll/resize.
-        Object.assign(spotlight.style, {left: `${box.left + (box.width - width) / 2}px`, top: `${box.top + (box.height - height) / 2}px`, width: `${width}px`, height: `${height}px`, borderRadius: `${radius}px`});
-    };
-    const setSpotlight = active => {
-        if (!active) {
-            spotlightAnimation?.cancel(); spotlightAnimation = null;
-            spotlightMaskAnimation?.cancel(); spotlightMaskAnimation = null;
-            spotlight?.remove(); spotlight = null;
-            return;
-        }
-        if (!spotlight) {
-            // A transparent opening over the real button: no cloned controls,
-            // stacking-context changes or layout movement in the search bar.
-            spotlight = document.createElement('div');
-            spotlight.className = 'booking-search-spotlight'; spotlight.setAttribute('aria-hidden', 'true');
-            document.body.append(spotlight);
-            const frames = [{transform: 'scale(1)'}, {transform: 'scale(1.06)'}, {transform: 'scale(1)'}];
-            const timing = {duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 2600 : 1800, iterations: Infinity, easing: 'ease-in-out'};
-            spotlightAnimation = submit.animate?.(frames, timing);
-            spotlightMaskAnimation = spotlight.animate?.(frames, timing);
-            // Keep the transparent opening exactly on the growing button.
-            const start = document.timeline.currentTime;
-            if (start !== null) for (const animation of [spotlightAnimation, spotlightMaskAnimation]) if (animation) animation.startTime = start;
-        }
-        updateSpotlight();
-    };
+    const setSpotlight = step => form.dispatchEvent(new CustomEvent('tutorial-highlight:toggle', {detail: {active: step > 0, pulse: step === 4}}));
     const saved = readStay();
     property.value = Array.from(property.options).some(option => option.value === saved.slug) ? saved.slug : '';
     guests.value = Array.from(guests.options).some(option => option.value === saved.guests) ? saved.guests : '1';
@@ -71,6 +39,7 @@ function initialize() {
     const calendarUrl = () => property.value ? property.selectedOptions[0].dataset.calendarUrl : form.dataset.calendarUrl;
     const calendarStatus = document.getElementById('date-availability-status');
     const calendarSurface = document.getElementById('date-calendar-surface');
+    const calendarProgress = new CalendarProgress(calendarSurface);
     const clearButton = document.getElementById('date-cancel'), applyButton = document.getElementById('date-apply');
     const criteria = () => ({arrivalDate: arrival.value, departureDate: departure.value, guests: guests.value, slug: property.value});
     const capacity = () => Number(property.selectedOptions[0].dataset.capacity || guests.options[guests.options.length - 1].value);
@@ -102,6 +71,7 @@ function initialize() {
         if (open) {
             element.classList.remove('d-none'); element.showModal(); positionPanel(element, button);
         } else {
+            if (element === panel) calendarProgress.cancel();
             element.close(); element.classList.add('d-none'); button.focus({preventScroll: true});
         }
         button.setAttribute('aria-expanded', String(open));
@@ -119,7 +89,7 @@ function initialize() {
         toggle.classList.toggle('is-guide-current', step === 2);
         guestsToggle.classList.toggle('is-guide-current', step === 3);
         submit.classList.toggle('is-guide-current', step === 4);
-        setSpotlight(step === 4);
+        setSpotlight(step);
         propertyPanel.classList.toggle('is-guided', step === 1);
         panel.classList.toggle('is-guided', step === 2);
         guestsPanel.classList.toggle('is-guided', step === 3);
@@ -148,7 +118,6 @@ function initialize() {
         const box = submit.getBoundingClientRect();
         const headerBottom = document.querySelector('header.sticky-top')?.getBoundingClientRect().bottom || 0;
         if (box.top < headerBottom + 16 || box.bottom > innerHeight - 16) submit.scrollIntoView({block: 'center', inline: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
-        updateSpotlight();
     };
     for (const [element, button] of panels) {
         on(element, 'cancel', event => { event.preventDefault(); stopGuide(); setPanel(element, button, false); });
@@ -167,13 +136,7 @@ function initialize() {
             } else if (guideStep) stopGuide();
         }));
     }
-    const reposition = () => { panels.forEach(([element, button]) => positionPanel(element, button)); updateSpotlight(); };
-    on(submit, 'pointerenter', () => { spotlightAnimation?.pause(); spotlightMaskAnimation?.pause(); });
-    on(submit, 'pointerleave', () => {
-        if (!spotlightAnimation || !spotlightMaskAnimation) return;
-        const start = document.timeline.currentTime - spotlightAnimation.currentTime;
-        for (const animation of [spotlightAnimation, spotlightMaskAnimation]) { animation.play(); animation.startTime = start; }
-    });
+    const reposition = () => { panels.forEach(([element, button]) => positionPanel(element, button)); };
     on(window, 'resize', reposition); on(window, 'scroll', reposition);
     on(window.visualViewport, 'resize', reposition); on(window.visualViewport, 'scroll', reposition);
     const busy = (value, complete = false) => {
@@ -255,10 +218,12 @@ function initialize() {
     const loadCalendar = async () => {
         if (!published || !availability.properties.length || !picker || !panel.open) { refreshCalendar(); return; }
         calendarRequest?.abort(); const request = new AbortController(); calendarRequest = request;
+        calendarProgress.start();
         calendarStatus.textContent = t('checkingDates'); calendarStatus.dataset.state = 'loading'; refreshCalendar();
         const index = picker.currentYear * 12 + picker.currentMonth;
         try {
             await Promise.all([index, index + 1].map(month => availability.load(month, calendarUrl(), request.signal)));
+            if (calendarRequest === request) calendarProgress.update(72);
             await availability.loadArrivalNights([index, index + 1], calendarUrl(), request.signal);
             if (request.signal.aborted) return;
             if (availability.issue(criteria(), activeProperties())) clearQuotes(results);
@@ -267,7 +232,9 @@ function initialize() {
             if (error.name === 'AbortError') return;
             availability.clear(); calendarStatus.dataset.state = 'unverified';
         } finally {
+            if (calendarRequest === request && !request.signal.aborted && calendarStatus.dataset.state === 'fresh') await calendarProgress.finish();
             if (calendarRequest === request) {
+                calendarProgress.cancel();
                 calendarRequest = null; refreshCalendar();
                 if ([index, index + 1].some(month => availability.months.get(month)?.enabled === false)) { calendarStatus.textContent = t('closed'); applyButton.disabled = true; document.getElementById('date-calendar-contact').hidden = false; }
                 else if (calendarStatus.dataset.state === 'unverified') { calendarStatus.textContent = t('failed'); document.getElementById('date-calendar-contact').hidden = false; }
