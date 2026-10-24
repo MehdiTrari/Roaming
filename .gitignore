@@ -2,6 +2,10 @@
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
+# Private environment files must also stay out of nested asset directories.
+**/.env.local
+**/.env.local.php
+**/.env.*.local
 /.env.*.local
 /.env.prod.*
 /.env.prod 
@@ -21,6 +25,8 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 node_modules
+__pycache__/
+*.py[cod]
 
 # Local backups
 *.bak

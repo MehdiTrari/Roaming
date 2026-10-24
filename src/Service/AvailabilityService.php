@@ -101,7 +101,7 @@ final class AvailabilityService
     {
         $image = $property->getImages()->first();
         foreach ($property->getImages() as $candidate) { if ($candidate->isCover()) { $image = $candidate; break; } }
-        return ['name' => $property->getTitle(), 'slug' => $property->getSlug(), 'city' => $property->getCity(), 'maxGuests' => $property->getBookingCapacity(), 'image' => $image ? '/uploads/'.$image->getFilename() : null];
+        return ['name' => $property->getTitle(), 'slug' => $property->getSlug(), 'city' => $property->getCity(), 'maxGuests' => $property->getBookingCapacity(), 'image' => $image ? \App\Media\PropertyImageUrl::resolve($image->getFilename()) : null];
     }
 
     private function logFailure(string $slug, string $operation, \Throwable $error, ?ResponseInterface $response = null): void

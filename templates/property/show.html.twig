@@ -8,7 +8,7 @@
 
 {% block og_type %}product{% endblock %}
 
-{% block og_image %}{% if property.images|length > 0 %}{{ absolute_url(asset('uploads/' ~ property.images|first.filename)) }}{% else %}{{ parent() }}{% endif %}{% endblock %}
+{% block og_image %}{% if property.images|length > 0 %}{{ absolute_url(asset(property_image_url(property.images|first.filename))) }}{% else %}{{ parent() }}{% endif %}{% endblock %}
 {% block og_dimensions %}
 {% if property.images|length > 0 %}
     {% set optimized = responsive_image((property.images|first).filename) %}
@@ -28,7 +28,7 @@
     {% if property.images|length > 0 %}
     "image": [
         {% for image in property.images|slice(0, 5) %}
-        {{ absolute_url(asset('uploads/' ~ image.filename))|json_encode(15)|raw }}{% if not loop.last %},{% endif %}
+        {{ absolute_url(asset(property_image_url(image.filename)))|json_encode(15)|raw }}{% if not loop.last %},{% endif %}
         {% endfor %}
     ],
     {% endif %}

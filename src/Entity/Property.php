@@ -155,6 +155,7 @@ class Property
     private Collection $amenities;
 
     #[ORM\OneToMany(mappedBy: 'property', targetEntity: PropertyImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     private Collection $images;
 
     #[ORM\OneToMany(mappedBy: 'property', targetEntity: Review::class, cascade: ['persist', 'remove'], orphanRemoval: true)]

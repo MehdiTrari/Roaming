@@ -1,4 +1,16 @@
 {% trans_default_domain 'legal' %}
+<section id="cookie-banner" class="cookie-banner" role="region" aria-labelledby="cookie-banner-title" hidden>
+    <div class="cookie-banner-copy">
+        <h2 id="cookie-banner-title" tabindex="-1">{{ 'legal.cookies.banner_title'|trans }}</h2>
+        <p data-cookie-intro>{{ 'legal.cookies.banner_description'|trans }} <a href="{{ path('app_cookies', {_locale: app.request.locale}) }}">{{ 'legal.cookies.banner_details'|trans }}</a></p>
+        <p data-cookie-request hidden>{{ 'legal.cookies.banner_request'|trans }} <a href="{{ path('app_cookies', {_locale: app.request.locale}) }}">{{ 'legal.cookies.banner_details'|trans }}</a></p>
+    </div>
+    <div class="cookie-banner-actions">
+        <button type="button" class="btn btn-outline-secondary" data-cookie-refuse>{{ 'legal.cookies.refuse'|trans }}</button>
+        <button type="button" class="btn btn-outline-secondary" data-cookie-allow>{{ 'legal.cookies.allow'|trans }}</button>
+        <button type="button" class="cookie-banner-customize" data-cookie-customize aria-haspopup="dialog" aria-controls="privacy-preferences">{{ 'legal.cookies.customize'|trans }}</button>
+    </div>
+</section>
 <dialog id="privacy-preferences" class="privacy-dialog" aria-labelledby="privacy-title" aria-describedby="privacy-description">
     <div class="privacy-dialog-heading">
         <div><p class="legal-eyebrow">Roaming Lille</p><h2 id="privacy-title">{{ 'legal.cookies.preferences'|trans }}</h2></div>

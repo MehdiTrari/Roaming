@@ -16,7 +16,8 @@ const stay = {slug: 'lambersart', arrivalDate: dates[0], departureDate: dates[1]
         page.on('pageerror', error => errors.push(error.message));
         await context.route('**/*', async route => {
             const url = new URL(route.request().url());
-            if (url.origin !== base) {remote.push(url.origin); return route.abort();}
+            if (!['GET', 'HEAD'].includes(route.request().method())) return route.abort();
+            if (url.origin !== base) {if (!url.pathname.startsWith('/guestluckybucket/listings/')) remote.push(url.origin); return route.abort();}
             if (url.pathname.startsWith('/reservation/')) {bookings.push(url); return route.fulfill({contentType: 'text/html', body: '<!doctype html><title>Mock booking</title><p>No booking</p>'});}
             if (!url.pathname.startsWith('/api/')) return route.continue();
             if (url.pathname === '/api/availability') {
@@ -27,32 +28,46 @@ const stay = {slug: 'lambersart', arrivalDate: dates[0], departureDate: dates[1]
             return route.fulfill({contentType: 'application/json', body: JSON.stringify({enabled: true, properties: [{slug: stay.slug, status: 'fresh', fetchedAt: new Date().toISOString(), days: Array.from({length: new Date(year, month, 0).getDate()}, (_, i) => ({date: `${year}-${String(month).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`, available: true, minStay: 2, price: 150}))}]})});
         });
         const load = async () => {await page.goto(base + '/?' + new URLSearchParams(stay)); await page.waitForFunction(() => document.querySelector('#date-range')?._flatpickr);};
-        const search = async () => {await page.locator('.booking-submit').click(); await page.waitForSelector('.booking-module-actions button');};
+        const search = async () => {await page.locator('.booking-submit').evaluate(e => e.scrollIntoView({block: 'center'})); await page.locator('.booking-submit').click(); await page.waitForSelector('.booking-module-actions button');};
         const open = () => page.locator('.booking-module-actions button').click();
-        const preferences = () => page.locator('.legal-footer-links [data-privacy-open]').click();
+        const preferences = async () => (await page.locator('#cookie-banner').isVisible() ? page.locator('[data-cookie-customize]') : page.locator('.legal-footer-links [data-privacy-open]')).click();
         const choice = () => page.evaluate(key => JSON.parse(localStorage.getItem(key)), key);
         await load();
-        assert.equal(await page.locator('#privacy-preferences').isVisible(), false, 'no unnecessary arrival popup');
+        assert.equal(await page.locator('#privacy-preferences').isVisible(), false, 'no modal on arrival');
+        assert.equal(await page.locator('#cookie-banner').isVisible(), true, 'a non-blocking cookie notice is shown on the first visit');
+        assert.equal(await choice(), null);
+        await page.locator('[data-cookie-customize]').click();
+        await page.waitForSelector('#privacy-preferences[open]');
+        await page.keyboard.press('Escape');
+        assert.equal(await page.locator('#cookie-banner').isVisible(), true);
+        assert.equal(await choice(), null, 'closing customisation never grants permission');
         assert.equal(await page.locator('iframe').count(), 0);
         await search(); const before = quotes;
-        await open(); await page.waitForSelector('#privacy-preferences[open]');
+        await open(); await page.waitForSelector('#cookie-banner:not([hidden])');
+        assert.equal(await page.locator('#privacy-preferences').isVisible(), false, 'booking no longer opens the detailed settings');
         assert.equal(quotes, before, 'permission is requested before quote revalidation');
         assert.equal(bookings.length, 0);
         await page.keyboard.press('Escape');
         assert.equal(await choice(), null, 'closing does not grant consent');
         assert.equal(await page.locator('.booking-module-actions button').evaluate(e => e === document.activeElement), true);
-        await open(); await page.locator('[data-privacy-refuse]').click();
+        await open(); await page.locator('[data-cookie-refuse]').click();
         const refusal = await choice(); assert.equal(refusal.guestlucky, false);
         assert.equal(refusal.expiresAt - refusal.updatedAt, lifetime);
         assert.equal(bookings.length, 0);
-        await load(); await search(); await open();
-        await page.waitForSelector('#privacy-preferences[open]');
-        await page.locator('[data-privacy-allow]').click();
+        await load();
+        assert.equal(await page.locator('#cookie-banner').isVisible(), false, 'a refusal is also remembered');
+        await search(); await open();
+        await page.waitForSelector('#cookie-banner:not([hidden])');
+        await page.locator('[data-cookie-allow]').click();
         await page.waitForSelector('.guestlucky-booking-frame');
         const permission = await choice(); assert.equal(permission.guestlucky, true);
         assert.equal(permission.expiresAt - permission.updatedAt, refusal.expiresAt - refusal.updatedAt, 'same retention for both choices');
         assert.equal(await page.locator('.guestlucky-booking-frame').getAttribute('referrerpolicy'), 'no-referrer');
         assert.equal(bookings.length, 1);
+        await load(); await search(); await open();
+        await page.waitForSelector('.guestlucky-booking-frame');
+        assert.equal(await page.locator('#cookie-banner').isVisible(), false, 'subsequent bookings open without another consent prompt');
+        assert.equal(bookings.length, 2);
         // Another tab withdrawing permission immediately removes the frame.
         const tab = await context.newPage(); await tab.goto(base + '/cookies');
         await tab.locator('.legal-content [data-privacy-open]').click(); await tab.locator('[data-privacy-refuse]').click();
@@ -66,12 +81,13 @@ const stay = {slug: 'lambersart', arrivalDate: dates[0], departureDate: dates[1]
         // An expired or malformed stored decision never enables a frame.
         for (const value of ['invalid JSON', JSON.stringify({...permission, updatedAt: Date.now() - lifetime - 1000, expiresAt: Date.now() - 1000})]) {
             await page.evaluate(({key, value}) => localStorage.setItem(key, value), {key, value});
-            await load(); await search(); await open(); await page.waitForSelector('#privacy-preferences[open]');
+            await load(); await search(); await open(); await page.waitForSelector('#cookie-banner:not([hidden])');
             await page.keyboard.press('Escape');
         }
         // Criteria changes and Turbo visits dismiss pending consent safely.
         await open(); await page.evaluate(() => {const guests = document.getElementById('guests-count'); guests.value = '3'; guests.dispatchEvent(new Event('change'));});
         assert.equal(await page.locator('#privacy-preferences').isVisible(), false);
+        assert.equal(await page.locator('[data-cookie-request]').isVisible(), false, 'changing criteria cancels the pending booking request');
         assert.equal(await page.locator('.booking-quote-card').count(), 0);
         await load(); await search(); await open();
         await page.evaluate(() => window.Turbo.visit('/cookies?_locale=en')); await page.waitForURL('**/cookies*');
@@ -97,15 +113,40 @@ const stay = {slug: 'lambersart', arrivalDate: dates[0], departureDate: dates[1]
             await page.keyboard.press('Escape');
             assert.equal(await page.locator('.legal-content [data-privacy-open]').evaluate(e => e === document.activeElement), true);
         }
+        // The first-visit banner fits both languages, themes and narrow screens without a backdrop or scroll jump.
+        for (const locale of ['fr', 'en']) for (const theme of ['light', 'dark']) for (const width of [1440, 390, 320]) {
+            await page.evaluate(key => localStorage.removeItem(key), key);
+            await page.setViewportSize({width, height: 844});
+            await page.goto(base + '/cookies?_locale=' + locale);
+            await page.evaluate(theme => document.documentElement.dataset.bsTheme = theme, theme);
+            await page.waitForSelector('#cookie-banner:not([hidden])');
+            await page.locator('#cookie-banner').evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished)));
+            const bounds = await page.locator('#cookie-banner').boundingBox();
+            assert.ok(bounds.x >= 10 && bounds.y > 0 && bounds.x + bounds.width <= width - 10 && bounds.y + bounds.height <= 834);
+            assert.ok(bounds.height < (width < 768 ? 350 : 200));
+            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+            const buttons = await page.locator('[data-cookie-refuse], [data-cookie-allow]').evaluateAll(nodes => nodes.map(node => ({width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height, color: getComputedStyle(node).color, background: getComputedStyle(node).backgroundColor})));
+            assert.ok(buttons.every(button => button.height >= 44));
+            assert.ok(Math.abs(buttons[0].width - buttons[1].width) < 1);
+            assert.equal(buttons[0].color, buttons[1].color); assert.equal(buttons[0].background, buttons[1].background);
+            if (locale === 'fr' && width !== 320) await page.screenshot({path: `var/cookie-banner-${theme}-${width}.png`});
+            await page.locator('[data-cookie-refuse]').click();
+        }
+        const previousPermission = JSON.stringify({version: 1, guestlucky: true, updatedAt: Date.now() - 10000, expiresAt: Date.now() + 86400000});
+        await page.evaluate(({key, value}) => localStorage.setItem(key, value), {key, value: previousPermission});
+        await page.locator('.legal-content [data-privacy-open]').click();
+        await page.locator('[data-privacy-service="maps"]').check(); await page.locator('[data-privacy-save]').click();
+        assert.equal(await page.evaluate(key => localStorage.getItem(key), key), previousPermission, 'map-only changes must not renew existing booking permission');
         const restricted = await browser.newContext(process.env.ROAMING_BROWSER_STORAGE ? {storageState: process.env.ROAMING_BROWSER_STORAGE} : {});
         await restricted.addInitScript(() => {Storage.prototype.setItem = () => {throw new DOMException('blocked', 'SecurityError');};});
         const restrictedPage = await restricted.newPage();
-        await restrictedPage.goto(base + '/cookies'); await restrictedPage.locator('.legal-content [data-privacy-open]').click(); await restrictedPage.locator('[data-privacy-allow]').click();
+        await restrictedPage.goto(base + '/cookies'); await restrictedPage.locator('[data-cookie-allow]').click();
+        assert.equal(await restrictedPage.locator('#cookie-banner').isVisible(), false);
         await restrictedPage.locator('.legal-content [data-privacy-open]').click();
         assert.equal(await restrictedPage.locator('[data-privacy-status]').innerText(), await restrictedPage.locator('[data-privacy-status]').getAttribute('data-allowed'));
         await restricted.close();
         assert.deepEqual(remote, []); assert.deepEqual(errors, []);
-        console.log('PASS privacy: default block, refusal, permission, equal retention, expiry/malformed choice, revocation across tabs and pending quotes, explicit external link, focus, Turbo, blocked storage, 12 theme/language/mobile layouts; no real provider calls.');
+        console.log('PASS privacy: first-visit banner, one-click acceptance/refusal, direct booking after permission, default block, equal retention, expiry/malformed choice, revocation across tabs and pending quotes, explicit external link, focus, Turbo, blocked storage, 24 banner/dialog theme/language/mobile layouts; no real provider calls.');
         await context.close();
     } finally {await browser.close();}
 })().catch(error => {console.error(error); process.exitCode = 1;});

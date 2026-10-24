@@ -10,6 +10,8 @@ parameters:
     app.default_locale: 'fr'
     app.supported_locales: ['en', 'fr']
     app.hostname: '%env(APP_HOSTNAME)%'
+    # Owner exception: keep Lambersart's existing local photos.
+    app.guestlucky_photo_preserved_ids: [2475]
 
 services:
     # default configuration for services in *this* file
@@ -54,3 +56,9 @@ services:
             $mcpHttpClient: '@guestlucky.mcp.http_client'
             $mcpUrl: '%env(GUESTLUCKY_MCP_URL)%'
             $mcpToken: '%env(GUESTLUCKY_MCP_TOKEN)%'
+
+    App\Integration\GuestLucky\PhotoClient:
+        arguments:
+            $mediaHttpClient: '@guestlucky.mcp.http_client'
+            $baseUrl: '%env(GUESTLUCKY_BASE_URL)%'
+            $bookingKey: '%env(GUESTLUCKY_BOOKING_KEY)%'

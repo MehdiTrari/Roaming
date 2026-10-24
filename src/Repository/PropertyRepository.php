@@ -24,7 +24,7 @@ class PropertyRepository extends ServiceEntityRepository
         if ($properties !== []) {
             $this->createQueryBuilder('p')->addSelect('image')->leftJoin('p.images', 'image')
                 ->where('p IN (:properties)')->setParameter('properties', $properties)
-                ->orderBy('image.id', 'ASC')->getQuery()->getResult();
+                ->orderBy('image.position', 'ASC')->addOrderBy('image.id', 'ASC')->getQuery()->getResult();
         }
         return $properties;
     }

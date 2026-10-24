@@ -6,6 +6,8 @@ const memoryChoices = {};
 // Preserve older refusals; GuestLucky still requires its own explicit consent.
 const choiceVersion = service => service === 'maps' ? 3 : 1;
 let dismiss = () => {};
+let pendingRequest = null;
+let bannerDismissed = false;
 
 function readChoice(service = 'guestlucky') {
     let choice = memoryChoices[service];
@@ -34,6 +36,32 @@ function storeChoice(allowed, service = 'guestlucky') {
     notifyChoice();
 }
 
+function renderBanner() {
+    const banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+    const requested = Boolean(pendingRequest);
+    banner.hidden = Boolean(document.querySelector('#privacy-preferences[open]'))
+        || (!requested && (Boolean(readChoice()) || bannerDismissed));
+    banner.querySelector('[data-cookie-intro]').hidden = requested;
+    banner.querySelector('[data-cookie-request]').hidden = !requested;
+}
+
+function finishRequest(allowed, restoreFocus = true) {
+    const request = pendingRequest;
+    pendingRequest = null;
+    request?.signal?.removeEventListener('abort', request.aborted);
+    renderBanner();
+    if (!request) return;
+    if (restoreFocus && request.trigger?.isConnected) request.trigger.focus({preventScroll: true});
+    request.resolve(allowed);
+}
+
+function chooseAll(allowed) {
+    storeChoice(allowed);
+    storeChoice(allowed, 'maps');
+    finishRequest(allowed);
+}
+
 function openPreferences(trigger, signal) {
     dismiss();
     const dialog = document.getElementById('privacy-preferences');
@@ -47,7 +75,8 @@ function openPreferences(trigger, signal) {
             settled = true; listeners.abort(); signal?.removeEventListener('abort', aborted);
             if (dialog.open) dialog.close();
             dismiss = () => {};
-            if (trigger?.isConnected) trigger.focus({preventScroll: true});
+            renderBanner();
+            if (trigger?.isConnected && !trigger.closest('[hidden]')) trigger.focus({preventScroll: true});
             resolve(allowed);
         };
         const aborted = () => finish(false);
@@ -62,7 +91,7 @@ function openPreferences(trigger, signal) {
         on(dialog.querySelector('[data-privacy-refuse]'), 'click', () => { storeChoice(false); storeChoice(false, 'maps'); finish(false); });
         on(dialog.querySelector('[data-privacy-save]'), 'click', () => {
             // Saving only a map preference must not renew booking consent.
-            if (guestChoice.checked !== guestLuckyAllowed()) storeChoice(guestChoice.checked);
+            if (!readChoice() || guestChoice.checked !== guestLuckyAllowed()) storeChoice(guestChoice.checked);
             if (mapChoice.checked !== mapsAllowed()) storeChoice(mapChoice.checked, 'maps');
             finish(guestChoice.checked);
         });
@@ -78,6 +107,7 @@ function openPreferences(trigger, signal) {
             else if (event.key === mapStorageKey) mapChoice.checked = mapsAllowed();
         });
         dialog.showModal();
+        renderBanner();
         // Give refusal and permission equal visibility; never preselect permission.
         dialog.querySelector('[data-privacy-close]').focus({preventScroll: true});
     });
@@ -85,7 +115,18 @@ function openPreferences(trigger, signal) {
 
 export function requestGuestLuckyConsent({signal, trigger} = {}) {
     if (signal?.aborted) return Promise.resolve(false);
-    return guestLuckyAllowed() ? Promise.resolve(true) : openPreferences(trigger, signal);
+    if (guestLuckyAllowed()) return Promise.resolve(true);
+    finishRequest(false, false);
+    if (!document.getElementById('cookie-banner')) return openPreferences(trigger, signal);
+    return new Promise(resolve => {
+        const aborted = () => { dismiss(); finishRequest(false, false); };
+        pendingRequest = {resolve, signal, trigger, aborted};
+        signal?.addEventListener('abort', aborted, {once: true});
+        bannerDismissed = false;
+        renderBanner();
+        // A request moves keyboard focus to the notice, never the page's scroll position.
+        document.getElementById('cookie-banner-title').focus({preventScroll: true});
+    });
 }
 
 // Delegation belongs to the document, which Turbo keeps between visits.
@@ -93,15 +134,37 @@ export function requestGuestLuckyConsent({signal, trigger} = {}) {
 // that the visitor already opened just after the first page loaded.
 document.addEventListener('click', event => {
         if (document.documentElement.hasAttribute('data-turbo-preview')) return;
+        const decision = event.target.closest('[data-cookie-allow], [data-cookie-refuse]');
+        if (decision) { chooseAll(decision.hasAttribute('data-cookie-allow')); return; }
+        const customize = event.target.closest('[data-cookie-customize]');
+        if (customize) {
+            openPreferences(customize, pendingRequest?.signal).then(allowed => { finishRequest(allowed); renderBanner(); });
+            return;
+        }
         const trigger = event.target.closest('[data-privacy-open]');
         if (!trigger || event.defaultPrevented || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         if (!document.getElementById('privacy-preferences')) return;
-        event.preventDefault(); openPreferences(trigger);
+        event.preventDefault(); openPreferences(trigger).then(allowed => { finishRequest(allowed); renderBanner(); });
 });
 window.addEventListener('storage', event => {
         if (![storageKey, mapStorageKey, null].includes(event.key)) return;
         if (event.key === mapStorageKey || event.key === null) delete memoryChoices.maps;
         if (event.key === storageKey || event.key === null) delete memoryChoices.guestlucky;
         notifyChoice();
+        if (event.key === storageKey || event.key === null) finishRequest(guestLuckyAllowed());
+        renderBanner();
 });
-document.addEventListener('turbo:before-cache', () => dismiss());
+document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !pendingRequest || document.querySelector('#privacy-preferences[open]')) return;
+    event.preventDefault(); bannerDismissed = true; finishRequest(false);
+});
+function leavePage() {
+    dismiss(); finishRequest(false, false); bannerDismissed = false;
+    const banner = document.getElementById('cookie-banner');
+    if (banner) banner.hidden = true;
+}
+document.addEventListener('turbo:before-cache', leavePage);
+document.addEventListener('turbo:before-visit', leavePage);
+document.addEventListener('turbo:load', renderBanner);
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderBanner, {once: true});
+else renderBanner();
