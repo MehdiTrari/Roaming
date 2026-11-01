@@ -15,6 +15,7 @@ final class LegalController extends AbstractController
     #[Route('/mentions-legales', name: 'app_legal_notice', defaults: ['document' => 'notice'], methods: ['GET'])]
     #[Route('/politique-de-confidentialite', name: 'app_privacy', defaults: ['document' => 'privacy'], methods: ['GET'])]
     #[Route('/cookies', name: 'app_cookies', defaults: ['document' => 'cookies'], methods: ['GET'])]
+    #[Route('/conditions-generales-de-vente', name: 'app_terms', defaults: ['document' => 'terms'], methods: ['GET'])]
     public function page(string $document, PropertyRepository $properties,
         #[Autowire('%env(bool:SITE_MAINTENANCE)%')] bool $maintenance): Response
     {
@@ -22,6 +23,9 @@ final class LegalController extends AbstractController
         $draft = !$legal['host_entity'] || !$legal['host_address'] || !$legal['host_phone'] || !$legal['privacy_reviewed'];
         foreach (['contact_retention', 'logs_retention', 'team_retention', 'providers_location'] as $field) {
             foreach (['fr', 'en'] as $locale) $draft = $draft || !trim($legal[$field][$locale]);
+        }
+        if ($document === 'terms') {
+            $draft = !$legal['terms_reviewed'] || !$legal['mediator_name'] || !$legal['mediator_address'] || !$legal['mediator_url'];
         }
         $privatePreview = $maintenance && !$this->isGranted('ROLE_TESTER');
         $response = $this->render('legal/page.html.twig', [

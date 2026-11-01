@@ -227,13 +227,26 @@ final class CatalogueAndRoutesTest extends WebTestCase
     {
         $this->importer()->import($this->catalogue(), true);
         $a = BookingDates::today()->format('Y-m-d'); $d = BookingDates::today()->modify('+2 days')->format('Y-m-d');
-        $http = new MockHttpClient([new MockResponse(json_encode(AvailabilityTest::quoteData($a, $d, 2474, 3)))]);
+        $http = new MockHttpClient(static fn () => new MockResponse(json_encode(AvailabilityTest::quoteData($a, $d, 2474, 3))));
         $client = new GuestLuckyClient($http, 'https://example.test', 'public-key');
         self::getContainer()->set(GuestLuckyClient::class, $client);
         self::getContainer()->set(AvailabilityService::class, new AvailabilityService($client, new ArrayAdapter(), new NullLogger(), true));
         $this->browser->request('GET', '/reservation/roubaix?'.http_build_query(['arrivalDate' => $a, 'departureDate' => $d, 'guests' => 3]));
-        self::assertResponseRedirects('https://example.test/book/public-key/2474?'.http_build_query(['checkin' => $a, 'checkout' => $d, 'guests' => 3]));
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('input[name="accept_terms"][required]');
+        self::assertSelectorNotExists('input[name="accept_terms"][checked]');
+        self::assertFalse($this->browser->getResponse()->headers->has('Location'));
+        // Direct POSTs must not bypass acceptance or CSRF, even with a valid stay.
+        $form = $this->browser->getCrawler()->filter('.booking-terms-form')->form();
+        $values = $form->getPhpValues();
+        $this->browser->request('POST', $form->getUri(), $values);
+        self::assertResponseStatusCodeSame(422);
+        $this->browser->request('POST', $form->getUri(), array_replace($values, ['accept_terms' => '1', '_token' => 'invalid']));
+        self::assertResponseStatusCodeSame(422);
+        $this->browser->submitForm('Continuer vers la réservation', ['accept_terms' => '1']);
+        self::assertResponseRedirects('https://example.test/book/public-key/2474?'.http_build_query(['checkin' => $a, 'checkout' => $d, 'guests' => 3]), 303);
         self::assertStringContainsString('no-store', $this->browser->getResponse()->headers->get('Cache-Control'));
+        self::assertSame(4, $http->getRequestsCount(), 'Each opening or submission must recheck availability.');
     }
 
     public function testEnglishPlanningAndInputValidation(): void
@@ -308,7 +321,7 @@ final class CatalogueAndRoutesTest extends WebTestCase
             foreach ($crawler->filter('script[type="application/ld+json"]') as $script) {
                 $data = json_decode($script->textContent, true, flags: JSON_THROW_ON_ERROR);
                 self::assertArrayHasKey('@type', $data);
-                if ($data['@type'] === 'LodgingBusiness') { self::assertSame($title, $data['name']); }
+                if ($data['@type'] === 'LodgingBusiness') { self::assertSame($title.' · Lille', $data['name']); }
             }
         }
     }

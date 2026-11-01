@@ -16,9 +16,10 @@
 {
     "@context": "https://schema.org",
     "@type": "AboutPage",
+    "inLanguage": {{ app.request.locale|json_encode(15)|raw }},
     "name": {{ 'about.title'|trans|json_encode(15)|raw }},
     "description": {{ 'seo.about_description'|trans|json_encode(15)|raw }},
-    "url": {{ url('app_about')|json_encode(15)|raw }},
+    "url": {{ seo_url('app_about')|json_encode(15)|raw }},
     "mainEntity": {
         "@type": "Organization",
         "name": "Roaming Lille",
@@ -38,13 +39,13 @@
             "@type": "ListItem",
             "position": 1,
             "name": {{ 'menu.home'|trans|json_encode(15)|raw }},
-            "item": {{ url('app_home')|json_encode(15)|raw }}
+            "item": {{ seo_url('app_home')|json_encode(15)|raw }}
         },
         {
             "@type": "ListItem",
             "position": 2,
             "name": {{ 'about.section_title'|trans|json_encode(15)|raw }},
-            "item": {{ url('app_about')|json_encode(15)|raw }}
+            "item": {{ seo_url('app_about')|json_encode(15)|raw }}
         }
     ]
 }
@@ -65,7 +66,7 @@
             {% if illustratedProperty %}
             <figure class="hospitality-about-photo reveal">
                 {% include 'components/_picture.html.twig' with {filename: (illustratedProperty.images|first).filename, alt: '', sizes: '(min-width: 992px) 50vw, 100vw', priority: true} only %}
-                <figcaption><a href="{{ path('app_property_show', {slug: illustratedProperty.slug}) }}"><span>{{ illustratedProperty.title }} <small>{{ illustratedProperty.city }}</small></span><span aria-hidden="true">&nearr;</span></a></figcaption>
+                <figcaption><a href="{{ path('app_property_show', {slug: illustratedProperty.slug}) }}"><span>{{ illustratedProperty.displayName }} <small>{{ illustratedProperty.city }}</small></span><span aria-hidden="true">&nearr;</span></a></figcaption>
             </figure>
             {% endif %}
         </div>

@@ -1,7 +1,28 @@
 {
   "source": "Informations confirmées par le propriétaire et annonces Airbnb officielles ; rédaction originale ROAMING FR/EN",
-  "confirmedAt": "2026-10-23",
+  "confirmedAt": "2026-10-24",
   "properties": [
+    {
+      "guestLuckyId": 2650,
+      "slug": "la-petite-cour-calme-charme-au-coeur-de-lille-2650",
+      "city": "Lille",
+      "verification": "Description et équipements Airbnb transmis par le propriétaire le 24 octobre 2026. Capacité de 4 voyageurs issue de GuestLucky. URL Airbnb non fournie ; aucune surface ni aucun nombre de chambres ou de lits ajouté.",
+      "fields": {
+        "title": "La Petite Cour – Calme & Charme au cœur de Lille",
+        "type": "apartment",
+        "travelers": 4,
+        "shortDescription": "Un appartement au calme en fond de cour à Lille, avec briques apparentes, salon cosy, canapé convertible, espace nuit en mezzanine et coin bureau.",
+        "description": "Bienvenue à La Petite Cour – Calme & Charme au cœur de Lille ! Niché en fond de cour, ce charmant appartement allie tranquillité et authenticité. Profitez d'un séjour chaleureux avec ses murs en briques apparentes, son salon cosy avec canapé convertible, sa cuisine équipée et son espace nuit en mezzanine. Un coin bureau est également à votre disposition. Idéal pour un séjour en couple, entre amis ou professionnel, à deux pas des commerces et des animations lilloises.",
+        "about": "Bienvenue à La Petite Cour – Calme & Charme au cœur de Lille ! Niché en fond de cour, ce charmant appartement allie tranquillité et authenticité. Profitez d'un séjour chaleureux avec ses murs en briques apparentes, son salon cosy avec canapé convertible, sa cuisine équipée et son espace nuit en mezzanine. Un coin bureau est également à votre disposition. Idéal pour un séjour en couple, entre amis ou professionnel, à deux pas des commerces et des animations lilloises.",
+        "accommodation": "Le salon dispose d'un canapé convertible et l'espace nuit se trouve en mezzanine. La cuisine équipée comprend un réfrigérateur et une cafetière. Un coin bureau, le Wi-Fi et la télévision sont disponibles. Lave-linge, sèche-linge, linge de lit, serviettes, savon, papier toilette et shampoing sont fournis. Le logement dispose du chauffage, de l'eau chaude, de cintres, de rangements pour les vêtements, de stores ou rideaux occultants et d'un détecteur de fumée.",
+        "otherRemarks": "L'espace nuit se trouve en mezzanine. Équipements non inclus : climatisation, sèche-cheveux, entrée privée et caméras de surveillance extérieures. La présence d'un détecteur de monoxyde de carbone n'est pas confirmée : contactez l'hôte pour toute question à ce sujet.",
+        "shortDescriptionEn": "A quiet courtyard apartment in Lille with exposed brickwork, a cosy living room, a sofa bed, a mezzanine sleeping area and a desk.",
+        "aboutEn": "Welcome to La Petite Cour – peace and charm in the heart of Lille! Tucked away at the back of a courtyard, this charming apartment combines tranquillity and character. Enjoy exposed brick walls, a cosy living room with a sofa bed, an equipped kitchen and a mezzanine sleeping area. A desk is also available. Ideal for couples, friends or a business stay, close to Lille's shops and lively streets.",
+        "accommodationEn": "The living room has a sofa bed, and the sleeping area is on a mezzanine. The equipped kitchen includes a refrigerator and a coffee maker. A desk, Wi-Fi and TV are available. A washing machine, dryer, bed linen, towels, soap, toilet paper and shampoo are provided. The apartment also has heating, hot water, hangers, clothing storage, blackout blinds or curtains and a smoke alarm.",
+        "otherRemarksEn": "The sleeping area is on a mezzanine. Not included: air conditioning, a hair dryer, a private entrance or outdoor security cameras. A carbon monoxide alarm has not been confirmed: contact the host if you have any questions."
+      },
+      "amenities": ["amenities.wifi", "amenities.television", "amenities.equipped_kitchen", "amenities.refrigerator", "amenities.coffee_maker", "amenities.workspace", "amenities.washing_machine", "amenities.dryer", "amenities.bed_linen", "amenities.towels", "amenities.soap_toilet_paper", "amenities.shampoo", "amenities.hot_water", "amenities.hangers", "amenities.clothing_storage", "amenities.blackout_curtains", "amenities.heating", "amenities.smoke_alarm"]
+    },
     {
       "guestLuckyId": 2467,
       "slug": "ecrin-noir-croix",

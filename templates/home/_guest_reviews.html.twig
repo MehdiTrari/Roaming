@@ -1,0 +1,37 @@
+{% set reviews = guestReviewFeed.reviews %}
+{% if reviews|length %}
+<section class="guest-reviews-section" id="guest-reviews" aria-labelledby="guest-reviews-title" data-controller="guest-reviews" data-action="mouseenter->guest-reviews#hoverStart mouseleave->guest-reviews#hoverEnd focusin->guest-reviews#focusStart focusout->guest-reviews#focusEnd">
+    <div class="container">
+        <header class="guest-reviews-heading">
+            <div><p class="calendar-eyebrow">{{ 'guest_reviews.eyebrow'|trans }}</p><h2 id="guest-reviews-title">{{ 'guest_reviews.title'|trans }}</h2><p class="guest-reviews-intro">{{ 'guest_reviews.intro'|trans }}</p></div>
+            <div class="guest-reviews-controls" data-guest-reviews-target="controls" hidden>
+                <button type="button" data-action="guest-reviews#previous" aria-label="{{ 'guest_reviews.previous'|trans }}" aria-controls="guest-reviews-list">←</button>
+                <span class="guest-reviews-position" data-guest-reviews-target="position" aria-label="{{ 'guest_reviews.position'|trans }}"></span>
+                <button type="button" data-action="guest-reviews#next" aria-label="{{ 'guest_reviews.next'|trans }}" aria-controls="guest-reviews-list">→</button>
+                <button type="button" class="guest-reviews-pause" data-action="guest-reviews#togglePause" data-guest-reviews-target="pause" data-pause-label="{{ 'guest_reviews.pause'|trans }}" data-play-label="{{ 'guest_reviews.play'|trans }}" aria-label="{{ 'guest_reviews.pause'|trans }}" aria-pressed="false">Ⅱ</button>
+            </div>
+        </header>
+        <div class="guest-reviews-viewport" data-guest-reviews-target="viewport" data-action="scroll->guest-reviews#scrolled pointerdown->guest-reviews#pointerDown pointermove->guest-reviews#pointerMove pointerup->guest-reviews#pointerUp pointercancel->guest-reviews#pointerCancel lostpointercapture->guest-reviews#pointerCancel dragstart->guest-reviews#preventNativeDrag keydown->guest-reviews#keyboard" tabindex="0" aria-label="{{ 'guest_reviews.browse'|trans }}">
+            <ul class="guest-reviews-track" id="guest-reviews-list">
+                {% for review in reviews %}
+                <li class="guest-review-card {{ review.text|length > 240 ? 'has-long-review' : '' }}" data-guest-reviews-target="card">
+                    <article>
+                        <header class="guest-review-author">{% if review.avatar %}<img class="guest-review-profile-photo" src="{{ asset(review.avatar) }}" alt="" width="44" height="44" loading="lazy" decoding="async">{% else %}<span class="guest-review-quote" aria-hidden="true">“</span>{% endif %}<div><h3>{{ review.author ?: 'guest_reviews.stay_in'|trans({'%city%': review.property.city}) }}</h3><time datetime="{{ review.date }}">{{ review.date|date(app.request.locale == 'fr' ? 'd/m/Y' : 'Y-m-d') }}</time></div>{% if review.sourceUrl %}<a class="guest-review-source" href="{{ review.sourceUrl }}" target="_blank" rel="noopener noreferrer" aria-label="{{ 'guest_reviews.source_link'|trans({'%source%': review.sourceLabel, '%property%': review.property.displayName}) }}">{% include 'components/_review_brand.html.twig' with {channel: review.channel, label: review.sourceLabel} only %}</a>{% else %}<span class="guest-review-source" title="{{ review.sourceLabel }}">{% include 'components/_review_brand.html.twig' with {channel: review.channel, label: review.sourceLabel} only %}</span>{% endif %}</header>
+                        <p class="guest-review-rating" aria-label="{{ 'guest_reviews.rating'|trans({'%rating%': review.rating|number_format(1, app.request.locale == 'fr' ? ',' : '.')}) }}"><span aria-hidden="true">{% for star in 1..5 %}<span class="{{ star <= review.rating ? 'is-filled' : '' }}">★</span>{% endfor %}</span><strong aria-hidden="true">{{ review.rating|number_format(1, app.request.locale == 'fr' ? ',' : '.') }}<small>/5</small></strong></p>
+                        {% if review.text %}<blockquote><p id="review-text-{{ loop.index }}" class="guest-review-text">{{ review.text }}</p></blockquote>{% else %}<p class="guest-review-text text-muted">{{ 'guest_reviews.rating_only'|trans }}</p>{% endif %}
+                        {% if review.text|length > 240 %}<button type="button" class="guest-review-expand" data-action="guest-reviews#expand" data-more="{{ 'guest_reviews.read_more'|trans }}" data-less="{{ 'guest_reviews.read_less'|trans }}" aria-expanded="false" aria-controls="review-text-{{ loop.index }}" hidden>{{ 'guest_reviews.read_more'|trans }}</button>{% endif %}
+                        <footer>
+                            <a class="guest-review-property" href="{{ path('app_property_show', {slug: review.property.slug}) }}" draggable="false">
+                                {% set cover = review.property.images|filter(image => image.isCover)|first ?: review.property.images|first %}
+                                {% if cover %}{% include 'components/_picture.html.twig' with {filename: cover.filename, imageClass: 'guest-review-cover', alt: '', sizes: '104px', width: 208, height: 156} only %}{% endif %}
+                                <span><small>{{ 'guest_reviews.discover_property'|trans }}</small><strong>{{ review.property.displayName }}</strong></span><span class="guest-review-property-arrow" aria-hidden="true">↗</span>
+                            </a>
+                        </footer>
+                    </article>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endif %}

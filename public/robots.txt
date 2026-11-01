@@ -1,16 +1,15 @@
-# Robots.txt for Roaming Lille
-# https://www.roamingfr.com
-
+# Roaming Lille — public website
 User-agent: *
 Allow: /
 
-# Disallow admin and development paths
+# Application endpoints, diagnostics and private workspace.
+# These rules are not access controls; private pages require authentication.
 Disallow: /_profiler/
 Disallow: /_wdt/
 Disallow: /api/
+Disallow: /equipe/
 Disallow: /test-disponibilites
 Disallow: /reservation/
 Disallow: /change-locale/
 
-# Sitemap location
-Sitemap: https://www.roamingfr.com/sitemap.xml
+Sitemap: https://roaminglille.com/sitemap.xml

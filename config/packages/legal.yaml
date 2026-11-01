@@ -1,7 +1,12 @@
-# Public information only. Complete the empty fields from contracts before launch.
+# Public information only. Proposed retention periods are not yet operational.
 parameters:
     app.legal:
-        updated: '2026-10-20'
+        updated: '2026-10-27'
+        terms_version: '2026-10-30'
+        terms_reviewed: false
+        mediator_name: ''
+        mediator_address: ''
+        mediator_url: ''
         company: 'ROAMING'
         form: 'SAS'
         capital: '1 000 €'
@@ -14,13 +19,21 @@ parameters:
         email: 'contact@roamingfr.com'
         phone: '+33 6 60 34 40 71'
         host_brand: 'Hostinger'
-        host_entity: ''
-        host_address: ''
+        host_entity: 'HOSTINGER INTERNATIONAL LIMITED'
+        host_address: '61 Lordou Vironos str., 6023 Larnaca, Chypre / Cyprus'
         host_phone: ''
         host_url: 'https://www.hostinger.com/fr/contact'
         # Validate real retention procedures, providers and transfers before publishing.
         privacy_reviewed: false
-        contact_retention: {fr: '', en: ''}
-        logs_retention: {fr: '', en: ''}
-        team_retention: {fr: '', en: ''}
-        providers_location: {fr: '', en: ''}
+        contact_retention:
+            fr: "Proposition à mettre en œuvre avant ouverture : demandes sans réservation, 12 mois après le dernier échange, puis suppression des messages et copies e-mail. Les pièces nécessaires à un contrat ou à un litige sont isolées et soumises à leur durée propre. Sauvegardes : cycle maximal proposé de 30 jours ; réappliquer les effacements après restauration. Ces délais ne sont pas encore appliqués automatiquement."
+            en: "Proposed policy to implement before launch: enquiries without a booking, 12 months after the last exchange, then delete messages and email copies. Records required for a contract or dispute are isolated under their own retention rules. Backups: proposed maximum cycle of 30 days; reapply erasures after restoration. These periods are not yet enforced automatically."
+        logs_retention:
+            fr: "Proposition à mettre en œuvre avant ouverture : journaux techniques courants, 30 jours ; traces de sécurité nécessaires à la détection des incidents, 6 mois, avec accès restreint. Une extraction liée à un incident peut être isolée pendant son traitement et les suites nécessaires. La rotation et les durées propres à Hostinger restent à vérifier ; la configuration actuelle ne garantit pas ces délais."
+            en: "Proposed policy to implement before launch: routine technical logs, 30 days; security events needed for incident detection, 6 months with restricted access. Incident evidence may be isolated for investigation and necessary follow-up. Log rotation and Hostinger retention still require verification; the current configuration does not guarantee these periods."
+        team_retention:
+            fr: "Proposition à mettre en œuvre avant ouverture : désactiver les accès dès la fin de l’habilitation et supprimer ou anonymiser le compte sous 30 jours. Supprimer les tickets, commentaires et captures 12 mois après clôture ; retirer plus tôt toute donnée personnelle inutile. Sauvegardes : cycle maximal proposé de 30 jours. Les procédures et la purge restent à mettre en place."
+            en: "Proposed policy to implement before launch: disable access when authorisation ends and delete or anonymise the account within 30 days. Delete tickets, comments and screenshots 12 months after closure; remove unnecessary personal data sooner. Backups: proposed maximum cycle of 30 days. Procedures and purging still need to be implemented."
+        providers_location:
+            fr: "Hostinger : les conditions publiques applicables à un client établi en France désignent HOSTINGER INTERNATIONAL LIMITED, à Chypre ; cette identification reste à rapprocher de la facture du compte. Le pays du centre de données de Roaming Lille n’est pas confirmé par les informations de compte accessibles. Messagerie : la configuration de production du projet utilise Gmail (Google), sans permettre de confirmer le type de compte, sa région ni ses garanties contractuelles. GuestLucky : son éditeur déclaré est MA INDUSTRY LTD, établi à Hong Kong, hors EEE. Sa politique cite PlanetHoster, Stripe et une infrastructure de synchronisation des canaux ; elle annonce des transferts hors UE et le recours à des clauses contractuelles types pour certains prestataires. Cela ne confirme pas les garanties du contrat de ROAMING. OpenFreeMap est exploité par Hyperknot Software Kft. et peut utiliser un CDN ; Google Maps est ouvert à votre initiative. Les services Google peuvent traiter des données dans plusieurs pays. Aucun stockage exclusivement en France ou dans l’EEE n’est garanti ici. Les lieux effectifs, sous-traitants et garanties applicables au compte ROAMING doivent encore être vérifiés ; vous pouvez demander les informations disponibles et une copie des garanties pertinentes à contact@roamingfr.com."
+            en: "Hostinger: public terms for a customer established in France identify HOSTINGER INTERNATIONAL LIMITED in Cyprus; this must still be checked against the account invoice. Available account information does not confirm the Roaming Lille data centre country. Email: this project’s production configuration uses Gmail (Google), but does not establish the account type, region or contractual safeguards. GuestLucky identifies its publisher as MA INDUSTRY LTD, established in Hong Kong, outside the EEA. Its policy lists PlanetHoster, Stripe and a channel synchronisation infrastructure, and describes non-EU transfers and standard contractual clauses for certain providers. This does not confirm the safeguards in ROAMING’s contract. OpenFreeMap is operated by Hyperknot Software Kft. and may use a CDN; Google Maps opens at your initiative. Google services may process data in several countries. Storage exclusively in France or the EEA is not guaranteed here. Actual locations, subprocessors and safeguards for the ROAMING account still require verification; request available information and a copy of relevant safeguards at contact@roamingfr.com."

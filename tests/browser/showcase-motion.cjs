@@ -15,6 +15,9 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
   const settled=()=>page.waitForFunction(()=>!document.querySelector('.property-showcase').classList.contains('is-moving'));
   const value=(index,key)=>slides.nth(index).evaluate((e,key)=>parseFloat(e.style.getPropertyValue(key)),key);
   const geometry=async()=>{
+   // Arrow clicks can scroll the controls into view and leave the image behind
+   // the sticky header. Keep the drag on the actual photograph.
+   await page.locator('.showcase-stage').evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));
    const card=await page.locator('.showcase-slide.is-active').boundingBox();
    const media=await page.locator('.showcase-slide.is-active .showcase-card-media').boundingBox();
    const spacing=await root.evaluate(e=>e.querySelector('.showcase-slide').offsetWidth*parseFloat(getComputedStyle(e).getPropertyValue('--showcase-step'))/100);
@@ -54,9 +57,13 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
   await settled();assert.equal(await value(sideIndex,'--slide-offset'),0);
   // A new direction can interrupt a running animation without snapping to an endpoint.
   await page.locator('.showcase-arrow').last().click();await page.waitForTimeout(90);
-  const interrupted=await value(sideIndex,'--slide-offset');
-  await page.locator('.showcase-arrow').first().click();
-  assert.ok(Math.abs(await value(sideIndex,'--slide-offset')-interrupted)<.15);
+  const interruption=await root.evaluate((element,index)=>{
+   const slide=element.querySelectorAll('.showcase-slide')[index];
+   const before=parseFloat(slide.style.getPropertyValue('--slide-offset'));
+   element.querySelector('.showcase-arrow').click();
+   return Math.abs(parseFloat(slide.style.getPropertyValue('--slide-offset'))-before);
+  },sideIndex);
+  assert.ok(interruption<.15);
   await settled();assert.equal(await activeIndex(),sideIndex);
   // A short fast flick carries enough momentum to select the next card.
   g=await geometry();await page.mouse.move(g.x,g.y);await page.mouse.down();
@@ -84,12 +91,15 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
   }
   await page.locator('.showcase-picker button').first().click();await settled();
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.locator('.showcase-arrow').last().click();
+  // Sample animation frames on a controlled clock, independent of Chrome load.
+  await page.clock.install(); await page.clock.pauseAt(new Date());
+  const reducedSettled=async()=>{await page.clock.runFor(2000);assert.equal(await root.evaluate(e=>e.classList.contains('is-moving')),false);};
+  await root.evaluate(e=>[...e.querySelectorAll('.showcase-arrow')].at(-1).click());
   assert.equal(await activeIndex(),1);
   assert.equal(await root.evaluate(e=>e.classList.contains('is-moving')),true);
-  await page.waitForTimeout(100);
+  await page.clock.runFor(100);
   assert.ok(await value(1,'--slide-offset')>.4,'Windows reduced motion must not bypass the explicitly requested slide');
-  await settled();assert.equal(await value(1,'--slide-offset'),0);
+  await reducedSettled();assert.equal(await value(1,'--slide-offset'),0);
   // Verify real pixel movement, not only CSS variables, with the Windows-like setting.
   for (const direction of [-1,1]) {
    const start=await activeIndex(),destination=(start+direction+count)%count;
@@ -98,9 +108,9 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
    const from=await slides.nth(destination).boundingBox();
    await page.mouse.click(direction<0?stageBox.x+65:stageBox.x+stageBox.width-65,centralMedia.y+centralMedia.height*.5);
    assert.equal(await activeIndex(),destination);
-   await page.waitForTimeout(100);const early=await slides.nth(destination).boundingBox();
-   await page.waitForTimeout(150);const middle=await slides.nth(destination).boundingBox();
-   await settled();const end=await slides.nth(destination).boundingBox();
+   await page.clock.runFor(100);const early=await slides.nth(destination).boundingBox();
+   await page.clock.runFor(150);const middle=await slides.nth(destination).boundingBox();
+   await reducedSettled();const end=await slides.nth(destination).boundingBox();
    const center=box=>box.x+box.width/2;
    assert.ok(Math.abs(center(early)-center(end))>140,'side click must visibly travel, even with reduced motion');
    assert.ok(Math.abs(center(middle)-center(end))<Math.abs(center(early)-center(end)));
@@ -108,13 +118,13 @@ const base=process.env.ROAMING_BROWSER_URL||'http://127.0.0.1:8000';
    // Repeat a short threshold-crossing release under the same preference.
    g=await geometry();const releaseTarget=(destination-direction+count)%count;
    await page.mouse.move(g.x,g.y);await page.mouse.down();
-   await page.mouse.move(g.x+direction*g.spacing*.52,g.y,{steps:8});await page.waitForTimeout(150);
+   await page.mouse.move(g.x+direction*g.spacing*.52,g.y,{steps:8});await page.clock.runFor(150);
    const released=await slides.nth(releaseTarget).boundingBox();
-   await page.mouse.up();await page.waitForTimeout(100);
+   await page.mouse.up();await page.clock.runFor(100);
    const approach=await slides.nth(releaseTarget).boundingBox();
-   await settled();const centered=await slides.nth(releaseTarget).boundingBox();
+   await reducedSettled();const centered=await slides.nth(releaseTarget).boundingBox();
    assert.ok(Math.abs(center(approach)-center(centered))>80,'short release must keep a visible remaining travel');
-   assert.ok(Math.abs(center(approach)-center(released))<80,'short release must not jump to the center');
+   assert.ok(Math.abs(center(approach)-center(released))<g.spacing*.18,'short release must not jump to the center');
   }
   // Native touch input, with vertical scrolling still allowed.
   const mobile=await browser.newContext({viewport:{width:390,height:900},isMobile:true,hasTouch:true,...(process.env.ROAMING_BROWSER_STORAGE?{storageState:process.env.ROAMING_BROWSER_STORAGE}:{})});

@@ -57,7 +57,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
     });
     const search = async () => {
         await page.locator('#booking-search-form [type="submit"]').click();
-        await page.waitForFunction(() => document.querySelector('#booking-search-form').getAttribute('aria-busy') === 'false');
+        await page.waitForFunction(() => document.querySelector('#booking-search-form').getAttribute('aria-busy') !== 'true');
     };
     const calendar = async (url = '/disponibilites?' + query({slug: catalogue[0].slug})) => {
         await page.goto(base + url); await page.locator('.stay-calendar').scrollIntoViewIfNeeded();
@@ -77,7 +77,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
         const quoteCalls = () => calls.filter(url => /\/api\/(test\/)?availability$/.test(url.pathname)).length;
         const before = quoteCalls();
         await page.locator('.booking-module-actions button').click();
-        await page.locator('#privacy-preferences [data-privacy-allow]').click();
+        await page.locator('#cookie-banner [data-cookie-allow]').click();
         await page.waitForSelector('.guestlucky-booking-frame');
         assert.equal(await page.locator('dialog.booking-modal[open]').count(), 1);
         assert.equal(await page.locator('.booking-quote-card dialog, .booking-quote-card iframe').count(), 0);
@@ -137,9 +137,26 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
         await page.locator('.booking-module-actions button').click();
         await page.evaluate(() => { const input = document.getElementById('guests-count'); input.value = '2'; input.dispatchEvent(new Event('change')); });
         await sleep(500); assert.equal(await page.locator('.guestlucky-booking-frame').count(), 0); delay = 0;
+        // A minute-old quote remains usable and still triggers fresh pricing.
+        await page.clock.install();
+        await search(); const minuteCalls = quoteCalls();
+        await page.clock.fastForward(61000);
+        assert.equal(await page.locator('.booking-module-actions button').isEnabled(), true);
+        assert.equal(await page.locator('.booking-module-actions a').getAttribute('aria-disabled'), null);
+        await page.locator('.booking-module-actions button').click();
+        await page.waitForSelector('dialog.booking-modal[open]');
+        assert.equal(quoteCalls(), minuteCalls + 1);
+        await page.locator('.booking-modal-close').click();
+        // The timer expires at five minutes, not before.
+        await search();
+        await page.clock.fastForward(299000);
+        assert.equal(await page.locator('.booking-module-actions button').isEnabled(), true);
+        await page.clock.fastForward(1000);
+        assert.equal(await page.locator('.booking-module-actions button').isDisabled(), true);
+        assert.match(await page.locator('.booking-feedback').innerText(), /expiré/);
         // Retired quotes cannot be reopened, including just before their timer fires.
         await search(); const retiredCalls = quoteCalls(), retiredBookings = bookings.length;
-        await page.evaluate(() => { const now = Date.now; Date.now = () => now() + 61000; });
+        await page.evaluate(() => { const now = Date.now; Date.now = () => now() + 301000; });
         await page.locator('.booking-module-actions button').click();
         assert.equal(quoteCalls(), retiredCalls); assert.equal(bookings.length, retiredBookings);
         assert.match(await page.locator('.booking-feedback').innerText(), /expiré/);

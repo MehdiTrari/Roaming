@@ -1,0 +1,24 @@
+{% trans_default_domain 'terms' %}
+<p class="legal-introduction">{{ 'intro'|trans }}</p>
+<p>{{ 'version'|trans }} {{ legal_information.terms_version }}</p>
+{% for section in ['provider', 'booking', 'payment', 'cancellation', 'changes', 'withdrawal', 'deposit', 'stay', 'pets', 'liability', 'complaints'] %}
+<section>
+    <h2>{{ (section ~ '.title')|trans }}</h2>
+    <p>{{ (section ~ '.text')|trans }}</p>
+    {% if section == 'provider' %}
+        <p>{{ legal_information.company }}, {{ legal_information.form }} — {{ legal_information.capital }}<br>
+        {{ legal_information.address }}<br>
+        SIREN {{ legal_information.siren }} · RCS {{ legal_information.registry }} · {{ legal_information.vat }}<br>
+        <a href="mailto:{{ legal_information.email }}">{{ legal_information.email }}</a> · <a href="tel:{{ legal_information.phone|replace({' ': ''}) }}">{{ legal_information.phone }}</a></p>
+    {% elseif section == 'complaints' %}
+        <p><a href="mailto:{{ legal_information.email }}">{{ legal_information.email }}</a> · {{ legal_information.address }}</p>
+        {% if legal_information.mediator_name and legal_information.mediator_address and legal_information.mediator_url %}
+            <p>{{ 'mediator.available'|trans }}</p>
+            <p>{{ legal_information.mediator_name }}<br>{{ legal_information.mediator_address }}<br><a href="{{ legal_information.mediator_url }}" rel="noopener noreferrer" target="_blank">{{ legal_information.mediator_url }}</a></p>
+        {% else %}
+            <p class="legal-mediator-pending">{{ 'mediator.pending'|trans }}</p>
+        {% endif %}
+    {% endif %}
+</section>
+{% endfor %}
+<p><a href="{{ path('app_privacy', {_locale: app.request.locale}) }}" target="_blank" rel="noopener">{{ 'privacy'|trans }}</a></p>

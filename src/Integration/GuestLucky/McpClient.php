@@ -36,9 +36,29 @@ final class McpClient
         throw new \RuntimeException('Toutes les pages du catalogue MCP n’ont pas pu être vérifiées.');
     }
 
+    /** Complete per-property/channel read; an empty response is a valid snapshot. */
+    public function guestReviews(int $propertyId, string $channel): array
+    {
+        $reviews = []; $ids = []; $total = null;
+        for ($page = 1; $page <= 100; $page++) {
+            $data = $this->readTool('gl-list-guest-reviews', ['property_id' => $propertyId, 'channel' => $channel, 'page' => $page, 'per_page' => 50]);
+            $rows = $data['reviews'] ?? null;
+            if (!is_int($data['total'] ?? null) || $data['total'] < 0 || ($data['page'] ?? null) !== $page || ($data['per_page'] ?? null) !== 50 || !is_array($rows) || !array_is_list($rows) || ($data['count'] ?? null) !== count($rows) || ($total !== null && $total !== $data['total'])) throw new \RuntimeException('Réponse des avis incomplète.');
+            $total = $data['total'];
+            foreach ($rows as $row) {
+                $id = $row['id'] ?? null;
+                if ((!is_int($id) && !is_string($id)) || trim((string) $id) === '' || isset($ids[(string) $id])) throw new \RuntimeException('Identifiant d’avis absent ou dupliqué.');
+                $ids[(string) $id] = true; $reviews[] = $row;
+            }
+            if (count($reviews) === $total) return $reviews;
+            if (count($reviews) > $total || count($rows) < 50) break;
+        }
+        throw new \RuntimeException('Toutes les pages des avis n’ont pas été vérifiées.');
+    }
+
     private function readTool(string $name, array $arguments): array
     {
-        if (!in_array($name, ['gl-whoami', 'gl-list-properties'], true)) { throw new \LogicException('Outil MCP non autorisé.'); }
+        if (!in_array($name, ['gl-whoami', 'gl-list-properties', 'gl-list-guest-reviews'], true)) { throw new \LogicException('Outil MCP non autorisé.'); }
         if (!$this->initialized) {
             $result = $this->rpc('initialize', ['protocolVersion' => $this->version, 'capabilities' => (object) [], 'clientInfo' => ['name' => 'RoamingCatalogueSync', 'version' => '1.0']]);
             if (!in_array($result['protocolVersion'] ?? null, ['2025-03-26', '2025-06-18', '2025-11-25'], true)) { throw new \RuntimeException('Version MCP non prise en charge.'); }

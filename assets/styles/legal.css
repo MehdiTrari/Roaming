@@ -10,6 +10,9 @@
 .legal-draft { border-left: 3px solid var(--roaming-accent); border-radius: 0 .5rem .5rem 0; padding: 1rem 1.25rem; background: var(--teal-fade); margin: 0 0 2rem; font-size: .9rem; }
 .legal-draft p { margin: .35rem 0 0; color: var(--roaming-muted); }
 .legal-content { line-height: 1.8; overflow-wrap: anywhere; }
+.booking-terms-form { margin-top: 2rem; }
+.booking-terms-label { display: flex; align-items: flex-start; gap: .75rem; min-height: 44px; cursor: pointer; }
+.booking-terms-label input { width: 20px; height: 20px; margin-top: .2rem; flex-shrink: 0; accent-color: var(--roaming-primary); }
 .legal-content a, .privacy-details { color: var(--roaming-accent); }
 .legal-content h2 { font-size: 1.45rem; margin: 2.5rem 0 1rem; font-weight: 700; }
 .legal-content h3 { font-size: 1.05rem; font-weight: 700; }

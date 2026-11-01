@@ -20,7 +20,7 @@ final class PropertyEnrichmentCommand extends Command
 {
     public function __construct(private PropertyRepository $properties, private EntityManagerInterface $em, private PropertyContentCatalogue $content) { parent::__construct(); }
 
-    protected function configure(): void { $this->addOption('apply', null, InputOption::VALUE_NONE, 'Save the reviewed content in one transaction.'); }
+    protected function configure(): void { $this->addOption('apply', null, InputOption::VALUE_NONE, 'Save the reviewed content in one transaction.')->addOption('slug', null, InputOption::VALUE_REQUIRED, 'Limit enrichment to one existing property.'); }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -29,6 +29,7 @@ final class PropertyEnrichmentCommand extends Command
         try {
             // Resolve every mapping before mutating anything; never create a Property.
             foreach ($this->content->entries() as $entry) {
+                if ($input->getOption('slug') !== null && $input->getOption('slug') !== $entry['slug']) continue;
                 $property = $this->properties->findOneBy(['guestLuckyId' => $entry['guestLuckyId']]);
                 if (!$property || !$property->isActive()) throw new \InvalidArgumentException('Active existing property missing: '.$entry['slug']);
                 $changes = $this->content->changes($property, $entry);
@@ -42,8 +43,9 @@ final class PropertyEnrichmentCommand extends Command
             $io->error($error->getMessage());
             return Command::FAILURE;
         }
+        if ($plans === []) { $io->error('No reviewed property matches the requested slug.'); return Command::FAILURE; }
         $io->table(['ID', 'Slug conservé', 'Nom', 'Capacité annoncée', 'Limite fournisseur', 'Réservation en ligne', 'Photos conservées', 'Changements'], $rows);
-        foreach ($plans as [$property, $entry]) $io->writeln($property->getSlug().' : '.$entry['fields']['airbnbUrl']);
+        foreach ($plans as [$property, $entry]) $io->writeln($property->getSlug().' : '.($entry['fields']['airbnbUrl'] ?? 'URL Airbnb non renseignée'));
         if ($input->getOption('apply')) {
             $this->em->wrapInTransaction(function () use ($plans): void {
                 $amenities = [];

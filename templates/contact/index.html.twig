@@ -10,9 +10,10 @@
 {
     "@context": "https://schema.org",
     "@type": "ContactPage",
+    "inLanguage": {{ app.request.locale|json_encode(15)|raw }},
     "name": {{ 'contact.title'|trans|json_encode(15)|raw }},
     "description": {{ 'seo.contact_description'|trans|json_encode(15)|raw }},
-    "url": {{ url('app_contact')|json_encode(15)|raw }},
+    "url": {{ seo_url('app_contact')|json_encode(15)|raw }},
     "mainEntity": {
         "@type": "Organization",
         "name": "Roaming Lille",
@@ -30,13 +31,13 @@
             "@type": "ListItem",
             "position": 1,
             "name": {{ 'menu.home'|trans|json_encode(15)|raw }},
-            "item": {{ url('app_home')|json_encode(15)|raw }}
+            "item": {{ seo_url('app_home')|json_encode(15)|raw }}
         },
         {
             "@type": "ListItem",
             "position": 2,
             "name": {{ 'contact.section_title'|trans|json_encode(15)|raw }},
-            "item": {{ url('app_contact')|json_encode(15)|raw }}
+            "item": {{ seo_url('app_contact')|json_encode(15)|raw }}
         }
     ]
 }
@@ -68,7 +69,7 @@
                     <a class="hospitality-stay-preview" href="{{ path('app_property_show', {slug: property.slug}) }}">
                         {% include 'components/_picture.html.twig' with {filename: (property.images|first).filename, alt: '', sizes: '(min-width: 992px) 300px, 45vw'} only %}
                         <span><strong>{{ property.city }}</strong><span aria-hidden="true">↗</span></span>
-                        <span class="visually-hidden">{{ property.title }}</span>
+                        <span class="visually-hidden">{{ property.displayName }}</span>
                     </a>
                     {% endfor %}
                 </div>

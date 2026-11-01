@@ -12,7 +12,7 @@
 <p>{{ legal_information.host_brand }}.{% if not legal_information.host_entity or not legal_information.host_address or not legal_information.host_phone %} {{ 'legal.notice.hosting_note'|trans }}{% endif %}</p>
 <dl class="legal-facts">
     {% for key in ['host_entity', 'host_address', 'host_phone'] %}
-    <div><dt>{{ ('legal.fields.' ~ key)|trans }}</dt><dd>{{ attribute(legal_information, key) ?: 'legal.pending'|trans }}</dd></div>
+    <div><dt>{{ ('legal.fields.' ~ key)|trans }}</dt><dd>{{ attribute(legal_information, key) ?: (key == 'host_phone' ? 'legal.notice.host_phone_unconfirmed'|trans : 'legal.pending'|trans) }}</dd></div>
     {% endfor %}
     <div><dt>{{ 'legal.notice.host_contact'|trans }}</dt><dd><a href="{{ legal_information.host_url }}" target="_blank" rel="noopener noreferrer">Hostinger</a></dd></div>
 </dl>

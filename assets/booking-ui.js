@@ -53,6 +53,8 @@ export const node = (tag, text = '', className = '') => {
     return element;
 };
 const quotes = new WeakMap();
+// Browsing window only: opening a booking still requests a fresh provider quote.
+const QUOTE_LIFETIME_MS = 5 * 60 * 1000;
 let quoteId = 0;
 export function clearQuotes(container) {
     const state = quotes.get(container);
@@ -118,11 +120,21 @@ function showBookingModal(module, frame, item, summary, bookingUrl, open, feedba
     module.showModal(); document.documentElement.classList.add('booking-modal-open');
     open.setAttribute('aria-expanded', 'true'); open.setAttribute('aria-controls', module.id); feedback.textContent = t('moduleLoading'); close.focus();
 }
+function capacityBadge(count) {
+    const badge = node('span', '', 'property-capacity');
+    const label = language() === 'fr' ? `Capacité maximale : ${count} personnes` : `Maximum capacity: ${count} guests`;
+    badge.setAttribute('aria-label', label); badge.title = label;
+    const ns = 'http://www.w3.org/2000/svg'; const icon = document.createElementNS(ns, 'svg');
+    for (const [key, value] of Object.entries({viewBox: '0 0 24 24', width: '16', height: '16', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.7', 'stroke-linecap': 'round', 'aria-hidden': 'true'})) icon.setAttribute(key, value);
+    const circle = document.createElementNS(ns, 'circle'); circle.setAttribute('cx', '12'); circle.setAttribute('cy', '7'); circle.setAttribute('r', '3.5');
+    const body = document.createElementNS(ns, 'path'); body.setAttribute('d', 'M5 21v-3a7 7 0 0 1 14 0v3'); icon.append(circle, body);
+    const number = node('span', String(count)); number.setAttribute('aria-hidden', 'true'); badge.append(icon, number); return badge;
+}
 export function renderQuotes(container, data, options = {}) {
     clearQuotes(container);
     const criteria = {arrivalDate: data.arrivalDate || options.criteria?.arrivalDate || '', departureDate: data.departureDate || options.criteria?.departureDate || '', guests: String(data.guests || options.criteria?.guests || ''), slug: options.criteria?.slug || ''};
     const state = {active: true, issuedAt: Date.now(), request: null}; quotes.set(container, state);
-    const current = () => state.active && container.isConnected && quotes.get(container) === state && Date.now() - state.issuedAt < 60000 && (!options.isCurrent || options.isCurrent());
+    const current = () => state.active && container.isConnected && quotes.get(container) === state && Date.now() - state.issuedAt < QUOTE_LIFETIME_MS && (!options.isCurrent || options.isCurrent());
     const summary = node('p', '', 'booking-criteria-summary');
     if (validStay(criteria)) {
         const format = value => new Intl.DateTimeFormat(language(), {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(value + 'T00:00:00Z'));
@@ -143,7 +155,7 @@ export function renderQuotes(container, data, options = {}) {
         if (item.image) { const image = node('img'); image.src = item.image; image.alt = ''; image.loading = 'lazy'; image.width = 80; image.height = 64; heading.append(image); }
         const info = node('div'); const title = node('a', item.name, 'booking-property-title');
         title.href = stayLink(item.detailsUrl, {...criteria, slug: item.slug});
-        info.append(title, node('p', `${item.city} · ${item.maxGuests} ${t('guests')}`, 'small text-muted')); heading.append(info); card.append(heading);
+        const nameLine = node('div', '', 'property-name-line'); nameLine.append(title, capacityBadge(item.capacity || item.maxGuests)); info.append(nameLine); heading.append(info); card.append(heading);
         card.append(node('p', t(data.enabled && status === 'unverified' ? 'verificationUnavailable' : status), 'booking-state'));
         if (status === 'unavailable' && Number(criteria.guests) > item.maxGuests) card.append(node('p', t('capacity'), 'small text-muted'));
         if (available) {
@@ -214,6 +226,6 @@ export function renderQuotes(container, data, options = {}) {
         if (options.onRefresh) { const refresh = node('button', t('retry'), 'btn btn-outline-secondary'); refresh.type = 'button'; refresh.addEventListener('click', options.onRefresh); notice.append(refresh); }
         container.append(notice);
     };
-    if (hasAvailable && !data.preview) state.timer = setTimeout(expire, 60000);
+    if (hasAvailable && !data.preview) state.timer = setTimeout(expire, QUOTE_LIFETIME_MS);
     if (!hasAvailable) { const contact = node('a', t('contact'), 'booking-external-link'); contact.href = stayLink('/contact-us', criteria); container.append(contact); }
 }

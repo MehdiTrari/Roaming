@@ -1,10 +1,14 @@
 legal:
+  terms:
+    title: 'General terms of sale and rental'
+    short_title: 'Booking terms'
+    draft: 'Terms prepared from the rules provided by ROAMING. Consumer mediator details and validation of the payment and confirmation process must be completed before bookings open.'
   description: 'Information about ROAMING, personal data and cookies on Roaming Lille.'
   footer_navigation: 'Legal information and privacy'
   updated: 'Updated:'
   pending: 'To be completed before launch.'
   draft_title: 'Working draft'
-  draft_description: 'Hosting, provider and data retention details still need to be completed and checked before the website is published.'
+  draft_description: "Identified providers and proposed retention periods are detailed below. The hosting invoice, processing locations and contractual safeguards still require verification; deletion and backup procedures must be implemented before final review."
   contact_notice: 'ROAMING uses this form to answer your enquiry and, where relevant, prepare your stay. Fields marked with an asterisk are required; your phone number is optional. To exercise your data rights: contact@roamingfr.com. Read our'
   fields:
     company: 'Company name'
@@ -29,7 +33,7 @@ legal:
     publisher: 'Website publisher'
     intro: 'Roaming Lille presents properties and stay services offered by the following company.'
     hosting: 'Hosting'
-    hosting_note: 'The contracting entity, address and phone number must be confirmed from the hosting agreement. The host’s registered office does not, by itself, identify the data centre country.'
+    hosting_note: "Hostinger’s public terms identify the entity below for customers established in France. This still needs to be checked against the account invoice. Its registered office does not determine the data centre country."
     host_contact: 'Provider contact'
     content_title: 'Content and intellectual property'
     content: 'Text, photographs, trademarks and graphics are protected according to their respective rights. Displaying them on this website does not grant a licence to reuse them. Contact ROAMING about reproduction requests. Third-party trademarks belong to their respective owners.'
@@ -37,7 +41,10 @@ legal:
     booking: 'Availability and price estimates are requested from GuestLucky and may change. A search or quote is not a confirmed booking. Please review stay conditions, final prices, payment and cancellation terms when booking through the relevant service.'
     data_title: 'Personal data'
     data: 'Information about data processing and your rights is set out in our'
+    host_phone_unconfirmed: "Hostinger states that it offers no customer service phone number. No phone number for the contracting entity has been verified; this remains to be confirmed with the host."
   privacy:
+    reviews_data: "Guest reviews on the homepage are supplied by booking platforms through GuestLucky. We retain the public first name, public review text, rating, date and relevant property. When a profile is verified on the original public review, we may supplement the first name and keep a local copy of its public avatar; private feedback and booking references are not imported. The local snapshot is replaced after each successful complete read and retained if the service is unavailable. To request removal or exercise your rights, contact contact@roamingfr.com. Viewing this section loads no Airbnb or Booking widget; clicking a link takes you to the relevant service."
+    provider_documents: "Information published by providers"
     title: 'Privacy policy'
     short_title: 'Privacy'
     intro: 'This page explains how information is used when you browse Roaming Lille, search for a stay, contact the team or use its private workspace.'
@@ -64,9 +71,9 @@ legal:
     team_data: 'Authorised accounts contain a name, email, roles and a hashed password. Tickets may include an author, comments, a screenshot and technical browsing context. This information supports issue tracking and internal exchanges. Avoid attaching guest information in screenshots.'
     team_basis: 'ROAMING’s legitimate interest in managing access to its tools and fixing website issues.'
     recipients_title: 'Who may receive your information?'
-    recipients: 'Depending on the service used, recipients are authorised ROAMING staff and necessary providers: Hostinger hosting at launch, email and technical support providers, and GuestLucky for searches and bookings. When the map is displayed, OpenFreeMap (Hyperknot Software Kft.) receives map tile requests. The Directions link voluntarily takes you to Google Maps. Email providers and their terms must be confirmed before publication. The current code implements neither targeted advertising nor automatic newsletter subscriptions.'
+    recipients: "Authorised ROAMING staff receive enquiries. Hostinger hosts the website; this project’s production configuration uses Gmail (Google) to send messages. GuestLucky, published by MA INDUSTRY LTD, handles searches and bookings. Its policy lists PlanetHoster for hosting, Stripe for payments and a channel synchronisation infrastructure. Maintenance personnel access data only under granted authorisations. OpenFreeMap (Hyperknot Software Kft.) receives map requests when the map is displayed; Directions opens Google Maps at your initiative. No targeted advertising tool or automatic newsletter subscription was found in the code reviewed."
     retention_title: 'How long is information kept?'
-    retention_intro: 'The periods below must cover website data, email copies, backups and provider data. The current version does not automatically delete messages or tickets: retention periods and procedures must be defined before publication. Booking records or information required by law follow separate rules, to be specified in the booking service’s documents.'
+    retention_intro: "The periods below are proposals for finalising ROAMING’s procedures, rather than guaranteed deletion schedules already in place. The website currently retains messages and tickets without automatic purging. Procedures must cover the database, email copies, screenshots and backups and be verified before final publication. Booking records, accounting documents and evidence needed for disputes have separate retention rules to document according to their nature."
     choice_retention: 'Up to 180 days in this browser, with independent expiry dates: permission or refusal for GuestLucky, a display preference for maps. At expiry, GuestLucky requires new permission and maps return to their default display.'
     transfers_title: 'Hosting and international transfers'
     transfers_pending: 'The Hostinger server country, GuestLucky and email processing locations, subcontractors and any transfers outside the European Economic Area still need to be checked against contracts. Enabling the map also involves OpenFreeMap (Hyperknot Software Kft.) infrastructure; directions open Google Maps. This draft cannot guarantee storage exclusively in France or the European Union. Locations and applicable safeguards must be specified before publication.'

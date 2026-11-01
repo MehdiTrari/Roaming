@@ -42,7 +42,7 @@ final class PropertyEnrichmentTest extends WebTestCase
         $this->em = self::getContainer()->get(EntityManagerInterface::class);
         self::assertSame('pdo_sqlite', $this->em->getConnection()->getParams()['driver']);
         (new SchemaTool($this->em))->createSchema($this->em->getMetadataFactory()->getAllMetadata());
-        foreach ([[2475, 'lambersart', 'Lambersart', 10], [2467, 'ecrin-noir-croix', 'Croix', 8], [2630, 'l-elegante-douaisienne-4-chambres-2630', 'Douai', 8], [2474, 'roubaix', 'Roubaix', 10]] as [$id, $slug, $city, $capacity]) {
+        foreach ([[2475, 'lambersart', 'Lambersart', 10], [2467, 'ecrin-noir-croix', 'Croix', 8], [2630, 'l-elegante-douaisienne-4-chambres-2630', 'Douai', 8], [2474, 'roubaix', 'Roubaix', 10], [2650, 'la-petite-cour-calme-charme-au-coeur-de-lille-2650', 'Lille', 4]] as [$id, $slug, $city, $capacity]) {
             $property = (new Property())->setGuestLuckyId($id)->setSlug($slug)->setCity($city)->setTitle('Original '.$city)->setTravelers($capacity)->setActive(true)
                 ->setAbout('Original description')->setAddress('Verified address '.$city)->setCoordinates(50.6, 3.1)->setMinimumStay(2)
                 ->setCreatedAt(new \DateTimeImmutable('2026-01-01'))->setUpdatedAt(new \DateTimeImmutable('2026-01-01'));
@@ -109,7 +109,41 @@ final class PropertyEnrichmentTest extends WebTestCase
         self::assertSame($rows, $this->em->getConnection()->fetchAllAssociative('SELECT * FROM property ORDER BY id'), 'Repeated application must not rewrite updatedAt.');
         self::assertSame($amenityLinks, $this->em->getConnection()->fetchAllAssociative('SELECT * FROM property_amenity ORDER BY property_id, amenity_id'));
         self::assertSame($amenityCount, $this->em->getRepository(Amenity::class)->count([]));
-        self::assertSame(4, $this->em->getRepository(Property::class)->count([]));
+        self::assertSame(5, $this->em->getRepository(Property::class)->count([]));
+    }
+
+    public function testPetiteCourCanBeEnrichedWithoutAnAirbnbUrlAndWithoutChangingOtherProperties(): void
+    {
+        $before = $this->em->getConnection()->fetchAllAssociative('SELECT * FROM property WHERE guest_lucky_id <> 2650 ORDER BY id');
+        $tester = new CommandTester(self::getContainer()->get(PropertyEnrichmentCommand::class));
+        $tester->execute(['--apply' => true, '--slug' => 'la-petite-cour-calme-charme-au-coeur-de-lille-2650']);
+        self::assertSame(0, $tester->getStatusCode());
+        self::assertSame($before, $this->em->getConnection()->fetchAllAssociative('SELECT * FROM property WHERE guest_lucky_id <> 2650 ORDER BY id'));
+        $property = $this->property(2650);
+        self::assertNull($property->getAirbnbUrl());
+        self::assertSame(4, $property->getBookingCapacity());
+        self::assertStringContainsString('mezzanine', $property->getAbout());
+        $names = $property->getAmenities()->map(static fn (Amenity $amenity) => $amenity->getName())->toArray();
+        self::assertContains('amenities.smoke_alarm', $names);
+        self::assertContains('amenities.dryer', $names);
+        self::assertNotContains('amenities.air_conditioning', $names);
+        self::assertNotContains('amenities.hair_dryer', $names);
+        foreach (['fr', 'en'] as $locale) {
+            $crawler = $this->browser->request('GET', '/property/'.$property->getSlug().'?_locale='.$locale);
+            self::assertResponseIsSuccessful();
+            $labels = $crawler->filter('.property-amenities li')->each(static fn ($node) => trim($node->text()));
+            self::assertContains($locale === 'fr' ? 'Détecteur de fumée' : 'Smoke alarm', $labels);
+            self::assertStringContainsString($locale === 'fr' ? "n'est pas confirmée" : 'has not been confirmed', $crawler->text());
+        }
+    }
+
+    public function testUnknownSlugDoesNotWriteAnyProperty(): void
+    {
+        $before = $this->em->getConnection()->fetchAllAssociative('SELECT * FROM property ORDER BY id');
+        $tester = new CommandTester(self::getContainer()->get(PropertyEnrichmentCommand::class));
+        $tester->execute(['--apply' => true, '--slug' => 'unknown']);
+        self::assertSame(1, $tester->getStatusCode());
+        self::assertSame($before, $this->em->getConnection()->fetchAllAssociative('SELECT * FROM property ORDER BY id'));
     }
 
     public function testMissingMappingFailsBeforeAnyPropertyIsEnriched(): void
@@ -138,7 +172,7 @@ final class PropertyEnrichmentTest extends WebTestCase
         }
         self::assertSame(7, $this->property(2467)->getBookingCapacity());
         self::assertSame(9, $this->property(2474)->getBookingCapacity());
-        self::assertSame(4, $this->em->getRepository(Property::class)->count([]));
+        self::assertSame(5, $this->em->getRepository(Property::class)->count([]));
     }
 
     public function testCapacityMismatchIsBoundedInApiAndFormAndBilingualContentIsRendered(): void

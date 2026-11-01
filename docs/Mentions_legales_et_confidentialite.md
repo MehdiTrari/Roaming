@@ -2,6 +2,23 @@
 
 Version de travail intégrée le 18 octobre 2026, en français et en anglais : `/mentions-legales`, `/politique-de-confidentialite`, `/cookies`. Le pied de page comporte les trois liens ; « Cookies » ouvre les préférences et conserve une page de repli sans JavaScript.
 
+## Compléments vérifiés le 27 octobre 2026
+
+- Le connecteur Hostinger confirme l’existence de `roaminglille.com` sur un hébergement actif. Les réponses accessibles pour le site et la commande ne fournissent ni la facture, ni le pays du centre de données.
+- Pour un client établi en France, les [conditions officielles Hostinger](https://www.hostinger.com/fr/legal/termes-universels-de-contrat-de-service) désignent HOSTINGER INTERNATIONAL LIMITED, 61 Lordou Vironos str., 6023 Larnaca, Chypre. Ces coordonnées sont intégrées avec une réserve explicite de rapprochement avec la facture du compte.
+- [Hostinger déclare ne pas fournir de numéro de service client](https://www.hostinger.com/support/1583604-is-phone-support-available-at-hostinger/). Aucun numéro trouvé sur un site tiers n’a été repris. `host_phone` reste vide et la page affiche une explication dédiée : l’absence de numéro de support ne prouve pas l’absence de numéro légal de l’entité.
+- Les fichiers privés de configuration de production du projet désignent `smtp.gmail.com`. Seul le nom du service a été retenu, sans publier les identifiants. Cela ne confirme pas la configuration effectivement déployée ni le type de compte Gmail/Workspace et ses garanties.
+- Les [mentions de GuestLucky](https://www.guestlucky.com/mentions-legales/) identifient MA INDUSTRY LTD à Hong Kong. Sa [politique](https://www.guestlucky.com/politique-confidentialite/) identifie PlanetHoster, Stripe et une infrastructure de synchronisation des canaux, avec des transferts hors UE annoncés. Le texte reflète ces déclarations sans garantir les lieux de traitement ni les clauses du contrat de ROAMING.
+- Les liens vers le [DPA Hostinger](https://www.hostinger.com/legal/dpa), la [politique Google](https://policies.google.com/privacy?hl=fr), GuestLucky et [OpenFreeMap](https://openfreemap.org/privacy/) sont accessibles sur la page de confidentialité.
+
+### Durées proposées, pas encore opérationnelles
+
+Les champs de conservation français et anglais contiennent désormais une proposition explicite : contacts sans réservation, 12 mois après le dernier échange ; journaux courants, 30 jours ; traces de sécurité, 6 mois ; accès équipe désactivés en fin d’habilitation, compte supprimé/anonymisé sous 30 jours ; tickets et captures, 12 mois après clôture ; cycle de sauvegarde proposé, 30 jours. Ce sont des choix de minimisation proposés pour cette activité, pas des durées universelles imposées par la loi. Les 6 mois de traces de sécurité s’appuient sur la [recommandation CNIL](https://www.cnil.fr/fr/securite-tracer-les-operations).
+
+Aucune purge, suppression de données, configuration de sauvegarde, modification distante ou mise en production n’a été exécutée. Les sauvegardes existantes et les copies e-mail ne sont pas réputées effacées. Avant d’afficher ces délais comme engagements : organiser la purge de chaque support, vérifier la rotation chez les prestataires, documenter les exceptions et réappliquer les suppressions après restauration.
+
+`privacy_reviewed` reste faux. Le bandeau de travail et `noindex` restent actifs : il manque la vérification contractuelle de l’hébergeur et de son téléphone, les lieux et garanties de traitement et la mise en œuvre des durées. Les anciennes instructions ci-dessous décrivent l’état initial ; les propositions ci-dessus remplacent les champs de durée auparavant vides.
+
 ## Finalisation des informations
 
 La capture fournie par le propriétaire le 18 octobre 2026 corrige la TVA en **FR44951207166** et indique le SIRET du siège **951 207 166 00020**. Ces deux valeurs ont été reportées dans les mentions ; le numéro de TVA précédemment déduit a été remplacé.

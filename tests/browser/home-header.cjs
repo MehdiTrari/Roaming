@@ -11,6 +11,10 @@ let catalogue = [];
     page.on('pageerror', error => errors.push(error.message));
     await context.route('**/*', route => {
         const url = new URL(route.request().url());
+        if (route.request().resourceType() === 'image' && url.protocol === 'https:'
+            && ['s3.eu-west-3.amazonaws.com', 'guestluckybucket.s3.eu-west-3.amazonaws.com'].includes(url.hostname)) {
+            return route.abort(); // Remote gallery loading is outside this offline layout regression.
+        }
         if (url.origin === new URL(base).origin && (url.pathname === '/api/calendar' || /^\/api\/properties\/[^/]+\/availability$/.test(url.pathname))) {
             const year = Number(url.searchParams.get('year')), month = Number(url.searchParams.get('month'));
             const properties = catalogue.map(property => ({slug: property.slug, status: 'fresh', fetchedAt: new Date().toISOString(), days: Array.from({length: new Date(year, month, 0).getDate()}, (_, i) => ({date: `${year}-${String(month).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`, available: true, minStay: 2, price: 100}))}));

@@ -5,13 +5,17 @@ import { readStay, writeStay, validStay, realDate, parisToday, bookingHorizon } 
 import {CalendarAvailability} from './calendar-availability';
 import {SearchProgress} from './search-progress';
 import {CalendarProgress} from './calendar-progress';
-import {animateSearchSurface, scrollToElement, scrollToPosition} from './ui-motion';
+import {animateSearchSurface, scrollToPosition} from './ui-motion';
 
 let cleanup = () => {};
+let initializedForm = null;
 function initialize() {
+    const form = document.getElementById('booking-search-form');
+    // The first turbo:load can arrive after slow photos, once the user is
+    // already using the form initialized on DOMContentLoaded.
+    if (form && initializedForm === form && !document.documentElement.hasAttribute('data-turbo-preview')) return;
     cleanup();
     if (document.documentElement.hasAttribute('data-turbo-preview')) return;
-    const form = document.getElementById('booking-search-form');
     if (!form) return;
     const listeners = new AbortController();
     const on = (element, type, callback, options = {}) => element?.addEventListener(type, callback, {...options, signal: listeners.signal});
@@ -28,10 +32,9 @@ function initialize() {
     const propertyToggle = document.getElementById('property-toggle');
     const panels = [[panel, dateButton], [guestsPanel, guestsButton], [propertyPanel, propertyButton]];
     const guide = document.getElementById('booking-guide');
-    const panelAnimations = new Map(), closingPanels = new Set();
+    const panelAnimations = new Map(), panelOpenings = new Map(), closingPanels = new Set();
     let guideAnimation, positionFrame, roomRequest;
     let guideStep = 0, guideRequest, guideOrigin;
-    let initialPlacementChecked = false;
     const setSpotlight = step => form.dispatchEvent(new CustomEvent('tutorial-highlight:toggle', {detail: {active: step > 0, pulse: step === 4}}));
     const saved = readStay();
     property.value = Array.from(property.options).some(option => option.value === saved.slug) ? saved.slug : '';
@@ -59,7 +62,7 @@ function initialize() {
         const rect = button.getBoundingClientRect();
         const bottomLimit = offsetY + height - gap;
         const bar = form.closest('.booking-bar').getBoundingClientRect();
-        // Desktop panels always unfold below the complete, centered module.
+        // Desktop panels unfold below the complete module, aligned near the header.
         const belowAnchor = Math.max(rect.bottom, bar.bottom);
         const below = Math.max(0, bottomLimit - belowAnchor - gap);
         if (!small) element.style.maxHeight = `${Math.max(44, Math.min(bottomLimit - topLimit, below))}px`;
@@ -70,29 +73,36 @@ function initialize() {
         element.style.top = `${Math.max(topLimit, Math.min(top, bottomLimit - box.height))}px`;
         element.style.left = `${small ? offsetX + (width - box.width) / 2 : Math.max(offsetX + gap, Math.min(rect.left, offsetX + width - box.width - gap))}px`;
     };
+    const moveSearchIntoView = async (button, signal) => {
+        // The guide changes the form's height. Measure its final layout before
+        // moving the form and revealing a fully positioned menu.
+        if (guideAnimation?.playState === 'running') await guideAnimation.finished.catch(() => {});
+        if (signal.aborted || listeners.signal.aborted) return false;
+        const header = document.querySelector('header.sticky-top');
+        // Reserve the pinned header height: the team banner above it scrolls away.
+        const headerBottom = header?.offsetHeight || 0;
+        const bar = form.closest('.booking-bar');
+        const gap = parseFloat(getComputedStyle(bar).scrollMarginTop) || 32;
+        const top = Math.max(window.visualViewport?.offsetTop || 0, headerBottom) + gap;
+        const bottom = (window.visualViewport?.height || innerHeight) + (window.visualViewport?.offsetTop || 0) - 16;
+        const rect = bar.getBoundingClientRect();
+        // On a short phone screen the stacked form may not fit: keep the
+        // active field visible above the existing bottom sheet instead.
+        const box = rect.height <= bottom - top ? rect : button.getBoundingClientRect();
+        if (box.top > top + 4 || box.top < headerBottom + 12) {
+            return scrollToPosition(scrollY + box.top - top, {signal, gentle: true});
+        }
+        return true;
+    };
     const keepSearchVisible = async button => {
-        // Only the first opening may move the page, never subsequent steps.
-        if (initialPlacementChecked) return;
-        initialPlacementChecked = true;
         roomRequest?.abort();
         const request = new AbortController(); roomRequest = request;
-        // Let the guide unfold before measuring. Its extra height must never
-        // cause native focus scrolling or a second jump to the page header.
-        await guideAnimation?.finished.catch(() => {});
-        if (request.signal.aborted || listeners.signal.aborted) return;
-        const header = document.querySelector('header.sticky-top');
-        const top = (header?.getBoundingClientRect().bottom || 0) + 16;
-        const bottom = (window.visualViewport?.height || innerHeight) + (window.visualViewport?.offsetTop || 0) - 16;
-        const bar = form.closest('.booking-bar').getBoundingClientRect();
-        const box = bar.height <= bottom - top ? bar : button.getBoundingClientRect();
-        const delta = box.top + box.height / 2 - (top + bottom) / 2;
-        // Leave an already comfortable position alone, including slightly
-        // below the midpoint. Only a low form needs more room underneath.
-        if (delta > (bottom - top) * .1) await scrollToPosition(scrollY + delta, {signal: request.signal, gentle: true});
-        if (roomRequest === request) roomRequest = null;
+        try { await moveSearchIntoView(button, request.signal); }
+        finally { if (roomRequest === request) roomRequest = null; }
     };
     const finishPanelClose = (element, button, restoreFocus = true) => {
         panelAnimations.get(element)?.cancel(); panelAnimations.delete(element); closingPanels.delete(element);
+        panelOpenings.delete(element); element.classList.remove('is-positioning');
         if (element === panel) calendarProgress.cancel();
         element.close(); element.classList.add('d-none'); element.style.pointerEvents = '';
         button.setAttribute('aria-expanded', 'false');
@@ -110,6 +120,8 @@ function initialize() {
             panels.filter(([other]) => other !== element && other.open).forEach(([other, trigger]) => finishPanelClose(other, trigger, false));
             closingPanels.delete(element); element.style.pointerEvents = '';
             element.classList.remove('d-none');
+            element.classList.add('is-positioning');
+            const opening = {}; panelOpenings.set(element, opening);
             if (!element.open) {
                 // Position the hidden surface BEFORE native showModal autofocus.
                 // Otherwise the browser scrolls to its unpositioned contents.
@@ -122,14 +134,19 @@ function initialize() {
                 element.querySelector('button, input, select, [tabindex="0"]')?.focus({preventScroll: true});
             }
             positionPanel(element, button, true);
-            keepSearchVisible(button);
-            const animation = animateSearchSurface(element, true, current);
-            if (animation) {
-                panelAnimations.set(element, animation);
-                animation.onfinish = () => { if (panelAnimations.get(element) === animation) panelAnimations.delete(element); };
-            }
+            keepSearchVisible(button).then(() => {
+                if (panelOpenings.get(element) !== opening || !element.open || closingPanels.has(element)) return;
+                panelOpenings.delete(element); element.classList.remove('is-positioning');
+                positionPanel(element, button, true);
+                const animation = animateSearchSurface(element, true, current);
+                if (animation) {
+                    panelAnimations.set(element, animation);
+                    animation.onfinish = () => { if (panelAnimations.get(element) === animation) panelAnimations.delete(element); };
+                }
+            });
         } else {
             roomRequest?.abort();
+            panelOpenings.delete(element); element.classList.remove('is-positioning');
             button.setAttribute('aria-expanded', 'false');
             if (immediate) { finishPanelClose(element, button, false); return; }
             closingPanels.add(element); element.style.pointerEvents = 'none';
@@ -147,6 +164,7 @@ function initialize() {
         guideStep = step;
         guide.hidden = !step;
         guideAnimation?.cancel();
+        guideAnimation = null;
         document.getElementById('booking-guide-property').textContent = property.selectedOptions[0].textContent;
         guide.querySelectorAll('[data-guide-step]').forEach(item => {
             const number = Number(item.dataset.guideStep);
@@ -171,12 +189,7 @@ function initialize() {
         }
     };
     const stopGuide = () => { guideRequest?.abort(); guideRequest = null; setGuideStep(0); };
-    const scrollToSearch = async signal => {
-        initialPlacementChecked = true;
-        await guideAnimation?.finished.catch(() => {});
-        if (signal.aborted) return false;
-        return scrollToElement(form.closest('.booking-bar'), {gap: 18, signal, block: 'center', gentle: true});
-    };
+    const scrollToSearch = signal => moveSearchIntoView(dateButton, signal);
     const showSearchStep = () => {
         panels.filter(([element]) => closingPanels.has(element)).forEach(([element, button]) => finishPanelClose(element, button, false));
         setGuideStep(4);
@@ -491,7 +504,8 @@ function initialize() {
         }
     };
     on(form, 'submit', search);
-    cleanup = () => { stopGuide(); roomRequest?.abort(); guideAnimation?.cancel(); panelResize.disconnect(); cancelAnimationFrame(positionFrame); panels.forEach(([element, button]) => setPanel(element, button, false, true)); clearInterval(calendarTimer); listeners.abort(); pending?.abort(); pending = null; calendarRequest?.abort(); calendarRequest = null; clearQuotes(results); busy(false); status.textContent = ''; picker.destroy(); cleanup = () => {}; };
+    cleanup = () => { stopGuide(); roomRequest?.abort(); guideAnimation?.cancel(); panelResize.disconnect(); cancelAnimationFrame(positionFrame); panels.forEach(([element, button]) => setPanel(element, button, false, true)); clearInterval(calendarTimer); listeners.abort(); pending?.abort(); pending = null; calendarRequest?.abort(); calendarRequest = null; clearQuotes(results); busy(false); status.textContent = ''; picker.destroy(); if (initializedForm === form) initializedForm = null; cleanup = () => {}; };
+    initializedForm = form;
 }
 document.addEventListener('DOMContentLoaded', initialize);
 document.addEventListener('turbo:load', initialize);

@@ -9,14 +9,15 @@
     <header class="legal-page-heading">
         <p class="legal-eyebrow">Roaming Lille</p>
         <h1>{{ ('legal.' ~ document ~ '.title')|trans }}</h1>
-        <p class="text-muted">{{ 'legal.updated'|trans }} <time datetime="{{ legal_information.updated }}">{{ legal_information.updated|date(app.request.locale == 'fr' ? 'd/m/Y' : 'Y-m-d') }}</time></p>
+        {% set updated = document == 'terms' ? legal_information.terms_version : legal_information.updated %}
+        <p class="text-muted">{{ 'legal.updated'|trans }} <time datetime="{{ updated }}">{{ updated|date(app.request.locale == 'fr' ? 'd/m/Y' : 'Y-m-d') }}</time></p>
     </header>
     <nav class="legal-page-nav" aria-label="{{ 'legal.footer_navigation'|trans }}">
-        {% for item, route in {notice: 'app_legal_notice', privacy: 'app_privacy', cookies: 'app_cookies'} %}
+        {% for item, route in {terms: 'app_terms', notice: 'app_legal_notice', privacy: 'app_privacy', cookies: 'app_cookies'} %}
         <a href="{{ path(route, {_locale: app.request.locale}) }}" {% if document == item %}aria-current="page"{% endif %}>{{ ('legal.' ~ item ~ '.title')|trans }}</a>
         {% endfor %}
     </nav>
-    {% if draft %}<aside class="legal-draft" role="note"><strong>{{ 'legal.draft_title'|trans }}</strong><p>{{ 'legal.draft_description'|trans }}</p></aside>{% endif %}
+    {% if draft %}<aside class="legal-draft" role="note"><strong>{{ 'legal.draft_title'|trans }}</strong><p>{{ (document == 'terms' ? 'legal.terms.draft' : 'legal.draft_description')|trans }}</p></aside>{% endif %}
     <article class="legal-content">
         {% include 'legal/_' ~ document ~ '.html.twig' %}
     </article>

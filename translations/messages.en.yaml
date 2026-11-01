@@ -19,7 +19,7 @@ footer:
 
 # Home page
 home:
-    title: Roaming Lille | Find Your Next Escape
+    title: "Short stays in Lille and Douai | Roaming Lille"
     hero_badge: "Your stay in the Lille metropolitan area"
     hero_title: "A place of your own. Lille to explore."
     hero_description: "Furnished homes for business trips and group stays. Find your place and plan your stay with Roaming."
@@ -93,6 +93,7 @@ contact:
 
 # Property page
 property:
+    max_capacity: 'Maximum capacity: %count% guests'
     travelers: travelers
     bedrooms: bedrooms
     beds: beds
@@ -124,6 +125,16 @@ property:
 
 # Amenities
 amenities:
+    microwave: 'Microwave'
+    wheelchair_accessible: 'Wheelchair accessible'
+    no_smoking: 'No smoking'
+    refrigerator: Refrigerator
+    coffee_maker: Coffee maker
+    shampoo: Shampoo
+    hot_water: Hot water
+    clothing_storage: Clothing storage
+    blackout_curtains: Blackout blinds or curtains
+    smoke_alarm: Smoke alarm
     wifi: Wi-Fi
     television: TV
     kitchen: Kitchen
@@ -177,12 +188,15 @@ error:
 
 # SEO
 seo:
-    default_description: "Furnished apartment rentals in Lille for professionals and groups. Fast WiFi, self check-in, fully equipped homes. Direct booking without commission."
+    availability_description: "Choose a home in Lille, Lambersart, Roubaix, Croix or Douai. Check your dates, guest numbers and the price of your stay."
+    availability_title: "Availability in Lille and Douai | Roaming Lille"
+    property_title: "%title% | Furnished rental | Roaming Lille"
+    default_description: "Furnished apartments and houses in Lille, Lambersart, Roubaix, Croix and Douai. Explore our homes and check availability and prices for your stay."
     default_keywords: "apartment rental Lille, furnished rental Lille, professional accommodation Lille, short term rental Lille, group apartment Lille, Roaming Lille"
-    home_description: "Discover our furnished apartments in Lille, perfect for professionals and groups. Fast WiFi, self check-in, fully equipped accommodations."
-    about_description: "Discover Roaming Lille: human-scale rental management, carefully maintained properties for discerning travelers in the Lille metropolis."
-    contact_description: "Contact Roaming Lille to book your furnished apartment. Quick response, personalized advice for your stay in Lille."
-    property_description: "%title% in %city%. %bedrooms% bedrooms, %beds% beds, %bathrooms% bathrooms. Perfect for %travelers% travelers. Direct booking."
+    home_description: "Explore our apartments and houses in Lille, Lambersart, Roubaix, Croix and Douai. Check availability and plan your stay with Roaming Lille."
+    about_description: "Meet Roaming Lille and discover how our team manages furnished homes in Lille, its metropolitan area and Douai."
+    contact_description: "Contact Roaming Lille to plan your stay in Lille, its metropolitan area or Douai. Ask about our homes, availability and practical information."
+    property_description: "%title%: a furnished home for up to %travelers% guests. Check availability and prices for your stay."
 
 calendar:
     pick_property: "Choose your property"
@@ -220,6 +234,7 @@ calendar:
     test_notice: "Calendars and quotes from the GuestLucky Booking Engine. Booking is disabled here. Roubaix availability still needs verification against the management calendar; this page is for development only."
 
 ui:
+    up_to_guests: "Up to %count% guests"
     skip_content: "Skip to content"
     navigation: "Open navigation"
     theme: "Change theme"
@@ -388,3 +403,21 @@ design:
   search_hint: "A place, your dates, your stay."
   footer_title: "Your next stay starts here."
   footer_cta: "Explore our places"
+
+guest_reviews:
+  stay_in: "Stay in %city%"
+  discover_property: "Explore this home"
+  rating_only: "This guest left a rating without a comment."
+  eyebrow: "Their stays, their words"
+  title: "What our guests say"
+  intro: "Reviews published on booking platforms, gathered here to help you choose your stay."
+  previous: "Previous reviews"
+  next: "Next reviews"
+  position: "Displayed reviews"
+  pause: "Pause automatic scrolling"
+  play: "Resume automatic scrolling"
+  browse: "Browse guest reviews"
+  source_link: "Read reviews on %source%: %property%"
+  rating: "Rating: %rating% out of 5"
+  read_more: "Read the full review"
+  read_less: "Show less"

@@ -5,7 +5,7 @@ menu:
   contact: Contact
   book_now: Réserver
 footer:
-  description: Des logements soigneusement sélectionnés à Lille et alentours, pensés pour les pros et les groupes.
+  description: Des logements soigneusement sélectionnés à Lille et ses alentours, pensés pour les pros et les groupes.
   quick_links: Navigation
   contact: Contact
   rights: Tous droits réservés.
@@ -14,7 +14,7 @@ footer:
 
 # Page d'accueil
 home:
-  title: Roaming Lille | Votre pied-à-terre à Lille
+  title: "Location courte durée à Lille et Douai | Roaming Lille"
   hero_badge: "Votre séjour dans la métropole lilloise"
   hero_title: "Une adresse à vous. Lille à découvrir."
   hero_description: "Des logements meublés pour vos déplacements professionnels et vos séjours en groupe. Trouvez votre adresse et préparez votre séjour avec Roaming."
@@ -92,6 +92,7 @@ contact:
 
 # Page Propriété
 property:
+  max_capacity: 'Capacité maximale : %count% personnes'
   travelers: voyageurs
   bedrooms: chambres
   beds: lits
@@ -123,6 +124,16 @@ property:
 
 # Amenities
 amenities:
+  microwave: 'Micro-ondes'
+  wheelchair_accessible: 'Accessible en fauteuil roulant'
+  no_smoking: 'Interdiction de fumer'
+  refrigerator: Réfrigérateur
+  coffee_maker: Cafetière
+  shampoo: Shampoing
+  hot_water: Eau chaude
+  clothing_storage: Rangement pour les vêtements
+  blackout_curtains: Stores ou rideaux occultants
+  smoke_alarm: Détecteur de fumée
   wifi: Wi-Fi
   television: Télévision
   kitchen: Cuisine
@@ -175,12 +186,15 @@ error:
 
 # SEO
 seo:
-  default_description: "Location d'appartements meublés à Lille pour professionnels et groupes. Wi-Fi rapide, arrivée autonome, logements équipés. Réservation directe sans commission."
+  availability_description: "Choisissez un logement à Lille, Lambersart, Roubaix, Croix ou Douai. Vérifiez vos dates, le nombre de voyageurs et le prix du séjour."
+  availability_title: "Disponibilités à Lille et Douai | Roaming Lille"
+  property_title: "%title% | Location meublée | Roaming Lille"
+  default_description: "Appartements et maisons meublés à Lille, Lambersart, Roubaix, Croix et Douai. Consultez les logements, les disponibilités et les prix pour votre séjour."
   default_keywords: "location appartement Lille, location meublée Lille, hébergement professionnel Lille, location courte durée Lille, appartement groupe Lille, Roaming Lille"
-  home_description: "Découvrez nos appartements meublés à Lille, parfaits pour les professionnels et les groupes. Wi-Fi rapide, arrivée autonome, logements entièrement équipés."
-  about_description: "Découvrez Roaming Lille : une gestion locative à taille humaine, des logements soignés pour les voyageurs exigeants dans la métropole lilloise."
-  contact_description: "Contactez Roaming Lille pour réserver votre appartement meublé. Réponse rapide, conseils personnalisés pour votre séjour à Lille."
-  property_description: "%title% à %city%. %bedrooms% chambres, %beds% lits, %bathrooms% salles de bain. Idéal pour %travelers% voyageurs. Réservation directe."
+  home_description: "Découvrez nos appartements et maisons à Lille, Lambersart, Roubaix, Croix et Douai. Consultez les disponibilités et préparez votre séjour avec Roaming Lille."
+  about_description: "Découvrez Roaming Lille, son équipe et sa gestion des logements meublés à Lille, dans sa métropole et à Douai."
+  contact_description: "Contactez Roaming Lille pour préparer un séjour à Lille, dans sa métropole ou à Douai : logements, disponibilités et informations pratiques."
+  property_description: "%title% : logement meublé pour jusqu’à %travelers% voyageurs. Consultez les disponibilités et les prix de votre séjour."
 
 calendar:
     pick_property: "Choisissez votre logement"
@@ -218,6 +232,7 @@ calendar:
     test_notice: "Calendriers et devis issus du Booking Engine GuestLucky. Aucune réservation possible ici. Les disponibilités de Roubaix restent à valider face au calendrier de gestion ; cette page est réservée au développement."
 
 ui:
+    up_to_guests: "Jusqu’à %count% voyageurs"
     skip_content: "Aller au contenu"
     navigation: "Ouvrir la navigation"
     theme: "Changer de thème"
@@ -390,3 +405,21 @@ design:
   search_hint: "Un lieu, des dates, votre séjour."
   footer_title: "Votre prochain séjour commence ici."
   footer_cta: "Découvrir nos adresses"
+
+guest_reviews:
+  stay_in: "Séjour à %city%"
+  discover_property: "Découvrir cette adresse"
+  rating_only: "Ce voyageur a laissé une note sans commentaire."
+  eyebrow: "Leurs séjours, leurs mots"
+  title: "Les retours de nos voyageurs"
+  intro: "Des avis publiés sur les plateformes de réservation, réunis ici pour vous aider à choisir votre séjour."
+  previous: "Avis précédents"
+  next: "Avis suivants"
+  position: "Avis affichés"
+  pause: "Mettre le défilement en pause"
+  play: "Reprendre le défilement"
+  browse: "Parcourir les avis voyageurs"
+  source_link: "Lire les avis sur %source% : %property%"
+  rating: "Note : %rating% sur 5"
+  read_more: "Lire l’avis complet"
+  read_less: "Réduire l’avis"

@@ -35,10 +35,10 @@ final class PropertyContentCatalogue
                 $valid = in_array($field, self::TEXT_FIELDS, true) ? is_string($value) && trim($value) !== '' : (in_array($field, self::INTEGER_FIELDS, true) ? is_int($value) && $value > 0 : ($field === 'bathrooms' && is_numeric($value) && $value > 0));
                 if (!$valid) throw new \InvalidArgumentException('Invalid or unsupported editorial field: '.$field);
             }
-            foreach (['title', 'travelers', 'airbnbUrl', 'shortDescription', 'about', 'shortDescriptionEn', 'aboutEn'] as $required) {
+            foreach (['title', 'travelers', 'shortDescription', 'about', 'shortDescriptionEn', 'aboutEn'] as $required) {
                 if (!array_key_exists($required, $row['fields'])) throw new \InvalidArgumentException('Missing bilingual editorial field: '.$required);
             }
-            if (!preg_match('~^https://www\.airbnb\.fr/rooms/[0-9]+$~D', $row['fields']['airbnbUrl']) || mb_strlen($row['fields']['title']) > 180) throw new \InvalidArgumentException('Invalid official Airbnb URL or title.');
+            if ((isset($row['fields']['airbnbUrl']) && !preg_match('~^https://www\.airbnb\.fr/rooms/[0-9]+$~D', $row['fields']['airbnbUrl'])) || mb_strlen($row['fields']['title']) > 180) throw new \InvalidArgumentException('Invalid official Airbnb URL or title.');
             foreach ($row['amenities'] as $name) {
                 if (!is_string($name) || !preg_match('/^amenities\.[a-z_]+$/D', $name)) throw new \InvalidArgumentException('Invalid amenity translation key.');
             }
@@ -72,7 +72,7 @@ final class PropertyContentCatalogue
             if ($before !== $value) $changes[$field] = ['before' => $before, 'after' => $value];
         }
         // Ratings from a different listing must not follow an editorial URL correction.
-        if ($property->getAirbnbUrl() !== $entry['fields']['airbnbUrl']) {
+        if (isset($entry['fields']['airbnbUrl']) && $property->getAirbnbUrl() !== $entry['fields']['airbnbUrl']) {
             foreach (['airbnbRating', 'airbnbReviewsCount'] as $field) {
                 $before = $property->{'get'.ucfirst($field)}();
                 if ($before !== null) $changes[$field] = ['before' => $before, 'after' => null];

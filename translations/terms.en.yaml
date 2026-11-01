@@ -1,0 +1,46 @@
+intro: 'These terms govern direct bookings for short stays in properties offered by ROAMING on Roaming Lille. They supplement the property description and the summary of your selected stay.'
+version: 'Terms version:'
+provider:
+  title: '1. Your accommodation provider'
+  text: 'ROAMING is the accommodation provider and collects payment for all properties offered on this website. GuestLucky provides the technical booking module; your contracting party remains ROAMING.'
+booking:
+  title: '2. Booking and confirmation'
+  text: 'Before booking, check the property, its description, dates, guest count, services and total price in the summary. Availability and quotes may change until validation. A search or opening the module does not constitute a booking. The booking is confirmed after payment validation and receipt of written confirmation from ROAMING. These terms and the specific terms of your stay must be provided with that confirmation on a durable medium, such as email. For bookings through a third-party platform, consult the terms displayed on that platform.'
+payment:
+  title: '3. Price and payment'
+  text: 'The full stay price is payable at booking using the payment methods offered in the payment module. The total in euros, mandatory charges, applicable taxes and additional services are shown before payment validation. Optional extras require your prior agreement. The €100 security deposit is separate from the stay price.'
+cancellation:
+  title: '4. Cancellation and no-show'
+  text: 'Cancellation is free up to 7 days before arrival, with a full refund of amounts paid for the stay. Less than 7 days before arrival, no refund is provided. No-shows are not refunded. Email ROAMING with your booking reference to request cancellation. The cut-off is 4 pm Paris time, 7 calendar days before the arrival date, inclusive. These conditions are subject to mandatory legal provisions, including force majeure where applicable.'
+changes:
+  title: '5. Date changes'
+  text: 'Date changes may be requested free of charge up to 7 days before arrival, subject to availability and the same cut-off as cancellation. The price for the new dates and any difference require your agreement before confirmation. A change takes effect only after written confirmation from ROAMING. Less than 7 days before arrival, free changes are not guaranteed: contact ROAMING to discuss available options.'
+withdrawal:
+  title: '6. No statutory withdrawal period'
+  text: 'Under Article L.221-28(12) of the French Consumer Code, the 14-day right of withdrawal does not apply to non-residential accommodation provided on a specific date or during a specific period. The cancellation options above remain applicable.'
+deposit:
+  title: '7. Security deposit'
+  text: 'A €100 security deposit is requested as a bank card pre-authorisation, separately from payment for the stay. If everything is in order after departure, ROAMING releases the pre-authorisation within 3 days after departure; the time it takes to appear on your account then depends on your bank. Any deduction for damage or breaches attributable to the guest must be justified and communicated with supporting evidence; it is not an automatic flat-rate penalty. Contact ROAMING if you dispute a deduction.'
+stay:
+  title: '8. Check-in, check-out and house rules'
+  text: 'Check-in is from 4 pm and check-out must be before 11 am, in the property’s local time. Parties are prohibited and properties are non-smoking. Respect the property capacity, premises, equipment, neighbours and instructions provided for your stay. Report damage or problems to ROAMING promptly.'
+pets:
+  title: '9. Pets'
+  text: 'Pets are allowed only on request and with prior agreement from ROAMING, subject to applicable laws on guide and assistance dogs. A quoted supplement may apply, generally €10 to €20 per stay. This is an indication rather than an automatic rate: the exact amount must be communicated and accepted before confirmation.'
+liability:
+  title: '10. Problems during your stay and cancellation by ROAMING'
+  text: 'Contact ROAMING promptly if a problem arises so that an appropriate solution can be sought. These terms do not restrict the guest’s statutory rights where services are non-compliant or ROAMING fails to perform its obligations. If ROAMING cancels a stay it cannot provide, amounts paid for the unprovided service are refunded, without prejudice to other statutory rights to compensation. The consequences of force majeure are assessed under applicable law.'
+complaints:
+  title: '11. Complaints, mediation and applicable law'
+  text: 'First submit a written complaint to ROAMING, describing the facts and giving your booking reference. The contract is governed by French law without depriving consumers of mandatory protections. If no amicable solution is reached, jurisdiction is determined by applicable legal rules.'
+mediator:
+  available: 'After an unresolved prior written complaint, you may refer the dispute free of charge to the consumer mediator below, subject to statutory admissibility requirements, including referral within one year of your written complaint.'
+  pending: 'Membership of a consumer mediation scheme is in progress. The mediator’s name, address and website must be provided here before bookings open. This temporary notice does not replace the actual appointment of a mediator.'
+privacy: 'Read the privacy policy'
+accept_title: 'Before continuing your booking'
+accept_intro: 'Please read the terms below. You can then check your details and the final price in the booking module.'
+accept_label: 'I have read and accept the general terms of sale and rental, version %version%.'
+accept_button: 'Continue to booking'
+accept_note: 'This step does not take payment or confirm your stay.'
+accept_error: 'To continue, tick the box to accept the terms and try again.'
+open_terms: 'Open the terms in a new tab'

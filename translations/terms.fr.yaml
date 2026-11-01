@@ -1,0 +1,46 @@
+intro: 'Les présentes conditions encadrent les réservations directes de séjours de courte durée dans les logements proposés par ROAMING sur Roaming Lille. Elles complètent le descriptif du logement et le récapitulatif du séjour choisi.'
+version: 'Version des conditions :'
+provider:
+  title: '1. Votre loueur et interlocuteur'
+  text: 'ROAMING est le loueur et encaisse les paiements pour la totalité des logements proposés sur ce site. GuestLucky fournit le module technique de réservation ; son intervention ne change pas l’identité de votre cocontractant, ROAMING.'
+booking:
+  title: '2. Réservation et confirmation'
+  text: 'Avant de réserver, vérifiez le logement, son descriptif, les dates, le nombre de voyageurs, les prestations et le prix total dans le récapitulatif. Les disponibilités et devis peuvent évoluer jusqu’à la validation. Une recherche ou l’ouverture du module ne constitue pas une réservation. La réservation est confirmée après validation du paiement et réception de la confirmation écrite de ROAMING. Les présentes conditions et les conditions particulières du séjour doivent être remises avec cette confirmation sur un support durable, tel qu’un e-mail. Pour une réservation sur une plateforme tierce, consultez les conditions présentées sur cette plateforme.'
+payment:
+  title: '3. Prix et paiement'
+  text: 'La totalité du prix du séjour est payable à la réservation, selon les moyens proposés dans le module de paiement. Le total en euros, les frais obligatoires, les taxes applicables et les éventuelles prestations supplémentaires sont indiqués avant la validation du paiement. Tout supplément optionnel doit faire l’objet de votre accord préalable. La caution de 100 € est distincte du prix du séjour.'
+cancellation:
+  title: '4. Annulation et non-présentation'
+  text: 'L’annulation est gratuite jusqu’à 7 jours avant l’arrivée, avec remboursement intégral des sommes versées pour le séjour. À moins de 7 jours de l’arrivée, aucun remboursement n’est prévu. La non-présentation ne donne lieu à aucun remboursement. Adressez votre demande à ROAMING par e-mail en indiquant la référence de réservation. La limite est fixée à 16 h (heure de Paris), 7 jours calendaires avant la date d’arrivée, limite incluse. Ces conditions s’appliquent sous réserve des dispositions légales impératives, notamment en cas de force majeure.'
+changes:
+  title: '5. Modification des dates'
+  text: 'Une modification des dates peut être demandée gratuitement jusqu’à 7 jours avant l’arrivée, selon les disponibilités, avec la même limite horaire que pour l’annulation. Le prix des nouvelles dates et toute différence éventuelle sont soumis à votre accord avant confirmation. La modification ne prend effet qu’après confirmation écrite de ROAMING. À moins de 7 jours, aucune modification gratuite n’est garantie : contactez ROAMING pour connaître les possibilités.'
+withdrawal:
+  title: '6. Absence de droit de rétractation'
+  text: 'Conformément à l’article L.221-28, 12° du Code de la consommation, le droit de rétractation de 14 jours ne s’applique pas aux prestations d’hébergement non résidentiel fournies à une date ou à une période déterminée. Les possibilités d’annulation décrites ci-dessus restent applicables.'
+deposit:
+  title: '7. Dépôt de garantie'
+  text: 'Une caution de 100 € est demandée par empreinte bancaire, distincte du paiement du séjour. Si tout est en ordre après le départ, ROAMING procède à la libération de cette empreinte dans les 3 jours suivant le départ ; le délai d’affichage sur votre compte dépend ensuite de votre banque. Toute retenue pour des dommages ou manquements imputables au voyageur doit être justifiée et communiquée, avec les éléments correspondants ; elle ne constitue pas une pénalité forfaitaire automatique. En cas de contestation, contactez ROAMING.'
+stay:
+  title: '8. Horaires et règles du séjour'
+  text: 'L’arrivée est possible à partir de 16 h et le départ doit avoir lieu avant 11 h, heure locale du logement. Les fêtes sont interdites et les logements sont non-fumeurs. Respectez la capacité du logement, les lieux, les équipements, le voisinage et les consignes communiquées pour votre séjour. Signalez rapidement tout dommage ou problème à ROAMING.'
+pets:
+  title: '9. Animaux'
+  text: 'Les animaux sont admis uniquement sur demande et après accord préalable de ROAMING, sous réserve des dispositions légales applicables aux chiens guides et d’assistance. Un supplément peut être proposé sur devis, généralement de 10 à 20 € par séjour. Ce montant indicatif n’est pas un tarif automatique : le montant exact doit être communiqué et accepté avant confirmation.'
+liability:
+  title: '10. Difficultés pendant le séjour et annulation par ROAMING'
+  text: 'En cas de difficulté, contactez rapidement ROAMING afin de permettre une solution adaptée. Les présentes conditions ne limitent pas les droits légaux du voyageur en cas de prestation non conforme ou d’inexécution imputable à ROAMING. Si ROAMING annule un séjour qu’elle ne peut assurer, les sommes versées pour la prestation non fournie sont remboursées, sans préjudice des autres droits à réparation prévus par la loi. Les conséquences d’un cas de force majeure sont appréciées selon les dispositions légales applicables.'
+complaints:
+  title: '11. Réclamations, médiation et droit applicable'
+  text: 'Pour toute réclamation, adressez d’abord une demande écrite à ROAMING, en précisant les faits et votre référence de réservation. Le contrat est soumis au droit français, sans priver le consommateur des protections impératives dont il bénéficie. À défaut de solution amiable, les juridictions compétentes sont déterminées par les règles légales applicables.'
+mediator:
+  available: 'Après une réclamation écrite préalable non résolue, vous pouvez recourir gratuitement au médiateur de la consommation ci-dessous, dans les conditions légales de recevabilité, notamment dans l’année suivant votre réclamation écrite.'
+  pending: 'Adhésion à un médiateur de la consommation en cours. Son nom, son adresse et son site internet doivent être renseignés ici avant l’ouverture des réservations. Cette mention provisoire ne remplace pas la désignation effective d’un médiateur.'
+privacy: 'Consulter la politique de confidentialité'
+accept_title: 'Avant de poursuivre votre réservation'
+accept_intro: 'Prenez connaissance des conditions ci-dessous. Vous pourrez ensuite vérifier les informations et le prix définitif dans le module de réservation.'
+accept_label: 'J’ai lu et j’accepte les conditions générales de vente et de location, version %version%.'
+accept_button: 'Continuer vers la réservation'
+accept_note: 'Cette étape ne déclenche aucun paiement et ne confirme pas votre séjour.'
+accept_error: 'Pour continuer, cochez la case d’acceptation des conditions et réessayez.'
+open_terms: 'Ouvrir les CGV dans un nouvel onglet'

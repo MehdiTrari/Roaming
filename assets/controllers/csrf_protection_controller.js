@@ -77,5 +77,7 @@ export function removeCsrfToken (formElement) {
     }
 }
 
-/* stimulusFetch: 'lazy' */
+// Handwritten login/logout forms need these listeners even without a Stimulus
+// attribute. Keep the same double-submit strategy across logout and login.
+/* stimulusFetch: 'eager' */
 export default 'csrf-protection-controller';

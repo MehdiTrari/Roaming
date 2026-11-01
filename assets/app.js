@@ -12,6 +12,7 @@ import './styles/page-reveal.css';
 import './styles/property-map.css';
 import './styles/hospitality.css';
 import './styles/hospitality-pages.css';
+import './styles/guest-reviews.css';
 import './privacy';
 import './booking-search';
 import './team-feedback';

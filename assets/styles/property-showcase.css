@@ -1,9 +1,9 @@
 /* Shared warm, photo-led carousel. Its spring is owned by the Stimulus controller. */
-.property-showcase { --showcase-step: 78%; position: relative; min-width: 0; }
+.property-showcase { --showcase-step: 94%; --showcase-radius: 28px; position: relative; min-width: 0; }
 .showcase-intro { color: var(--roaming-muted); text-align: center; font-size: .85rem; margin: -8px 0 14px; }
 .showcase-stage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .showcase-slide { min-width: 0; }
-.showcase-card { display: flex; flex-direction: column; height: 100%; border: 1px solid var(--roaming-border); border-radius: var(--roaming-radius) !important; overflow: hidden; background: var(--roaming-card-bg); }
+.showcase-card { display: flex; flex-direction: column; height: 100%; border: 1px solid var(--roaming-border); border-radius: var(--showcase-radius) !important; overflow: hidden; background: var(--roaming-card-bg); }
 .showcase-card-media { display: block; position: relative; flex: 1 0 auto; min-height: 300px; overflow: hidden; background: var(--section-alt-bg); color: inherit; text-decoration: none; }
 .showcase-card-media picture { display: block; width: 100%; height: 100%; }
 .showcase-image { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
@@ -31,11 +31,11 @@
 .showcase-book span { font-size: 1.2rem; line-height: 1; transition: transform .25s; }
 .showcase-book:hover span { transform: translateX(3px); }
 .property-showcase.is-ready .showcase-stage { display: block; position: relative; height: 664px; perspective: 1800px; overflow: hidden; overflow: clip; touch-action: pan-y; isolation: isolate; }
-.property-showcase.is-ready .showcase-slide { position: absolute; top: 18px; left: 50%; width: min(780px, 60%); height: 620px; transform: translateX(calc(-50% + var(--slide-offset) * var(--showcase-step))) scale(var(--slide-scale)) rotateY(var(--slide-rotate)); transform-origin: center; opacity: var(--slide-opacity); will-change: transform; }
-.showcase-slide::after { content: ''; position: absolute; inset: 0; border-radius: var(--roaming-radius); background: rgb(40 29 23); pointer-events: none; opacity: var(--slide-shade, 0); }
-.property-showcase.is-ready .showcase-card { filter: saturate(var(--slide-saturation)); box-shadow: 0 18px 40px -18px rgb(45 29 20 / var(--slide-shadow)); }
+.property-showcase.is-ready .showcase-slide { position: absolute; top: 18px; translate: 0 calc(var(--slide-shade, 0) * 100px); left: 50%; width: min(780px, 58%); height: 620px; transform: translateX(calc(-50% + var(--slide-offset) * var(--showcase-step))) scale(var(--slide-scale)) rotateY(var(--slide-rotate)); transform-origin: center; opacity: var(--slide-opacity); will-change: transform; }
+.showcase-slide::after { content: ''; position: absolute; inset: 0; border-radius: var(--showcase-radius); background: rgb(40 29 23); pointer-events: none; opacity: var(--slide-shade, 0); }
+.property-showcase.is-ready .showcase-card { filter: saturate(var(--slide-saturation)); box-shadow: 0 22px 44px -22px rgb(45 29 20 / var(--slide-shadow)); }
 .property-showcase.is-ready .showcase-slide.is-distant { pointer-events: none; will-change: auto; }
-.showcase-side-select { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; border: 0; border-radius: var(--roaming-radius); background: transparent; cursor: pointer; }
+.showcase-side-select { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; border: 0; border-radius: var(--showcase-radius); background: transparent; cursor: pointer; }
 .showcase-side-select[hidden] { display: none; }
 .property-showcase.is-dragging, .property-showcase.is-dragging a { cursor: grabbing; user-select: none; }
 .showcase-controls { display: flex; justify-content: center; align-items: center; gap: 16px; margin: 6px auto 0; max-width: 850px; min-width: 0; }
@@ -53,10 +53,10 @@
 .property-showcase :focus-visible { outline: 3px solid var(--roaming-accent); outline-offset: 3px; }
 
 /* The availability variant keeps the photograph and the real address in one panel. */
-.availability-showcase { --showcase-step: 80%; min-width: 0; }
-.availability-showcase.is-ready .showcase-stage { height: 500px; border-radius: var(--roaming-radius); }
-.availability-showcase.is-ready .showcase-slide { width: 82%; height: 468px; top: 10px; }
-.availability-showcase .availability-property-card { height: 100%; min-height: 0; border-radius: var(--roaming-radius); box-shadow: 0 16px 36px -16px rgb(45 29 20 / .24); }
+.availability-showcase { min-width: 0; }
+.availability-showcase.is-ready .showcase-stage { height: 500px; }
+.availability-showcase.is-ready .showcase-slide { width: 74%; height: 458px; top: 12px; }
+.availability-showcase .availability-property-card { height: 100%; min-height: 0; border-radius: var(--showcase-radius); border: 1px solid var(--roaming-border); box-shadow: 0 22px 40px -20px rgb(45 29 20 / .3); }
 .availability-showcase:not(.is-ready) .showcase-stage { grid-template-columns: 1fr; }
 .availability-showcase:not(.is-ready) .availability-property-card { min-height: 380px; }
 .availability-showcase .availability-property-card:hover { transform: none; }
@@ -96,19 +96,19 @@
 @keyframes booking-guide-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 991px) {
     .showcase-stage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .property-showcase.is-ready .showcase-slide { width: 70%; }
-    .availability-showcase.is-ready .showcase-slide { width: min(600px, 78%); }
+    .property-showcase.is-ready .showcase-slide { width: 68%; }
+    .availability-showcase.is-ready .showcase-slide { width: min(600px, 74%); }
 }
 @media (min-width: 1600px) {
     .availability-showcase.is-ready .showcase-stage { height: 540px; }
-    .availability-showcase.is-ready .showcase-slide { height: 508px; }
+    .availability-showcase.is-ready .showcase-slide { height: 498px; }
 }
 @media (max-width: 767px) {
-    .property-showcase { --showcase-step: 88%; }
+    .property-showcase { --showcase-step: 94%; --showcase-radius: 22px; }
     .showcase-stage { grid-template-columns: 1fr; }
     .showcase-intro { margin-top: -8px; font-size: .8rem; }
     .property-showcase.is-ready .showcase-stage { height: 612px; margin: 0 -10px; }
-    .property-showcase.is-ready .showcase-slide { width: 86%; height: 576px; top: 10px; transform: translateX(calc(-50% + var(--slide-offset) * var(--showcase-step))) scale(var(--slide-scale)); }
+    .property-showcase.is-ready .showcase-slide { width: 84%; height: 576px; top: 10px; translate: 0 calc(var(--slide-shade, 0) * 72px); transform: translateX(calc(-50% + var(--slide-offset) * var(--showcase-step))) scale(var(--slide-scale)); }
     .showcase-card-media { min-height: 260px; }
     .showcase-card-info { padding: 20px; }
     .showcase-card h3 { font-size: 1.45rem; }
@@ -125,7 +125,7 @@
     .booking-guide-steps { gap: 8px 12px; }
     .booking-guide-steps li { font-size: .68rem; }
     .availability-showcase.is-ready .showcase-stage { height: 450px; margin-inline: 0; }
-    .availability-showcase.is-ready .showcase-slide { width: 84%; height: 424px; }
+    .availability-showcase.is-ready .showcase-slide { width: 78%; height: 410px; }
     .availability-showcase .availability-property-overlay { padding: 1.25rem; }
     .availability-showcase .availability-property-overlay h3 { font-size: 1.55rem; }
     .availability-showcase .showcase-picker button { padding: .5rem .7rem; }
@@ -137,7 +137,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .property-showcase *, .property-showcase *::after, .booking-guide { animation: none !important; transition: none !important; }
-    .property-showcase.is-ready .showcase-slide { transform: translateX(calc(-50% + var(--slide-offset) * var(--showcase-step))); }
+    .property-showcase.is-ready .showcase-slide { transform: translateX(calc(-50% + var(--slide-offset) * var(--showcase-step))) scale(var(--slide-scale)); }
     .property-showcase .showcase-card:hover .showcase-image, .property-showcase .availability-property-card:hover img { transform: none !important; }
     .property-showcase .showcase-arrow:hover, .property-showcase .showcase-book:hover span { transform: none; }
 }

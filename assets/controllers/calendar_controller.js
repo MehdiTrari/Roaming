@@ -6,7 +6,7 @@ import {SearchProgress} from '../search-progress';
 import {CalendarProgress} from '../calendar-progress';
 
 export default class extends Controller {
-    static targets = ['previous', 'next', 'status', 'board', 'calendarSurface', 'fields', 'arrival', 'departure', 'guests', 'quote', 'progress', 'notice', 'content', 'propertyButton', 'summary', 'selection', 'propertyName', 'submit', 'feedback', 'clear', 'stage', 'popover', 'dateTrigger', 'dateHint', 'applyDates', 'monthLabel'];
+    static targets = ['previous', 'next', 'status', 'board', 'calendarSurface', 'fields', 'arrival', 'departure', 'guests', 'guestCount', 'guestLimit', 'guestDecrease', 'guestIncrease', 'quote', 'progress', 'notice', 'content', 'propertyButton', 'summary', 'selection', 'propertyName', 'propertyCapacity', 'submit', 'feedback', 'clear', 'stage', 'popover', 'dateTrigger', 'dateMirror', 'dateHint', 'applyDates', 'monthLabel'];
     static values = { url: String, quoteUrl: String, picker: Boolean, compact: Boolean, published: Boolean };
     connect() {
         if (document.documentElement.hasAttribute('data-turbo-preview')) return;
@@ -66,6 +66,13 @@ export default class extends Controller {
         if (!this.selected) return;
         this.slug = this.selected.dataset.slug;
         this.propertyNameTarget.textContent = this.selected.dataset.name;
+        if (this.hasPropertyCapacityTarget) {
+            const badge = this.propertyCapacityTarget.querySelector('.property-capacity');
+            const count = this.selected.dataset.publicCapacity || this.selected.dataset.capacity;
+            badge.querySelector('span').textContent = count;
+            const label = language() === 'fr' ? `Capacité maximale : ${count} personnes` : `Maximum capacity: ${count} guests`;
+            badge.setAttribute('aria-label', label); badge.title = label;
+        }
         this.propertyButtonTargets.forEach(button => button.setAttribute('aria-pressed', String(button === this.selected)));
         this.guestsTarget.max = this.selected.dataset.capacity;
         this.current = this.base; this.days.clear(); this.months = []; this.fieldsTarget.disabled = true;
@@ -91,21 +98,45 @@ export default class extends Controller {
     }
     clearDates() { this.arrivalTarget.value = this.departureTarget.value = ''; this.editingPart = 'arrival'; this.changed(); (this.compactValue ? this.dateTriggerTargets[0] : this.arrivalTarget).focus(); }
     selectionCriteria() { return this.compactValue && this.popoverTarget.open && this.editingPart !== 'complete' ? {...this.criteria(), arrivalDate: this.editingPart === 'arrival' ? '' : this.arrivalTarget.value, departureDate: ''} : this.criteria(); }
+    get dateFieldButtons() { return [...this.dateTriggerTargets, ...this.dateMirrorTargets]; }
     openDates(event) {
         event.preventDefault();
-        this.dateTrigger = event.currentTarget;
-        this.editingPart = this.dateTrigger.dataset.datePart === 'departure' && this.arrivalTarget.value ? 'departure' : 'arrival';
-        this.dateTriggerTargets.forEach(button => button.setAttribute('aria-expanded', String(button === this.dateTrigger)));
-        if (!this.popoverTarget.open) this.popoverTarget.showModal();
-        this.render(); this.positionDates(); this.load();
-        const anchor = this.dateTrigger.dataset.datePart === 'departure' ? this.departureTarget.value : this.arrivalTarget.value;
+        const part = event.currentTarget.dataset.datePart || event.currentTarget.dataset.editPart;
+        this.dateTrigger = this.dateTriggerTargets.find(button => button.dataset.datePart === part && !this.popoverTarget.contains(button));
+        this.editingPart = part === 'departure' && this.arrivalTarget.value ? 'departure' : 'arrival';
+        const opening = !this.popoverTarget.open;
+        this.dateAnimation?.cancel();
+        if (opening) this.popoverTarget.showModal();
+        this.render(); this.positionDates();
+        if (opening) this.animateDates(false);
+        this.load();
+        const anchor = part === 'departure' ? this.departureTarget.value : this.arrivalTarget.value;
         (this.boardTarget.querySelector(`[data-date="${anchor}"]:not(:disabled)`) || this.boardTarget.querySelector('button:not(:disabled)') || this.popoverTarget.querySelector('button'))?.focus({preventScroll: true});
     }
-    closeDates() {
+    animateDates(closing) {
+        const panel = this.popoverTarget;
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
+        const field = this.dateTrigger.closest('.compact-date-fields').getBoundingClientRect(), box = panel.getBoundingClientRect();
+        const collapsed = {opacity: .25, transform: `translate(${field.left - box.left}px, ${field.top - box.top}px) scaleX(${field.width / box.width})`, clipPath: `inset(0 0 ${Math.max(0, box.height - field.height)}px 0 round 14px)`};
+        const expanded = {opacity: 1, transform: 'translate(0, 0) scaleX(1)', clipPath: 'inset(0 0 0 0 round 16px)'};
+        panel.style.transformOrigin = 'top left';
+        const animation = panel.animate(closing ? [expanded, collapsed] : [collapsed, expanded], {duration: closing ? 180 : 320, easing: closing ? 'cubic-bezier(.4,0,1,1)' : 'cubic-bezier(.16,1,.3,1)', fill: 'both'});
+        this.dateAnimation = animation;
+        if (!closing) animation.finished.then(() => { if (this.dateAnimation === animation) { animation.cancel(); this.dateAnimation = null; } }).catch(() => {});
+        return animation;
+    }
+    closeDates(immediate = false) {
         if (!this.hasPopoverTarget || !this.popoverTarget.open) return;
-        this.popoverTarget.close(); this.editingPart = 'complete';
-        this.dateTriggerTargets.forEach(button => button.setAttribute('aria-expanded', 'false'));
-        if (!this.contentTarget.hidden && this.dateTrigger?.isConnected) this.dateTrigger.focus({preventScroll: true});
+        this.dateAnimation?.cancel();
+        const finish = () => {
+            this.popoverTarget.close(); this.editingPart = 'complete';
+            this.dateAnimation?.cancel(); this.dateAnimation = null;
+            this.dateFieldButtons.forEach(button => { button.setAttribute('aria-expanded', 'false'); button.classList.remove('is-editing'); if (this.popoverTarget.contains(button)) button.setAttribute('aria-pressed', 'false'); });
+            if (immediate !== true && !this.contentTarget.hidden && this.dateTrigger?.isConnected) this.dateTrigger.focus({preventScroll: true});
+        };
+        const animation = immediate === true ? null : this.animateDates(true);
+        if (animation) animation.finished.then(finish).catch(() => {});
+        else finish();
     }
     cancelDates(event) { event.preventDefault(); this.closeDates(); }
     outsideDates(event) {
@@ -119,11 +150,27 @@ export default class extends Controller {
         const offsetX = viewport?.offsetLeft || 0, offsetY = viewport?.offsetTop || 0, gap = 12;
         const small = width < 768, topLimit = offsetY + (small ? gap : Math.max(gap, (document.querySelector('header.sticky-top')?.getBoundingClientRect().bottom || 0) + gap));
         this.popoverTarget.style.maxWidth = `${width - 24}px`; this.popoverTarget.style.maxHeight = `${Math.max(44, offsetY + height - gap - topLimit)}px`;
-        const field = this.dateTrigger.getBoundingClientRect(), box = this.popoverTarget.getBoundingClientRect();
+        const field = this.dateTrigger.closest('.compact-date-fields').getBoundingClientRect(), box = {width: this.popoverTarget.offsetWidth, height: this.popoverTarget.offsetHeight};
         let top = small ? offsetY + height - gap - box.height : field.bottom + gap;
         if (!small && top + box.height > offsetY + height - gap) top = field.top - gap - box.height >= topLimit ? field.top - gap - box.height : topLimit;
         this.popoverTarget.style.top = `${Math.max(topLimit, Math.min(top, offsetY + height - gap - box.height))}px`;
         this.popoverTarget.style.left = `${small ? offsetX + (width - box.width) / 2 : Math.max(offsetX + gap, Math.min(field.left, offsetX + width - box.width - gap))}px`;
+    }
+    adjustGuests(event) {
+        if (this.guestsTarget.disabled) return;
+        const current = Number(this.guestsTarget.value) || 1;
+        const next = Math.max(1, Math.min(Number(this.guestsTarget.max), current + Number(event.params.step)));
+        if (next === current) return;
+        this.guestsTarget.value = String(next);
+        this.changed();
+    }
+    updateGuestCounter() {
+        if (!this.hasGuestCountTarget) return;
+        const count = Number(this.guestsTarget.value) || 1, max = Number(this.guestsTarget.max);
+        this.guestCountTarget.value = String(count);
+        this.guestLimitTarget.textContent = this.guestLimitTarget.dataset.template.replace('{count}', String(max));
+        this.guestDecreaseTarget.disabled = this.guestsTarget.disabled || count <= 1;
+        this.guestIncreaseTarget.disabled = this.guestsTarget.disabled || count >= max;
     }
     changed(event) {
         this.invalidateQuote();
@@ -139,6 +186,7 @@ export default class extends Controller {
         if (checking) this.calendarProgress.start(); else this.calendarProgress.cancel();
         this.calendarSurfaceTarget.classList.toggle('is-checking', checking);
         this.calendarSurfaceTarget.setAttribute('aria-busy', String(checking));
+        this.updateGuestCounter();
         this.boardTarget.inert = checking;
         this.boardTarget.setAttribute('aria-busy', String(checking));
     }
@@ -205,10 +253,11 @@ export default class extends Controller {
         for (const day of this.boardTarget.querySelectorAll('[data-date]')) {
             if (day.dataset.date > stay.arrivalDate && day.dataset.date < button.dataset.date) day.classList.add('stay-preview-range');
         }
+        this.boardTarget.querySelector('.stay-arrival')?.classList.add('stay-preview-start');
         button.classList.add('stay-preview-end');
     }
     clearRangePreview() {
-        this.boardTarget.querySelectorAll('.stay-preview-range, .stay-preview-end').forEach(day => day.classList.remove('stay-preview-range', 'stay-preview-end'));
+        this.boardTarget.querySelectorAll('.stay-preview-range, .stay-preview-end, .stay-preview-start').forEach(day => day.classList.remove('stay-preview-range', 'stay-preview-end', 'stay-preview-start'));
     }
     selectDate(event) {
         const button = event.target.closest('button[data-date]');
@@ -295,6 +344,7 @@ export default class extends Controller {
         if (selected) button.classList.add('stay-selected');
         if (selected && date === arrival) button.classList.add('stay-arrival', 'stay-boundary');
         if (selected && date === departure) button.classList.add('stay-departure', 'stay-boundary');
+        if (selected && date === arrival && departure > arrival) button.classList.add('stay-range-start');
         return button;
     }
     render() {
@@ -305,6 +355,7 @@ export default class extends Controller {
         this.feedbackTarget.textContent = issue ? t(issue) + (issue === 'capacity' ? ` (${this.guestsTarget.max} ${t('guests')})` : issue === 'tooShort' ? ` (${this.days.get(this.arrivalTarget.value)?.minStay} ${t('minimum')})` : '') : '';
         this.submitTarget.disabled = this.fieldsTarget.disabled || Boolean(this.quoteRequest) || Boolean(issue) || !validStay(this.criteria(), Number(this.guestsTarget.max));
         this.guestsTarget.disabled = this.fieldsTarget.disabled;
+        this.updateGuestCounter();
         this.previousTarget.disabled = this.current <= this.base; this.nextTarget.disabled = this.current >= this.base + 10;
         const arrival = this.arrivalTarget.value, departure = this.departureTarget.value;
         const nights = arrival && departure ? Math.round((Date.parse(departure) - Date.parse(arrival)) / 86400000) : 0;
@@ -327,7 +378,15 @@ export default class extends Controller {
             section.append(grid); this.boardTarget.append(section);
         }
         if (this.compactValue) {
-            for (const button of this.dateTriggerTargets) button.querySelector('[data-date-label]').textContent = realDate(button.dataset.datePart === 'arrival' ? arrival : departure) ? formatDate(button.dataset.datePart === 'arrival' ? arrival : departure) : t('chooseDates');
+            for (const button of this.dateFieldButtons) {
+                const part = button.dataset.datePart || button.dataset.editPart;
+                const value = part === 'arrival' ? arrival : departure;
+                button.querySelector('[data-date-label]').textContent = realDate(value) ? formatDate(value) : t('chooseDates');
+                const active = this.popoverTarget.open && part === this.editingPart;
+                button.classList.toggle('is-editing', active);
+                if (this.popoverTarget.contains(button)) button.setAttribute('aria-pressed', String(active));
+                else button.setAttribute('aria-expanded', String(active));
+            }
             this.dateHintTarget.textContent = this.statusTarget.dataset.state === 'unverified' ? t('failed') : this.selectionTarget.textContent;
             this.applyDatesTarget.disabled = Boolean(issue) || !validStay(this.criteria(), Number(this.guestsTarget.max)) || this.fieldsTarget.disabled;
             this.positionDates();

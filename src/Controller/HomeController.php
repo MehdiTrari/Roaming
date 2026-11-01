@@ -6,6 +6,7 @@ use App\Entity\ContactMessage;
 use App\Form\ContactMessageType;
 use App\Repository\PropertyRepository;
 use App\Service\ContactService;
+use App\Service\GuestReviewFeed;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +18,8 @@ class HomeController extends AbstractController
     public function index(
         Request $request,
         PropertyRepository $propertyRepository,
-        ContactService $contactService
+        ContactService $contactService,
+        GuestReviewFeed $reviewFeed
     ): Response {
         $featured = $propertyRepository->findActiveWithImages(['createdAt' => 'DESC']);
         $navProperties = $propertyRepository->findActive();
@@ -46,6 +48,7 @@ class HomeController extends AbstractController
             'featuredProperties' => $featured,
             'navProperties' => $navProperties,
             'popularAmenities' => $popularAmenities,
+            'guestReviewFeed' => $reviewFeed->publicFeed(),
             'contactForm' => $form->createView(),
         ], new Response('', $form->isSubmitted() ? 422 : 200));
     }

@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+{% trans_default_domain 'terms' %}
+{% block title %}{{ 'accept_title'|trans }} · Roaming Lille{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block body %}
+<section class="legal-page container py-5">
+    <header class="legal-page-heading">
+        <p class="legal-eyebrow">Roaming Lille</p>
+        <h1>{{ 'accept_title'|trans }}</h1>
+        <p>{{ 'accept_intro'|trans }}</p>
+        <p><strong>{{ property.displayName }}</strong> · {{ arrival|date('d/m/Y') }} → {{ departure|date('d/m/Y') }} · {{ guests }} {{ 'home.guests'|trans({}, 'messages') }}</p>
+        <a href="{{ path('app_terms', {_locale: app.request.locale}) }}" target="_blank" rel="noopener">{{ 'open_terms'|trans }}</a>
+    </header>
+    {% if termsDraft %}<aside class="legal-draft mt-4" role="note"><strong>{{ 'legal.draft_title'|trans({}, 'legal') }}</strong><p>{{ 'legal.terms.draft'|trans({}, 'legal') }}</p></aside>{% endif %}
+    <article class="legal-content">{% include 'legal/_terms.html.twig' %}</article>
+    <form method="post" action="{{ path('app_booking_redirect', {slug: property.slug, arrivalDate: arrival, departureDate: departure, guests: guests, _locale: app.request.locale}) }}" data-turbo="false" class="booking-terms-form legal-draft">
+        {% if acceptError %}<p role="alert" id="terms-error">{{ 'accept_error'|trans }}</p>{% endif %}
+        <input type="hidden" name="_token" value="{{ csrf_token(tokenId) }}">
+        <input type="hidden" name="terms_version" value="{{ legal_information.terms_version }}">
+        <label class="booking-terms-label" for="accept-terms"><input id="accept-terms" type="checkbox" name="accept_terms" value="1" required {% if acceptError %}aria-describedby="terms-error"{% endif %}> <span>{{ 'accept_label'|trans({'%version%': legal_information.terms_version}) }}</span></label>
+        <p>{{ 'accept_note'|trans }}</p>
+        <button type="submit" class="btn btn-primary">{{ 'accept_button'|trans }}</button>
+    </form>
+</section>
+{% endblock %}

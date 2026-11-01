@@ -1,6 +1,6 @@
 {% set mapItems = [] %}
 {% for item in properties %}
-    {% set mapItems = mapItems|merge([{slug: item.slug, name: item.title, city: item.city, address: item.address, latitude: item.latitude, longitude: item.longitude, directionsUrl: item.directionsUrl}]) %}
+    {% set mapItems = mapItems|merge([{slug: item.slug, name: item.displayName, city: item.city, address: item.address, latitude: item.latitude, longitude: item.longitude, directionsUrl: item.directionsUrl}]) %}
 {% endfor %}
 <section class="stay-map" data-controller="property-map" data-reveal="fade" data-property-map-properties-value="{{ mapItems|json_encode|e('html_attr') }}" data-property-map-selected-value="{{ selectedSlug|default('') }}" aria-label="{{ 'locations.map_title'|trans }}">
     <div class="stay-map-surface">
@@ -25,5 +25,5 @@
         </a>
     </div>
     <p class="stay-map-disclosure"><a href="https://openfreemap.org/privacy/" target="_blank" rel="noopener noreferrer">{{ 'locations.map_provider'|trans }}</a><span aria-hidden="true">·</span><a href="{{ path('app_cookies', {_locale: app.request.locale}) }}" data-privacy-open>{{ 'locations.map_preferences'|trans }}</a></p>
-    <noscript><div class="p-3">{% for item in properties %}<p><strong>{{ item.title }}</strong><br>{{ item.address ?: item.city }}{% if item.directionsUrl %}<br><a href="{{ item.directionsUrl }}" target="_blank" rel="noopener noreferrer">{{ 'locations.directions'|trans }}</a>{% endif %}</p>{% endfor %}</div></noscript>
+    <noscript><div class="p-3">{% for item in properties %}<p><strong>{{ item.displayName }}</strong><br>{{ item.address ?: item.city }}{% if item.directionsUrl %}<br><a href="{{ item.directionsUrl }}" target="_blank" rel="noopener noreferrer">{{ 'locations.directions'|trans }}</a>{% endif %}</p>{% endfor %}</div></noscript>
 </section>

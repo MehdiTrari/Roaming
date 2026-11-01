@@ -4,7 +4,7 @@
 {% block body %}
 <section class="container py-5 booking-return">
     <div class="booking-feedback">
-    <p class="calendar-eyebrow">{{ property.title }}</p>
+    <p class="calendar-eyebrow">{{ property.displayName }}</p>
     <h1>{{ 'calendar.confirm'|trans }}</h1>
     <p>{{ 'calendar.retry_note'|trans }}</p>
     <a class="btn btn-primary text-white" href="{{ path('app_property_show', {slug: property.slug}) }}#availability">{{ 'calendar.choose'|trans }}</a>

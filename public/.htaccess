@@ -8,15 +8,14 @@
     RewriteCond %{REQUEST_URI} !^/\.well-known/
     RewriteRule ^ maintenance.php [L]
 
-    # Force HTTPS (active in production)
-    RewriteCond %{HTTPS} off
-    RewriteCond %{HTTP_HOST} !^localhost [NC]
-    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1 [NC]
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    # Canonical production origin in one hop; keep path and query string.
+    # Restricted to the real public hosts, so local hosts are never redirected.
+    RewriteCond %{HTTP_HOST} ^www\.roaminglille\.com(?::[0-9]+)?$ [NC]
+    RewriteRule ^ https://roaminglille.com%{REQUEST_URI} [R=301,L,NE]
 
-    # Force www (active in production)
-    RewriteCond %{HTTP_HOST} ^roamingfr\.com$ [NC]
-    RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    RewriteCond %{HTTP_HOST} ^roaminglille\.com(?::[0-9]+)?$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^ https://roaminglille.com%{REQUEST_URI} [R=301,L,NE]
 
     # Determine the RewriteBase automatically and set it as environment variable.
     # If you are using Apache aliases to do mass virtual hosting or installed the

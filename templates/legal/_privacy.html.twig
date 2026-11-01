@@ -6,6 +6,7 @@
 {% for purpose in ['contact', 'search', 'booking', 'map', 'security', 'team'] %}
 <section class="legal-purpose"><h3>{{ ('legal.privacy.' ~ purpose ~ '_title')|trans }}</h3><p>{{ ('legal.privacy.' ~ purpose ~ '_data')|trans }}</p><p class="text-muted"><strong>{{ 'legal.privacy.basis'|trans }}</strong> {{ ('legal.privacy.' ~ purpose ~ '_basis')|trans }}</p></section>
 {% endfor %}
+<p>{{ 'legal.privacy.reviews_data'|trans }}</p>
 <h2>{{ 'legal.privacy.recipients_title'|trans }}</h2><p>{{ 'legal.privacy.recipients'|trans }}</p>
 <h2>{{ 'legal.privacy.retention_title'|trans }}</h2>
 <p>{{ 'legal.privacy.retention_intro'|trans }}</p>
@@ -16,6 +17,7 @@
     <div><dt>{{ 'legal.cookies.choice'|trans }}</dt><dd>{{ 'legal.privacy.choice_retention'|trans }}</dd></div>
 </dl>
 <h2>{{ 'legal.privacy.transfers_title'|trans }}</h2><p>{{ legal_information.providers_location[app.request.locale] ?: 'legal.privacy.transfers_pending'|trans }}</p>
+<p>{{ 'legal.privacy.provider_documents'|trans }} : <a href="https://www.hostinger.com/legal/dpa" target="_blank" rel="noopener noreferrer">Hostinger</a> · <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google / Gmail</a> · <a href="https://www.guestlucky.com/politique-confidentialite/" target="_blank" rel="noopener noreferrer">GuestLucky</a> · <a href="https://openfreemap.org/privacy/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a>.</p>
 <h2>{{ 'legal.privacy.rights_title'|trans }}</h2><p>{{ 'legal.privacy.rights'|trans }}</p>
 <p>{{ 'legal.privacy.exercise'|trans }} <a href="mailto:{{ legal_information.email }}">{{ legal_information.email }}</a>. {{ 'legal.privacy.response'|trans }}</p>
 <p>{{ 'legal.privacy.complaint'|trans }} <a href="https://www.cnil.fr/fr/adresser-une-plainte" target="_blank" rel="noopener noreferrer">CNIL</a>.</p>

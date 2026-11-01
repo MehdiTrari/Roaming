@@ -67,8 +67,18 @@ header .navbar { min-height: 88px; }
 .roaming-home h2 { font-family: var(--roaming-display-font); font-weight: 400 !important; font-size: clamp(2rem, 3.3vw, 3.3rem); line-height: 1.15; letter-spacing: -.035em; }
 .collection-count { display: inline-flex; justify-content: center; align-items: center; min-width: 28px; height: 22px; margin-left: 8px; border: 1px solid var(--roaming-border); border-radius: 20px; font-size: .65rem; }
 .roaming-home .home-search-popover { transform-origin: center top; }
-.roaming-home .booking-bar { overflow-anchor: none; }
+.roaming-home .booking-bar { overflow-anchor: none; scroll-margin-top: clamp(24px, 5vh, 48px); }
 .roaming-home .home-search-popover { scrollbar-gutter: stable; }
+.roaming-home .home-search-popover.is-positioning { opacity: 0; pointer-events: none; }
+.home-search-popover.is-positioning::backdrop { background: transparent; }
+@media (min-width: 768px) {
+    .roaming-home #date-panel.is-guided { padding-block: 10px; }
+    #date-panel.is-guided .search-popover-heading { margin-bottom: 4px; }
+    #date-panel.is-guided .search-date-hint { display: none; }
+    #date-panel.is-guided .booking-guide-panel-hint { padding-block: 4px; margin-bottom: 8px; }
+    .roaming-home #date-panel.is-guided .panel-actions { margin-top: 8px; padding-top: 8px; }
+    #date-panel.is-guided .search-calendar-legend { margin-block: 4px 0; }
+}
 
 /* Quiet, rounded scrollbars follow both themes; retain native scrolling. */
 :root { --roaming-scroll-thumb: color-mix(in srgb, var(--roaming-muted) 75%, var(--roaming-text)); }
@@ -186,3 +196,38 @@ header .navbar { min-height: 88px; }
     .property-heading h1 { font-size: 2.2rem; }
     .property-facts { gap: 10px 20px; }
 }
+
+/* A short name and a separate, readable maximum capacity. */
+.property-capacity { display: inline-flex; align-items: center; gap: .3rem; flex-shrink: 0; white-space: nowrap; font: 600 .85rem/1.3 var(--bs-body-font-family); letter-spacing: 0; vertical-align: middle; color: inherit; }
+.property-capacity svg { flex-shrink: 0; }
+.property-name-line { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem 1rem; }
+.property-name-line > h2 { margin-bottom: 0; }
+.navbar .property-nav-menu .dropdown-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.property-name-label { min-width: 0; }
+.showcase-card-info h3 .property-capacity { margin-left: .45rem; }
+[data-property-option] { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.availability-property-overlay .property-capacity { margin-left: .4rem; }
+
+/* Keep the live date fields visible while the calendar unfolds and scrolls. */
+.property-date-header { position: sticky; top: -16px; z-index: 5; margin: -16px -16px 0; padding: 16px; background: var(--roaming-card-bg); border-bottom: 1px solid var(--roaming-border); }
+.property-date-header .search-popover-heading { margin-bottom: 12px; }
+.property-date-live-fields { margin-bottom: 10px; }
+.property-date-live-fields .compact-date-trigger { min-height: 64px; text-align: left; }
+.compact-date-trigger.is-editing { background: var(--section-alt-bg); box-shadow: inset 0 -2px var(--roaming-primary); }
+.property-date-header .compact-date-hint { min-height: 1.3em; }
+.property-date-popover .compact-date-actions { position: sticky; bottom: -16px; z-index: 4; margin: 12px -16px -16px; padding: 12px 16px; background: var(--roaming-card-bg); }
+.stay-day:is(.stay-range-start, .stay-preview-start):nth-child(7n), .stay-day:is(.stay-departure, .stay-preview-end):nth-child(7n + 1) { --stay-marker-band: linear-gradient(transparent, transparent); }
+
+/* The guest counter shares the date fields' warm, quiet booking controls. */
+.property-guests-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; }
+.property-guests-label { display: grid; gap: 4px; min-width: 0; }
+.property-guests-label > span { font-size: .9rem; font-weight: 600; color: var(--roaming-text); }
+.property-guests-label small { font-size: .7rem; color: var(--roaming-muted); }
+.property-guests-counter { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; padding: 4px; border: 1px solid var(--roaming-border); border-radius: 999px; background: var(--roaming-card-bg); }
+.property-guests-counter button { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border: 1px solid transparent; border-radius: 50%; background: var(--section-alt-bg); color: var(--roaming-accent); transition: background .15s, color .15s; }
+.property-guests-counter button:not(:disabled):hover { background: var(--roaming-primary); color: var(--roaming-on-primary); }
+.property-guests-counter button:focus-visible { outline: 2px solid var(--roaming-accent); outline-offset: 2px; }
+.property-guests-counter button:disabled { opacity: .35; cursor: default; }
+.property-guests-counter output { width: 28px; margin: 0; text-align: center; font-size: 1rem; font-weight: 650; font-variant-numeric: tabular-nums; color: var(--roaming-text); }
+@media (max-width: 359px) { .property-guests-row { gap: 8px; } .property-guests-label small { max-width: 105px; } .property-guests-counter { gap: 1px; padding: 2px; } .property-guests-counter output { width: 22px; } }
+@media (prefers-reduced-motion: reduce) { .property-guests-counter button { transition: none; } }

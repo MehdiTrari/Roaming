@@ -10,8 +10,10 @@
 {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": {{ seo_absolute('/#website')|json_encode(15)|raw }},
+    "inLanguage": {{ app.request.locale|json_encode(15)|raw }},
     "name": "Roaming Lille",
-    "url": {{ url('app_home')|json_encode(15)|raw }}
+    "url": {{ seo_url('app_home')|json_encode(15)|raw }}
 }
 </script>
 <script type="application/ld+json">
@@ -25,8 +27,8 @@
             "position": {{ loop.index }},
             "item": {
                 "@type": "LodgingBusiness",
-                "name": {{ property.title|json_encode(15)|raw }},
-                "url": {{ url('app_property_show', {slug: property.slug})|json_encode(15)|raw }},
+                "name": {{ property.displayName|json_encode(15)|raw }},
+                "url": {{ seo_url('app_property_show', {slug: property.slug})|json_encode(15)|raw }},
                 "address": {
                     "@type": "PostalAddress",
                     "addressLocality": {{ property.city|json_encode(15)|raw }},
@@ -43,8 +45,12 @@
 {% block body %}
 {% set heroProperty = null %}
 {% for property in featuredProperties %}
+    {% if property.guestLuckyId == 2467 and property.images|length > 0 %}{% set heroProperty = property %}{% endif %}
+{% endfor %}
+{% for property in featuredProperties %}
     {% if heroProperty is null and property.images|length > 0 %}{% set heroProperty = property %}{% endif %}
 {% endfor %}
+{% set heroImage = heroProperty ? (heroProperty.images|filter(image => image.isCover)|first ?: heroProperty.images|first) : null %}
 <div class="roaming-home">
 <section class="hero-section home-hero" aria-labelledby="home-heading">
     <div class="container position-relative">
@@ -58,7 +64,7 @@
             </div>
             {% if heroProperty %}
             <figure class="home-hero-visual">
-                {% include 'components/_picture.html.twig' with {filename: heroProperty.images[0].filename, imageClass: 'home-hero-image', alt: heroProperty.images[0].alt ?: heroProperty.title, sizes: '(min-width: 992px) 60vw, 100vw', priority: true} only %}
+                {% include 'components/_picture.html.twig' with {filename: heroImage.filename, imageClass: 'home-hero-image', alt: heroImage.alt ?: heroProperty.displayName, sizes: '(min-width: 992px) 60vw, 100vw', priority: true} only %}
                 <figcaption><a class="home-hero-caption" href="{{ path('app_property_show', {slug: heroProperty.slug}) }}"><span><small>{{ 'design.inside'|trans }}</small><strong>{{ heroProperty.city }}</strong></span><span class="home-photo-arrow" aria-hidden="true">&#8599;</span></a></figcaption>
                 <span class="home-photo-stamp" aria-hidden="true">ROAMING<br>— LILLE —</span>
             </figure>
@@ -85,14 +91,14 @@
                             </button>
                             <select id="booking-property" class="d-none" name="slug" tabindex="-1" aria-hidden="true">
                                 <option value="">{{ 'journey.all_properties'|trans }}</option>
-                                {% for item in featuredProperties %}<option value="{{ item.slug }}" data-capacity="{{ item.bookingCapacity }}" data-calendar-url="{{ path('api_property_availability', {slug: item.slug}) }}">{{ item.city }} · {{ item.title }}</option>{% endfor %}
+                                {% for item in featuredProperties %}<option value="{{ item.slug }}" data-capacity="{{ item.bookingCapacity }}" data-calendar-url="{{ path('api_property_availability', {slug: item.slug}) }}">{{ item.displayName }}</option>{% endfor %}
                             </select>
                             <dialog id="property-panel" class="selector-panel home-search-popover property-search-popover d-none" aria-labelledby="property-panel-title">
                                 <div class="search-popover-heading"><h5 id="property-panel-title">{{ 'calendar.property'|trans }}</h5><button type="button" class="search-popover-close" data-search-dismiss aria-label="{{ 'ui.close'|trans }}">×</button></div>
                                 <p class="booking-guide-panel-hint" data-guide-hint="property" hidden>{{ 'showcase.guide_property'|trans }}</p>
                                 <div class="property-search-options">
                                     <button type="button" data-property-option="" aria-pressed="false">{{ 'journey.all_properties'|trans }}</button>
-                                    {% for item in featuredProperties %}<button type="button" data-property-option="{{ item.slug }}" aria-pressed="false">{{ item.city }} · {{ item.title }}</button>{% endfor %}
+                                    {% for item in featuredProperties %}<button type="button" data-property-option="{{ item.slug }}" aria-pressed="false"><span>{{ item.displayName }}</span>{% include 'components/_capacity_badge.html.twig' with {capacity: item.travelers} only %}</button>{% endfor %}
                                 </div>
                             </dialog>
                         </div>
@@ -117,7 +123,7 @@
                             <dialog class="selector-panel home-search-popover d-none" id="date-panel" aria-labelledby="date-panel-title">
                                 <div class="search-popover-heading"><h5 id="date-panel-title">{{ 'ui.stay_dates'|trans }}</h5><button type="button" class="search-popover-close" data-search-dismiss aria-label="{{ 'ui.close'|trans }}">×</button></div>
                                 <p class="booking-guide-panel-hint" data-guide-hint="dates" hidden>{{ 'showcase.guide_dates'|trans }}</p>
-                                <p class="small text-muted mb-2">{{ 'ui.date_hint'|trans }}</p>
+                                <p class="small text-muted mb-2 search-date-hint">{{ 'ui.date_hint'|trans }}</p>
                                 <p id="date-availability-status" class="small search-calendar-status" role="status" aria-live="polite"></p>
                                 <div id="date-calendar-surface" class="calendar-fetch-surface">
                                     <div id="date-calendar" class="date-calendar"></div>
@@ -239,6 +245,8 @@
         </div>
     </div>
 </section>
+
+    {% include 'home/_guest_reviews.html.twig' %}
 
 <section class="home-contact-section" id="contact">
     <div class="container py-4">

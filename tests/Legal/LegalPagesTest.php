@@ -39,7 +39,7 @@ final class LegalPagesTest extends WebTestCase
     public function testLegalDocumentsRemainPublicDuringMaintenanceWithoutExposingTheCatalogue(): void
     {
         $this->site(true);
-        foreach (['fr', 'en'] as $locale) foreach (['mentions-legales', 'politique-de-confidentialite', 'cookies'] as $path) {
+        foreach (['fr', 'en'] as $locale) foreach (['mentions-legales', 'politique-de-confidentialite', 'cookies', 'conditions-generales-de-vente'] as $path) {
             $crawler = $this->client->request('GET', '/'.$path.'?_locale='.$locale);
             self::assertResponseIsSuccessful();
             self::assertSelectorExists('h1');
@@ -52,7 +52,7 @@ final class LegalPagesTest extends WebTestCase
         }
         $this->client->request('GET', '/');
         self::assertSelectorExists('.team-maintenance');
-        self::assertSelectorCount(3, '.legal-footer-links a');
+        self::assertSelectorCount(4, '.legal-footer-links a');
     }
 
     public function testPublicFooterAndContactInformationMatchTheActualForm(): void
@@ -62,7 +62,7 @@ final class LegalPagesTest extends WebTestCase
             $this->client->request('GET', '/contact-us?_locale='.$locale);
             self::assertResponseIsSuccessful();
             self::assertSelectorExists('.contact-privacy-note a[href^="/politique-de-confidentialite"]');
-            self::assertSelectorCount(3, '.legal-footer-links a');
+            self::assertSelectorCount(4, '.legal-footer-links a');
             self::assertSelectorCount(0, '.contact-form input[type="checkbox"]');
             self::assertSelectorCount(1, '#privacy-preferences [data-privacy-refuse]');
             self::assertSelectorCount(1, '#privacy-preferences [data-privacy-allow]');

@@ -1149,7 +1149,9 @@ footer {
 .roaming-home .flatpickr-day.stay-no-arrival.flatpickr-disabled { text-decoration: line-through; }
 .stay-day:not(:disabled):hover { border-color: var(--teal-primary); }
 .stay-day:is(.stay-selected, .stay-preview-range) { background: var(--stay-range-bg); border-radius: 0; color: var(--roaming-text); opacity: 1; }
-.stay-day:is(.stay-boundary, .stay-preview-end) { background: var(--roaming-primary); border-color: var(--roaming-primary); color: #fff; border-radius: 50%; }
+.stay-day:is(.stay-boundary, .stay-preview-end) { --stay-marker-band: linear-gradient(transparent, transparent); background: radial-gradient(circle closest-side, var(--roaming-primary) 98%, transparent 100%), var(--stay-marker-band); background-origin: border-box; border-color: transparent; color: var(--roaming-on-primary); border-radius: 0; }
+.stay-day:is(.stay-range-start, .stay-preview-start) { --stay-marker-band: linear-gradient(to right, transparent 50%, var(--stay-range-bg) 50%); }
+.stay-day:is(.stay-departure, .stay-preview-end) { --stay-marker-band: linear-gradient(to left, transparent 50%, var(--stay-range-bg) 50%); }
 :is(.stay-boundary, .stay-preview-end) .stay-night-price { color: #fff; }
 .stay-today .stay-day-number { text-decoration: underline; text-underline-offset: 4px; font-weight: 750; }
 .stay-calendar-bottom, .stay-footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.5rem; }
@@ -1166,7 +1168,7 @@ footer {
 .stay-day:not(:disabled):is(:hover, :focus) { background: #e6e6e6; border-color: #e6e6e6; }
 [data-bs-theme="dark"] .stay-day:not(:disabled):is(:hover, :focus) { background: rgba(255,255,255,.1); border-color: transparent; }
 .stay-calendar .stay-day:is(.stay-selected, .stay-preview-range):is(:hover, :focus) { background: var(--stay-range-bg); border-color: transparent; }
-.stay-calendar .stay-day:is(.stay-boundary, .stay-preview-end):is(:hover, :focus) { background: var(--roaming-primary); border-color: var(--roaming-primary); }
+.stay-calendar .stay-day:is(.stay-boundary, .stay-preview-end):is(:hover, :focus) { background: radial-gradient(circle closest-side, var(--roaming-primary) 98%, transparent 100%), var(--stay-marker-band); background-origin: border-box; border-color: transparent; }
 .stay-checkout-only .stay-day-number { text-decoration: none; }
 .stay-checkout-only:not(.stay-boundary) { color: var(--roaming-accent); border-color: var(--roaming-accent); opacity: 1; }
 .stay-checkout-mark { font-weight: 700; line-height: 1; }

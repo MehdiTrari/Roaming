@@ -88,3 +88,5 @@ php -d extension=pdo_sqlite -d extension=fileinfo -S 127.0.0.1:8014 -t public te
 ```
 
 Dans un second terminal : `node tests/browser/team-preview.cjs`. Playwright et Chrome sont nécessaires. Le script bloque les domaines externes et les parcours de réservation, vérifie FR/EN, les largeurs 320/390/1440 px, deux sessions distinctes, connexion, dialogue, ticket et déconnexion. Arrêter ensuite le serveur et fermer le terminal dédié pour rétablir l'environnement local habituel.
+
+Avant d'arrêter ce serveur isolé, lancer aussi `node tests/browser/team-reconnect.cjs` : trois cycles de connexion/déconnexion dans la même session, depuis l'accueil et les tickets, avec et sans JavaScript. Le contrôleur `csrf_protection_controller.js` doit rester chargé immédiatement (`stimulusFetch: 'eager'`) : les formulaires HTML de connexion/déconnexion ont besoin de ses écouteurs même sans attribut Stimulus. Un chargement différé peut faire réussir la première connexion puis refuser la suivante, car la stratégie CSRF mémorisée lors de la déconnexion exige alors le double envoi du jeton. Le correctif se déploie avec les assets recompilés et leurs manifestes.

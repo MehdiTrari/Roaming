@@ -85,7 +85,7 @@ final class AvailabilityController extends AbstractController
         } catch (\InvalidArgumentException) { return $this->reply(['error' => 'invalid_stay'], 400); }
     }
 
-    #[Route('/reservation/{slug}', name: 'app_booking_redirect', methods: ['GET'])]
+    #[Route('/reservation/{slug}', name: 'app_booking_redirect', methods: ['GET', 'POST'])]
     public function book(string $slug, Request $request, GuestLuckyClient $client): Response
     {
         $property = $this->properties->findActiveSlug($slug);
@@ -96,7 +96,21 @@ final class AvailabilityController extends AbstractController
             // Always issue a fresh quote, including after a successful search.
             $quote = $this->availability->quotes([$property], $arrival, $departure, $guests)['availability'][0];
             if ($quote['available']) {
-                $response = $this->redirect($client->bookingUrl($property->getGuestLuckyId(), $arrival, $departure, $guests));
+                $legal = $this->getParameter('app.legal');
+                $tokenId = 'booking_terms:'.$slug.':'.$arrival.':'.$departure.':'.$guests.':'.$legal['terms_version'];
+                $accepted = $request->isMethod('POST')
+                    && $request->request->get('accept_terms') === '1'
+                    && $request->request->get('terms_version') === $legal['terms_version']
+                    && $this->isCsrfTokenValid($tokenId, $request->request->getString('_token'));
+                if (!$accepted) {
+                    return $this->render('legal/booking.html.twig', [
+                        'property' => $property, 'arrival' => $arrival, 'departure' => $departure, 'guests' => $guests,
+                        'tokenId' => $tokenId, 'acceptError' => $request->isMethod('POST'),
+                        'termsDraft' => !$legal['terms_reviewed'] || !$legal['mediator_name'] || !$legal['mediator_address'] || !$legal['mediator_url'],
+                        'navProperties' => $this->properties->findActive(),
+                    ], new Response('', $request->isMethod('POST') ? 422 : 200, ['Cache-Control' => 'no-store, private', 'X-Robots-Tag' => 'noindex, nofollow']));
+                }
+                $response = $this->redirect($client->bookingUrl($property->getGuestLuckyId(), $arrival, $departure, $guests), 303);
                 $response->headers->set('Cache-Control', 'no-store, private');
                 return $response;
             }

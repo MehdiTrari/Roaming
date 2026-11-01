@@ -47,7 +47,9 @@ export default class extends Controller {
             const opacity = Math.max(0, Math.min(1, (fadeEdge - distance) / Math.min(.65, fadeEdge * .5)));
             const active = index === this.index;
             slide.style.setProperty('--slide-offset', offset);
-            slide.style.setProperty('--slide-scale', reducedMotion ? 1 : .88 + .12 * emphasis);
+            // Keep more of the smaller neighbors visible, with a gentler scale
+            // change under reduced motion during the requested slide only.
+            slide.style.setProperty('--slide-scale', reducedMotion ? .84 + .16 * emphasis : .82 + .18 * emphasis);
             slide.style.setProperty('--slide-rotate', `${reducedMotion ? 0 : -3 * Math.max(-1, Math.min(1, offset))}deg`);
             slide.style.setProperty('--slide-shade', (reducedMotion ? .12 : .25) * (1 - emphasis));
             slide.style.setProperty('--slide-saturation', reducedMotion ? 1 : .85 + .15 * emphasis);

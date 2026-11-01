@@ -1,14 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ property.title }} | Roaming Lille{% endblock %}
+{% block title %}{{ 'seo.property_title'|trans({'%title%': property.displayName}) }}{% endblock %}
 
-{% block meta_description %}{% if property.bedrooms > 0 %}{{ 'seo.property_description'|trans({'%title%': property.title, '%city%': property.city, '%bedrooms%': property.bedrooms, '%beds%': property.beds, '%bathrooms%': property.bathrooms, '%travelers%': property.travelers}) }}{% else %}{{ property.title }} - {{ property.city }}{% endif %}{% endblock %}
+{% block meta_description %}{% set summary = app.request.locale == 'en' and property.shortDescriptionEn ? property.shortDescriptionEn : property.shortDescription %}{{ (summary ? property.displayName ~ '. ' ~ summary : 'seo.property_description'|trans({'%title%': property.displayName, '%city%': property.city, '%bedrooms%': property.bedrooms, '%beds%': property.beds, '%bathrooms%': property.bathrooms, '%travelers%': property.travelers}))|seo_summary }}{% endblock %}
 
-{% block meta_keywords %}{{ property.title }}, {{ property.city }}, location appartement {{ property.city }}, hébergement {{ property.city }}, Roaming Lille{% endblock %}
+{% block meta_keywords %}{{ property.displayName }}, {{ property.city }}, location appartement {{ property.city }}, hébergement {{ property.city }}, Roaming Lille{% endblock %}
 
-{% block og_type %}product{% endblock %}
+{% block og_type %}website{% endblock %}
 
-{% block og_image %}{% if property.images|length > 0 %}{{ absolute_url(asset(property_image_url(property.images|first.filename))) }}{% else %}{{ parent() }}{% endif %}{% endblock %}
+{% block og_image %}{% if property.images|length > 0 %}{{ seo_absolute(asset(property_image_url(property.images|first.filename))) }}{% else %}{{ parent() }}{% endif %}{% endblock %}
 {% block og_dimensions %}
 {% if property.images|length > 0 %}
     {% set optimized = responsive_image((property.images|first).filename) %}
@@ -22,22 +22,24 @@
 {
     "@context": "https://schema.org",
     "@type": "LodgingBusiness",
-    "name": {{ property.title|json_encode(15)|raw }},
-    "description": {{ property.about|default(property.description)|default('')|slice(0, 200)|json_encode(15)|raw }},
-    "url": {{ url('app_property_show', {slug: property.slug})|json_encode(15)|raw }},
+    "name": {{ property.displayName|json_encode(15)|raw }},
+    "description": {{ (app.request.locale == 'en' and property.aboutEn ? property.aboutEn : property.about|default(property.description)|default(''))|seo_summary(300)|json_encode(15)|raw }},
+    "url": {{ seo_url('app_property_show', {slug: property.slug})|json_encode(15)|raw }},
     {% if property.images|length > 0 %}
     "image": [
         {% for image in property.images|slice(0, 5) %}
-        {{ absolute_url(asset(property_image_url(image.filename)))|json_encode(15)|raw }}{% if not loop.last %},{% endif %}
+        {{ seo_absolute(asset(property_image_url(image.filename)))|json_encode(15)|raw }}{% if not loop.last %},{% endif %}
         {% endfor %}
     ],
     {% endif %}
     "address": {
         "@type": "PostalAddress",
+        {% if property.address %}"streetAddress": {{ property.address|json_encode(15)|raw }},{% endif %}
         "addressLocality": {{ property.city|json_encode(15)|raw }},
         "addressRegion": "Hauts-de-France",
         "addressCountry": "FR"
     },
+    {% if property.latitude is not null and property.longitude is not null %}"geo": {"@type": "GeoCoordinates", "latitude": {{ property.latitude|json_encode(15)|raw }}, "longitude": {{ property.longitude|json_encode(15)|raw }}},{% endif %}
     {% if property.bedrooms > 0 %}"numberOfRooms": {{ property.bedrooms }},{% endif %}
     "occupancy": {
         "@type": "QuantitativeValue",
@@ -48,7 +50,7 @@
         "telephone": "+33660344071",
         "email": "contact@roamingfr.com",
         "contactType": "reservations"
-    }{% if property.airbnbRating and property.airbnbReviewsCount %},
+    }{% if property.airbnbRating and property.airbnbReviewsCount and property.airbnbUrl %},
     "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": {{ property.airbnbRating|json_encode(15)|raw }},
@@ -68,19 +70,19 @@
             "@type": "ListItem",
             "position": 1,
             "name": {{ 'menu.home'|trans|json_encode(15)|raw }},
-            "item": {{ url('app_home')|json_encode(15)|raw }}
+            "item": {{ seo_url('app_home')|json_encode(15)|raw }}
         },
         {
             "@type": "ListItem",
             "position": 2,
             "name": {{ 'menu.properties'|trans|json_encode(15)|raw }},
-            "item": {{ (url('app_home') ~ '#featured')|json_encode(15)|raw }}
+            "item": {{ (seo_url('app_home') ~ '#featured')|json_encode(15)|raw }}
         },
         {
             "@type": "ListItem",
             "position": 3,
-            "name": {{ property.title|json_encode(15)|raw }},
-            "item": {{ url('app_property_show', {slug: property.slug})|json_encode(15)|raw }}
+            "name": {{ property.displayName|json_encode(15)|raw }},
+            "item": {{ seo_url('app_property_show', {slug: property.slug})|json_encode(15)|raw }}
         }
     ]
 }
@@ -101,18 +103,18 @@
             <span aria-current="page">{{ property.city }}</span>
         </nav>
         <header class="property-heading">
-            <div><p class="calendar-eyebrow">{{ property.city }} · {{ 'listing.region'|trans }}</p><h1>{{ property.title }}</h1></div>
+            <div><p class="calendar-eyebrow">{{ property.city }} · {{ 'listing.region'|trans }}</p><h1 class="property-name-line"><span>{{ property.displayName }}</span>{% include 'components/_capacity_badge.html.twig' with {capacity: property.travelers} only %}</h1></div>
             <a class="btn btn-primary" href="#availability">{{ 'calendar.choose'|trans }}</a>
         </header>
         {% include 'components/_property_facts.html.twig' with {property: property} only %}
 
         {% if property.images|length > 0 %}
-            <section id="propertyGallery" class="carousel slide property-gallery" {% if property.images|length > 1 %}data-controller="property-gallery"{% endif %} aria-label="{{ 'listing.photos_of'|trans({'%name%': property.title}) }}" aria-roledescription="{{ 'property.image_carousel'|trans }}" tabindex="0">
+            <section id="propertyGallery" class="carousel slide property-gallery" {% if property.images|length > 1 %}data-controller="property-gallery"{% endif %} aria-label="{{ 'listing.photos_of'|trans({'%name%': property.displayName}) }}" aria-roledescription="{{ 'property.image_carousel'|trans }}" tabindex="0">
                 <div class="property-gallery-layout">
                 <div class="carousel-inner property-gallery-main">
                     {% for image in property.images %}
                         <div class="carousel-item {{ loop.first ? 'active' : '' }} h-100" role="group" aria-label="{{ 'listing.photo_position'|trans({'%index%': loop.index, '%total%': property.images|length}) }}">
-                            {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: 'd-block w-100 h-100 object-fit-cover', alt: image.alt ?: property.title, sizes: '(min-width: 1600px) 960px, (min-width: 992px) 62vw, 100vw', priority: loop.first} only %}
+                            {% include 'components/_picture.html.twig' with {filename: image.filename, imageClass: 'd-block w-100 h-100 object-fit-cover', alt: image.alt ?: property.displayName, sizes: '(min-width: 1600px) 960px, (min-width: 992px) 62vw, 100vw', priority: loop.first} only %}
                         </div>
                     {% endfor %}
                 </div>
@@ -157,7 +159,7 @@
                 <section class="property-panel" id="property-amenities" aria-labelledby="property-amenities-heading">
                     <h2 id="property-amenities-heading">{{ 'property.popular_amenities'|trans }}</h2>
                     <ul class="property-amenities">
-                        {% for amenity in property.amenities|display_amenities %}<li>{% if amenity.icon %}<span class="property-amenity-icon" aria-hidden="true">{{ amenity.icon|raw }}</span>{% endif %}<span>{{ amenity.name|trans }}</span></li>{% else %}<li class="property-empty-state"><p>{{ 'listing.no_amenities'|trans }}</p><a href="{{ path('app_contact') }}">{{ 'listing.ask_amenities'|trans }}</a></li>{% endfor %}
+                        {% for amenity in property.amenities|display_amenities %}<li><span class="property-amenity-icon" aria-hidden="true">{% include 'components/_amenity_icon.html.twig' with {amenity: amenity.name} only %}</span><span>{{ amenity.name|trans }}</span></li>{% else %}<li class="property-empty-state"><p>{{ 'listing.no_amenities'|trans }}</p><a href="{{ path('app_contact') }}">{{ 'listing.ask_amenities'|trans }}</a></li>{% endfor %}
                     </ul>
                 </section>
                 <section class="property-panel" id="property-location" aria-labelledby="property-location-heading">
@@ -166,7 +168,7 @@
                 </section>
             </div>
             <aside id="availability" class="property-availability" aria-labelledby="property-stay-heading">
-                <div class="property-stay-intro"><p class="property-muted">{{ property.title }}</p><h2 id="property-stay-heading">{{ 'calendar.book_stay'|trans }}</h2></div>
+                <div class="property-stay-intro"><p class="property-muted">{{ property.displayName }}</p><h2 id="property-stay-heading">{{ 'calendar.book_stay'|trans }}</h2></div>
                 {% include 'calendar/_planning.html.twig' with {calendarUrl: path('api_property_availability', {slug: property.slug}), compact: true} %}
             </aside>
         </div>

@@ -1,0 +1,29 @@
+{
+  "publicChannels": [
+    "airbnb",
+    "booking"
+  ],
+  "sources": [
+    {
+      "propertyId": 2467,
+      "channel": "airbnb",
+      "url": "https://www.airbnb.fr/h/croixroaming"
+    },
+    {
+      "propertyId": 2630,
+      "channel": "airbnb",
+      "url": "https://www.airbnb.fr/h/douairoaming"
+    },
+    {
+      "propertyId": 2474,
+      "channel": "airbnb",
+      "url": "https://www.airbnb.fr/h/roubaixroaming"
+    },
+    {
+      "propertyId": 2475,
+      "channel": "booking",
+      "url": "https://www.booking.com/hotel/fr/duplex-cosy-lambersart.fr.html"
+    }
+  ],
+  "excludedReviewIds": []
+}

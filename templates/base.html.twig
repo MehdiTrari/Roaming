@@ -14,11 +14,10 @@
     
     {# SEO Meta Tags #}
     <meta name="description" content="{% block meta_description %}{{ 'seo.default_description'|trans }}{% endblock %}">
-    <meta name="keywords" content="{% block meta_keywords %}{{ 'seo.default_keywords'|trans }}{% endblock %}">
     <meta name="author" content="Roaming Lille">
     {% set publicRoute = app.request.attributes.get('_route') %}
     {% set routeParams = app.request.attributes.get('_route_params')|default({}) %}
-    {% set canonicalUrl = publicRoute ? url(publicRoute, routeParams|merge({'_locale': app.request.locale})) : app.request.schemeAndHttpHost ~ app.request.pathInfo %}
+    {% set canonicalUrl = publicRoute ? seo_url(publicRoute, routeParams|merge({'_locale': app.request.locale})) : seo_absolute(app.request.pathInfo) %}
     <meta name="robots" content="{% block robots %}index, follow{% endblock %}">
     <link rel="canonical" href="{% block canonical %}{{ canonicalUrl }}{% endblock %}">
     
@@ -27,7 +26,7 @@
     <meta property="og:url" content="{{ block('canonical') }}">
     <meta property="og:title" content="{% block og_title %}{{ block('title') }}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{{ block('meta_description') }}{% endblock %}">
-    <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('images/og-default.png')) }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ seo_absolute(asset('images/og-default.png')) }}{% endblock %}">
     {% block og_dimensions %}<meta property="og:image:width" content="1536">
     <meta property="og:image:height" content="1024">{% endblock %}
     <meta property="og:locale" content="{{ app.request.locale == 'fr' ? 'fr_FR' : 'en_US' }}">
@@ -41,9 +40,9 @@
     
     {# Alternate language versions #}
     {% if publicRoute and not (block('robots') starts with 'noindex') %}
-    <link rel="alternate" hreflang="fr" href="{{ url(publicRoute, routeParams|merge({'_locale': 'fr'})) }}">
-    <link rel="alternate" hreflang="en" href="{{ url(publicRoute, routeParams|merge({'_locale': 'en'})) }}">
-    <link rel="alternate" hreflang="x-default" href="{{ url(publicRoute, routeParams|merge({'_locale': 'fr'})) }}">
+    <link rel="alternate" hreflang="fr" href="{{ seo_url(publicRoute, routeParams|merge({'_locale': 'fr'})) }}">
+    <link rel="alternate" hreflang="en" href="{{ seo_url(publicRoute, routeParams|merge({'_locale': 'en'})) }}">
+    <link rel="alternate" hreflang="x-default" href="{{ seo_url(publicRoute, routeParams|merge({'_locale': 'fr'})) }}">
     {% endif %}
     
     {# Favicon adaptatif selon le thème du navigateur (blanc par défaut / noir pour thème clair) #}
@@ -62,9 +61,10 @@
     {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": {{ seo_absolute('/#organization')|json_encode(15)|raw }},
         "name": "Roaming Lille",
-        "url": {{ url('app_home')|json_encode(15)|raw }},
-        "logo": {{ absolute_url(asset('images/logo-footer-black.png'))|json_encode(15)|raw }},
+        "url": {{ seo_url('app_home')|json_encode(15)|raw }},
+        "logo": {{ seo_absolute(asset('images/logo-footer-black.png'))|json_encode(15)|raw }},
         "description": {{ 'seo.default_description'|trans|json_encode(15)|raw }},
         "address": {
             "@type": "PostalAddress",
@@ -126,7 +126,7 @@
                             <ul class="dropdown-menu property-nav-menu">
                                 {% for p in navProperties|default([]) %}
                                     {% set currentProperty = app.request.attributes.get('_route') == 'app_property_show' and app.request.attributes.get('slug') == p.slug %}
-                                    <li><a class="dropdown-item {{ currentProperty ? 'active' : '' }}" {% if currentProperty %}aria-current="page"{% endif %} href="{{ path('app_property_show', {slug: p.slug}) }}">{{ p.title }}</a></li>
+                                    <li><a class="dropdown-item {{ currentProperty ? 'active' : '' }}" {% if currentProperty %}aria-current="page"{% endif %} href="{{ path('app_property_show', {slug: p.slug}) }}"><span class="property-name-label">{{ p.displayName }}</span>{% include 'components/_capacity_badge.html.twig' with {capacity: p.travelers} only %}</a></li>
                                 {% else %}
                                     <li><span class="dropdown-item text-muted">{{ 'home.no_properties'|trans }}</span></li>
                                 {% endfor %}

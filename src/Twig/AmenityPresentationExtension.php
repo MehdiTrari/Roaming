@@ -12,6 +12,14 @@ use Twig\TwigFilter;
 final class AmenityPresentationExtension extends AbstractExtension
 {
     private const ALIASES = [
+        'shampooing' => ['amenities.shampoo'],
+        'machine à café' => ['amenities.coffee_maker'],
+        'micro-ondes' => ['amenities.microwave'],
+        'animaux acceptés' => ['amenities.pets_allowed'],
+        'parking gratuit sur place' => ['amenities.private_parking'],
+        'accessible en fauteuil roulant' => ['amenities.wheelchair_accessible'],
+        'interdiction de fumer' => ['amenities.no_smoking'],
+        'smart tv' => ['amenities.television'],
         'wi-fi' => ['amenities.wifi'],
         'télévision' => ['amenities.television'],
         'cuisine' => ['amenities.kitchen'],

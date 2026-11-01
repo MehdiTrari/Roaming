@@ -181,6 +181,19 @@ class Property
         return $this->title;
     }
 
+    /** Short public label; keep the provider title intact for synchronisation. */
+    public function getDisplayName(): string
+    {
+        $title = trim($this->title ?? '');
+        $city = trim($this->city ?? '');
+        if (preg_match('/^Appartement\s+\d+\s+personnes\b/iu', $title)) {
+            return trim('Appartement '.$city);
+        }
+        $name = trim(preg_split('/\s+[–—•]\s+/u', $title, 2)[0]);
+        if ($name === '') $name = $this->type === 'house' ? 'Maison' : 'Appartement';
+        return $city !== '' && !preg_match('/(?<!\p{L})'.preg_quote($city, '/').'(?!\p{L})/iu', $name) ? $name.' · '.$city : $name;
+    }
+
     public function setTitle(string $title): self
     {
         $this->title = $title;

@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "profiles": [
+    {
+      "reviewId": "airbnb:2467:15355",
+      "propertyId": 2467,
+      "channel": "airbnb",
+      "textHash": "bcae52871449441fcf158902c3f5dba37763077ac0ea9081315045fec53a5ab0",
+      "author": "Sylvie",
+      "avatar": "images/reviewers/profile-d1fff05052081067.png",
+      "avatarKind": "initials",
+      "sourceUrl": "https://www.airbnb.fr/rooms/1765420065815429494/reviews",
+      "sourceReviewId": "1805664932103470049",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "airbnb:2467:15356",
+      "propertyId": 2467,
+      "channel": "airbnb",
+      "textHash": "5fa312c45ad6a738776bc5e9c034d9fc5545b9ea68d1c4c42c65b06dd7b1c5a0",
+      "author": "Chaima",
+      "avatar": "images/reviewers/profile-0f39601c067418b3.jpg",
+      "avatarKind": "photo",
+      "sourceUrl": "https://www.airbnb.fr/rooms/1765420065815429494/reviews",
+      "sourceReviewId": "1803486353212054484",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "airbnb:2467:15357",
+      "propertyId": 2467,
+      "channel": "airbnb",
+      "textHash": "e6e12540a1bc398d301164426e2865d4e1eb08158776fa36605838b4f456b8cb",
+      "author": "Benjamin",
+      "avatar": "images/reviewers/profile-abc34004c49680fc.png",
+      "avatarKind": "initials",
+      "sourceUrl": "https://www.airbnb.fr/rooms/1765420065815429494/reviews",
+      "sourceReviewId": "1799829871410922348",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "airbnb:2467:15358",
+      "propertyId": 2467,
+      "channel": "airbnb",
+      "textHash": "d663cd0eafb95967d5940e01358fa0200663397b4834dfaa88a5187c1cc2132c",
+      "author": "Priscilla",
+      "avatar": "images/reviewers/profile-4473adb871efba92.jpg",
+      "avatarKind": "photo",
+      "sourceUrl": "https://www.airbnb.fr/rooms/1765420065815429494/reviews",
+      "sourceReviewId": "1794071737544847422",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "airbnb:2467:15359",
+      "propertyId": 2467,
+      "channel": "airbnb",
+      "textHash": "c10b979a81770bd1e05f38d8870fb88b1ee07b389089e6d2f8926e995a37cf64",
+      "author": "Fannie",
+      "avatar": "images/reviewers/profile-5bba236109fcc76c.jpg",
+      "avatarKind": "photo",
+      "sourceUrl": "https://www.airbnb.fr/rooms/1765420065815429494/reviews",
+      "sourceReviewId": "1788938795393199906",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "airbnb:2467:15360",
+      "propertyId": 2467,
+      "channel": "airbnb",
+      "textHash": "8d591282278c44dacd1b1a736ceb7b924ae98fa684ea257f913767147692004d",
+      "author": "Hina",
+      "avatar": "images/reviewers/profile-f58e3cfc03b39b0a.jpg",
+      "avatarKind": "photo",
+      "sourceUrl": "https://www.airbnb.fr/rooms/1765420065815429494/reviews",
+      "sourceReviewId": "1779527195473545156",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "airbnb:2467:15361",
+      "propertyId": 2467,
+      "channel": "airbnb",
+      "textHash": "fb17ffa90db618a40811fbb819cf9571d8c5c5f1933c303482889fbbb1d6541c",
+      "author": "Hina",
+      "avatar": "images/reviewers/profile-f58e3cfc03b39b0a.jpg",
+      "avatarKind": "photo",
+      "sourceUrl": "https://www.airbnb.fr/rooms/1765420065815429494/reviews",
+      "sourceReviewId": "1778124462054866241",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "airbnb:2467:15362",
+      "propertyId": 2467,
+      "channel": "airbnb",
+      "textHash": "c929e591937e8a8de0b52ffe15eef16cfd1b33573363a6df03ef4ba38287346f",
+      "author": "Théo",
+      "avatar": "images/reviewers/profile-ccbb5b061ae0d08e.jpg",
+      "avatarKind": "photo",
+      "sourceUrl": "https://www.airbnb.fr/rooms/1765420065815429494/reviews",
+      "sourceReviewId": "1768712386362028939",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "booking:2475:15369",
+      "propertyId": 2475,
+      "channel": "booking",
+      "textHash": "79f783debea8b42facf85b1f79750d480880ebc2c378de4b3eb2a72ed5a9ee90",
+      "author": "Non",
+      "avatar": "images/reviewers/profile-75f1c79db1ccdf80.png",
+      "avatarKind": "photo",
+      "sourceUrl": "https://www.booking.com/hotel/fr/duplex-cosy-lambersart.fr.html",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "booking:2475:15366",
+      "propertyId": 2475,
+      "channel": "booking",
+      "textHash": "faeca9576d4401a602498ee5a7e6efc36a4a2b602576dd6b6fb94d17f490beae",
+      "author": "Hetru",
+      "avatar": "images/reviewers/profile-af7b708c4ca864f6.png",
+      "avatarKind": "initials",
+      "sourceUrl": "https://www.booking.com/hotel/fr/duplex-cosy-lambersart.fr.html",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "booking:2475:15367",
+      "propertyId": 2475,
+      "channel": "booking",
+      "textHash": "34da1b96234c474becf5197144e58b8abb0179a25ae9c4eae16ce864c4553bd0",
+      "author": "Maxime",
+      "avatar": "images/reviewers/profile-8de387dff102bbff.png",
+      "avatarKind": "initials",
+      "sourceUrl": "https://www.booking.com/hotel/fr/duplex-cosy-lambersart.fr.html",
+      "checkedAt": "2026-10-31"
+    },
+    {
+      "reviewId": "booking:2475:15371",
+      "propertyId": 2475,
+      "channel": "booking",
+      "textHash": "ebc1a24373390447ecd36bd4f106824729d002da826f4beb9a023c8aceb0d669",
+      "author": "Jose",
+      "avatar": "images/reviewers/profile-2180dd2937c7f6f3.png",
+      "avatarKind": "initials",
+      "sourceUrl": "https://www.booking.com/hotel/fr/duplex-cosy-lambersart.fr.html",
+      "checkedAt": "2026-10-31"
+    }
+  ]
+}
